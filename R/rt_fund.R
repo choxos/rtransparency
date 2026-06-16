@@ -717,13 +717,14 @@ get_fund_acknow <- function(article) {
 get_fund_acknow_new <- function(article) {
 
   synonyms <- .create_synonyms()
-  words <- c("acknowledge", "support_only", "grant|foundation|insititute|organization")
-
-  synonyms %>%
-    magrittr::extract(words) %>%
+  ack_terms <-
+    synonyms %>%
+    magrittr::extract(c("acknowledge", "support_only")) %>%
     lapply(.bound) %>%
-    unlist() %>%
-    .encase %>%
+    unlist()
+  fund_terms <- c(synonyms$foundation, synonyms$award) %>% .bound()
+  c(ack_terms, fund_terms) %>%
+    .encase() %>%
     grep(article, perl = T, ignore.case = T)
 
 }
@@ -1647,6 +1648,7 @@ rt_fund <- function(filename) {
       if (diff <= 100) {
 
         index_fund[['fund']] <- get_fund_acknow(paragraphs_pruned[from:to])
+        index_fund[['fund_new']] <- get_fund_acknow_new(paragraphs_pruned[from:to])
         index_fund[['project']] <- get_project_acknow(paragraphs_pruned[from:to])
         index <- unlist(index_fund) %>% magrittr::add(from - 1)
       }

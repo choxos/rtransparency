@@ -1,5 +1,14 @@
 <div align="justify">
 
+# rtransparent 0.3.0
+
+* `rt_novelty` and `rt_novelty_pmc` added: detect claims of novelty ("for the first time") in TXT and PMC XML files.
+* `rt_replication` and `rt_replication_pmc` added: detect replication/validation components in TXT and PMC XML files.
+* `rt_register` and `rt_register_pmc` expanded: now detect registrations on ISRCTN, ANZCTR (ACTRN), DRKS, IRCT, and UMIN in addition to NCT and PROSPERO.
+* `rt_all` and `rt_all_pmc` updated to include novelty and replication indicators.
+* A formal testthat test suite has been added (`tests/testthat/`).
+
+
 # rtransparent 0.2.5
 
 * A vignette has been added to help illustrate how to use the package.

@@ -987,6 +987,63 @@
 
 
 
+#' Identify mentions of registration on ISRCTN
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+.which_isrctn_1 <- function(article) {
+
+  grep("\\bISRCTN[0-9]{8}\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on ANZCTR
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+.which_anzctr_1 <- function(article) {
+
+  grep("\\bACTRN[0-9]{14}\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on DRKS
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+.which_drks_1 <- function(article) {
+
+  grep("\\bDRKS[0-9]{8}\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on IRCT
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+.which_irct_1 <- function(article) {
+
+  # IRCT IDs follow the format IRCT + digits + uppercase letter + digits
+  # e.g. IRCT20120526009954N3, IRCT138707012049N3
+  grep("\\bIRCT[0-9]{5,}[A-Z][0-9]+\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on UMIN
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+.which_umin_1 <- function(article) {
+
+  grep("\\bUMIN[0-9]{9}\\b", article, perl = TRUE)
+
+}
+
+
 #' Identify and extract Registration statements in PMC XML files.
 #'
 #' Takes a PMC XML file as a list of strings and returns data related to the
@@ -1022,7 +1079,12 @@
     reg_title_2 = NA,
     reg_title_3 = NA,
     reg_title_4 = NA,
-    funded_ct_1 = NA
+    funded_ct_1 = NA,
+    isrctn_1    = NA,
+    anzctr_1    = NA,
+    drks_1      = NA,
+    irct_1      = NA,
+    umin_1      = NA
   )
 
   index_method <- list(
@@ -1125,6 +1187,11 @@
   index_any$reg_title_3 <- .which_reg_title_3(article_processed, dict)
   index_any$reg_title_4 <- .which_reg_title_4(article_processed, dict)
   index_any$funded_ct_1 <- .which_funded_ct_1(article_processed, dict)
+  index_any$isrctn_1    <- .which_isrctn_1(article_processed)
+  index_any$anzctr_1    <- .which_anzctr_1(article_processed)
+  index_any$drks_1      <- .which_drks_1(article_processed)
+  index_any$irct_1      <- .which_irct_1(article_processed)
+  index_any$umin_1      <- .which_umin_1(article_processed)
   index <- unlist(index_any) %>% unique() %>% sort()
 
 
@@ -1249,7 +1316,12 @@ rt_register_pmc <- function(filename, remove_ns = F) {
     reg_title_2 = NA,
     reg_title_3 = NA,
     reg_title_4 = NA,
-    funded_ct_1 = NA
+    funded_ct_1 = NA,
+    isrctn_1    = NA,
+    anzctr_1    = NA,
+    drks_1      = NA,
+    irct_1      = NA,
+    umin_1      = NA
   )
 
   index_method <- list(
@@ -1403,7 +1475,7 @@ rt_register_pmc <- function(filename, remove_ns = F) {
   #   purrr::compact()
 
   # Adding PROPSERO adds negligible overhead
-  rel_regex <- "\\b(|-)([Rr]egist|(|[Cc]linical)[Tt]rial|NCT[0-9]{8}|ISRCTN|ChiCTR|PROSPERO)"
+  rel_regex <- "\\b(|-)([Rr]egist|(|[Cc]linical)[Tt]rial|NCT[0-9]{8}|ISRCTN|ACTRN|DRKS|IRCT|UMIN|ChiCTR|PROSPERO)"
   article %<>% purrr::keep(stringr::str_detect, pattern = rel_regex)
 
 
@@ -1477,6 +1549,11 @@ rt_register_pmc <- function(filename, remove_ns = F) {
   index_any$reg_title_3 <- .which_reg_title_3(article_processed, dict)
   index_any$reg_title_4 <- .which_reg_title_4(article_processed, dict)
   index_any$funded_ct_1 <- .which_funded_ct_1(article_processed, dict)
+  index_any$isrctn_1    <- .which_isrctn_1(article_processed)
+  index_any$anzctr_1    <- .which_anzctr_1(article_processed)
+  index_any$drks_1      <- .which_drks_1(article_processed)
+  index_any$irct_1      <- .which_irct_1(article_processed)
+  index_any$umin_1      <- .which_umin_1(article_processed)
   index <- unlist(index_any) %>% unique() %>% sort()
 
   # Tidier but takes a median 11.0 ms vs current, which takes 10.6 ms
