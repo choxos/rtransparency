@@ -77,6 +77,29 @@ Naming convention: functions that operate on TXT files do not end in `_pmc`;
 functions that operate on PMC XML end in `_pmc`. The best way to learn the
 package is the vignette: `vignette("rtransparent")`.
 
+## Summarizing a corpus
+
+The detectors describe one article at a time. To study a whole corpus, stack
+the per-article rows and summarize them:
+
+```r
+# results: one row per article (e.g. purrr::map_dfr(files, rt_all_pmc))
+data(rt_demo)            # a small simulated example shipped with the package
+
+rt_summary(rt_demo)      # prevalence of each indicator, with a confidence
+                         # interval and a sensitivity/specificity-corrected
+                         # (Rogan-Gladen) prevalence
+
+rt_score(rt_demo)        # add a per-article count of openness practices met
+
+rt_plot(rt_demo)                              # prevalence bar chart
+rt_plot(rt_demo, type = "trend", year = "year")  # prevalence over time
+```
+
+The accuracy correction uses the bundled `rt_accuracy` table (validated detector
+sensitivity and specificity), which you can override. See
+`vignette("transparency-summary")` for a full walk-through.
+
 ## Validation
 
 Benchmarked against the human-labeled gold standard of Serghiou et al. (2021) on
