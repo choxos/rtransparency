@@ -1,6 +1,7 @@
-# The detectors use magrittr pipes with the `.` placeholder, which R CMD check
-# otherwise flags as an undefined global variable. Declare it package-wide.
-utils::globalVariables(".")
+# The detectors use magrittr pipes with the `.` placeholder, and rt_summary()
+# refers to the lazily-loaded `rt_accuracy` dataset; R CMD check would otherwise
+# flag both as undefined global variables. Declare them package-wide.
+utils::globalVariables(c(".", "rt_accuracy"))
 
 
 .onAttach <- function(libname, pkgname) {

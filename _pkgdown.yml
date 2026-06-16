@@ -38,6 +38,16 @@ reference:
   contents:
   - rt_meta_pmc
   - rt_read_pdf
+- title: Summarize and visualize
+  desc: Corpus-level prevalence, per-article scores and plots.
+  contents:
+  - rt_summary
+  - rt_score
+  - rt_plot
+- title: Datasets
+  contents:
+  - rt_accuracy
+  - rt_demo
 - title: internal
   contents:
   - matches(".")

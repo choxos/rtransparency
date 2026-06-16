@@ -1,7 +1,7 @@
 Package: rtransparent
 Type: Package
 Title: Identifies Indicators of Transparency
-Version: 0.4.3
+Version: 0.5.0
 Authors@R: c(
     person("Stylianos", "Serghiou", role = "aut",
            email = "stelios.serghiou@gmail.com"),
@@ -29,6 +29,7 @@ Imports:
     utf8,
     xml2
 Suggests:
+    ggplot2,
     knitr,
     readxl,
     rmarkdown,

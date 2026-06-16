@@ -1,5 +1,15 @@
 <div align="justify">
 
+# rtransparent 0.5.0
+
+* New corpus-level summary tools, for turning per-article detector output into the kind of figures and tables used in meta-research studies of transparency:
+  * `rt_summary()` reports each indicator's prevalence with a Wilson confidence interval and, by default, a prevalence corrected for the detector's sensitivity and specificity (the Rogan-Gladen estimator). It can summarize within groups via `by`.
+  * `rt_score()` adds a per-article count of the openness practices met.
+  * `rt_plot()` draws a prevalence bar chart or a prevalence-over-time line chart (requires `ggplot2`).
+* New datasets: `rt_accuracy` (validated detector sensitivity and specificity, used by `rt_summary()`) and `rt_demo` (a small simulated corpus for the examples).
+* New vignette, `vignette("transparency-summary")`, illustrating the output: from one article to a corpus prevalence table, an accuracy-corrected prevalence, a practice-count distribution, subgroup summaries and plots.
+
+
 # rtransparent 0.4.3
 
 * Removed the unused legacy data and code helper functions that still referenced `oddpub` and `tokenizers`. The native detector (added in 0.4.0) is the only data and code path; `oddpub`, `tokenizers` and `metareadr` have been dropped from `Suggests`, so the package and its CRAN-style check no longer reference any GitHub-only packages.
