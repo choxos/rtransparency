@@ -30,9 +30,11 @@ rt_all <- function(filename) {
   # Extract indicators
   # TODO Modify functions to avoid loading the TXT file multiple times.
   out_ls <- list(
-    coi_df = rt_coi(filename) %>% dplyr::select(!(article:pmid)),
-    fund_df = rt_fund(filename) %>% dplyr::select(!(article:pmid)),
-    register_df = rt_register(filename)
+    coi_df        = rt_coi(filename) %>% dplyr::select(!(article:pmid)),
+    fund_df       = rt_fund(filename) %>% dplyr::select(!(article:pmid)),
+    register_df   = rt_register(filename),
+    novelty_df    = rt_novelty(filename) %>% dplyr::select(!(article:pmid)),
+    replication_df = rt_replication(filename) %>% dplyr::select(!(article:pmid))
   )
 
   # Return dataframe of indicators

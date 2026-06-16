@@ -321,6 +321,11 @@ rt_all_pmc <- function(filename, remove_ns = F, all_meta = F) {
   reg_ls <- purrr::list_modify(pmc_reg_ls, !!!reg_out)
 
 
+  novelty_ls     <- .rt_novelty_pmc(article_ls)
+  replication_ls <- .rt_replication_pmc(article_ls)
+
+
   status_ls <- list(is_success = T)
-  tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls, status_ls))
+  tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls,
+                      novelty_ls, replication_ls, status_ls))
 }

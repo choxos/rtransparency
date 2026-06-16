@@ -733,13 +733,23 @@ get_fund_acknow <- function(article) {
 get_fund_acknow_new <- function(article) {
 
   synonyms <- .create_synonyms()
-  words <- c("acknowledge", "support_only", "grant|foundation|insititute|organization")
 
-  synonyms %>%
-    magrittr::extract(words) %>%
+  # Terms indicating acknowledgement of support
+  ack_terms <-
+    synonyms %>%
+    magrittr::extract(c("acknowledge", "support_only")) %>%
     lapply(.bound) %>%
-    unlist() %>%
-    .encase %>%
+    unlist()
+
+  # Institutional/award terms that indicate a funding body
+  fund_terms <- c(
+    synonyms$foundation,
+    synonyms$award
+  ) %>%
+    .bound()
+
+  c(ack_terms, fund_terms) %>%
+    .encase() %>%
     grep(article, perl = T, ignore.case = T)
 
 }
@@ -1804,6 +1814,7 @@ obliterate_disclosure_1 <- function(article) {
 
   index_ack <- list(
     fund_ack = NA,
+    fund_ack_new = NA,
     project_ack = NA
   )
 
@@ -1974,6 +1985,7 @@ obliterate_disclosure_1 <- function(article) {
   if (!!length(i)) {
 
     index_ack$fund_ack <- get_fund_acknow(article_processed[i])
+    index_ack$fund_ack_new <- get_fund_acknow_new(article_processed[i])
     index_ack$project_ack <- get_project_acknow(article_processed[i])
 
     index <- i[unlist(index_ack) %>% unique() %>% sort()]
@@ -2182,7 +2194,7 @@ rt_fund_pmc <- function(filename, remove_ns = F) {
 
 
   # Check relevance
-  rel_regex <- "fund|support|financ|receive|grant|none|sponsor|fellowship"
+  rel_regex <- "fund|support|financ|receive|grant|none|sponsor|fellowship|Association|Institute|National|Foundation"
   article %<>% purrr::keep(~ str_detect(.x, regex(rel_regex, ignore_case = T)))
 
   out$is_relevant <- !!length(article)
@@ -2317,6 +2329,7 @@ rt_fund_pmc <- function(filename, remove_ns = F) {
   if (!!length(i)) {
 
     index_ack$fund_ack <- get_fund_acknow(article_processed[i])
+    index_ack$fund_ack_new <- get_fund_acknow_new(article_processed[i])
     index_ack$project_ack <- get_project_acknow(article_processed[i])
 
     index <- i[unlist(index_ack) %>% unique() %>% sort()]

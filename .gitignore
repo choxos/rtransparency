@@ -5,3 +5,6 @@ packrat/lib*/
 .Rhistory
 *.DS_Store
 inst/doc
+
+# Local-only research data (bundled OSF data and paper materials, not distributed)
+paper/

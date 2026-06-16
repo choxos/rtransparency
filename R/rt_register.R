@@ -944,6 +944,75 @@ find_methods <- function(article) {
 }
 
 
+#' Identify mentions of registration on ISRCTN
+#'
+#' Extract the index of mentions such as: "The study was registered at ISRCTN
+#'     (ISRCTN12345678)."
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+get_isrctn_1 <- function(article) {
+
+  grep("\\bISRCTN[0-9]{8}\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on ANZCTR
+#'
+#' Extract the index of mentions such as: "The study was registered with ANZCTR
+#'     (ACTRN12614001234567)."
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+get_anzctr_1 <- function(article) {
+
+  grep("\\bACTRN[0-9]{14}\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on DRKS
+#'
+#' Extract the index of mentions such as: "Registered at DRKS (DRKS00012345)."
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+get_drks_1 <- function(article) {
+
+  grep("\\bDRKS[0-9]{8}\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on IRCT (Iranian Registry of Clinical Trials)
+#'
+#' Extract the index of mentions such as: "Registered at IRCT (IRCT20120526009954N3)."
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+get_irct_1 <- function(article) {
+
+  # IRCT IDs follow the format IRCT + digits + uppercase letter + digits
+  # e.g. IRCT20120526009954N3, IRCT138707012049N3
+  grep("\\bIRCT[0-9]{5,}[A-Z][0-9]+\\b", article, perl = TRUE)
+
+}
+
+
+#' Identify mentions of registration on UMIN (Japan Primary Registries Network)
+#'
+#' Extract the index of mentions such as: "Registered at UMIN (UMIN000012345)."
+#'
+#' @param article A string or a list of strings.
+#' @return Index of element with phrase of interest
+get_umin_1 <- function(article) {
+
+  grep("\\bUMIN[0-9]{9}\\b", article, perl = TRUE)
+
+}
+
+
 #' Identify and extract Registration statements in TXT files.
 #'
 #' Takes a TXT file and returns data related to the presence of a Registration
@@ -987,7 +1056,7 @@ rt_register <- function(filename) {
 
   file_text <- readr::read_file(filename)
 
-  is_relevant <- any(grepl("\\b(|-)([Rr]egist|(|[Cc]linical)[Tt]rial|NCT[0-9]{8})", file_text))
+  is_relevant <- any(grepl("\\b(|-)([Rr]egist|(|[Cc]linical)[Tt]rial|NCT[0-9]{8}|ISRCTN[0-9]{8}|ACTRN[0-9]{14}|DRKS[0-9]{8}|IRCT[0-9A-Z]+|UMIN[0-9]{9}|PROSPERO)", file_text))
   if (is_relevant) {
 
     # TODO: MOVE THIS TO THE pdf2text FUNCTION AND ENCODE AS UTF-8
@@ -1067,6 +1136,11 @@ rt_register <- function(filename) {
     index_any[["reg_title_3"]] <- get_reg_title_3(paragraphs_pruned)
     index_any[["reg_title_4"]] <- get_reg_title_4(paragraphs_pruned)
     index_any[["funded_ct_1"]] <- get_funded_ct_1(paragraphs_pruned)
+    index_any[["isrctn_1"]]   <- get_isrctn_1(paragraphs_pruned)
+    index_any[["anzctr_1"]]   <- get_anzctr_1(paragraphs_pruned)
+    index_any[["drks_1"]]     <- get_drks_1(paragraphs_pruned)
+    index_any[["irct_1"]]     <- get_irct_1(paragraphs_pruned)
+    index_any[["umin_1"]]     <- get_umin_1(paragraphs_pruned)
     index <- unlist(index_any) %>% unique() %>% sort()
 
 

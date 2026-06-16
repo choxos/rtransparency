@@ -1,7 +1,7 @@
 Package: rtransparent
 Type: Package
 Title: Identifies indicators of transparency
-Version: 0.2.5
+Version: 0.3.0
 Authors@R: c(person("Stylianos", "Serghiou", role = c("aut", "cre"),
                      email = "stelios.serghiou@gmail.com"))
 Description: Use this package to identify indicators of transparency within the
@@ -27,10 +27,11 @@ Imports:
     utf8,
     xml2
 RoxygenNote: 7.1.1
-Suggests: 
+Suggests:
     knitr,
     metareadr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr,
     metareadr

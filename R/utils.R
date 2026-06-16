@@ -995,7 +995,7 @@
   )
 
   synonyms[["foundation"]] <- c(
-    "Ffoundation(|s)",
+    "[Ff]oundation(|s)",
     "Institut(e|es|ution)",
     "Universit",  # to cover for say German Universitaet
     "Universit(y|ies)",

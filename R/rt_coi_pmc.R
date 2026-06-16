@@ -829,7 +829,7 @@
     "compet",
     "disclos",
     "declar",
-    "\\commercial"
+    "\\bcommercial"
   )
 
   lo_synonyms <- c(

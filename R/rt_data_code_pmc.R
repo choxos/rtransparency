@@ -116,7 +116,7 @@
     article2 <-
       article_xml %>%
       xml2::xml_find_all(".//custom-meta | .//notes") %>%
-      purrr::map(~ xml_contents(.x) %>% xml_text) %>%
+      purrr::map(~ xml2::xml_contents(.x) %>% xml2::xml_text()) %>%
       purrr::map_chr(paste, collapse = ": ")
 
     # Required!
@@ -684,7 +684,7 @@ rt_data_pmc_specific_list <- function(filenames, remove_ns = T) {
       article2 <-
         article_xml %>%
         xml2::xml_find_all(".//custom-meta | .//notes") %>%
-        purrr::map(~ xml_contents(.x) %>% xml_text) %>%
+        purrr::map(~ xml2::xml_contents(.x) %>% xml2::xml_text()) %>%
         purrr::map_chr(paste, collapse = ": ")
 
       # Required!
