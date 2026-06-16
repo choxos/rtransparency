@@ -1,0 +1,224 @@
+# Introduction to rtransparent
+
+``` r
+
+library(rtransparent)
+```
+
+## Overview
+
+`rtransparent` identifies and extracts **indicators of transparency**
+from the full text of published biomedical articles. It works on two
+inputs: plain TXT files (typically converted from PDFs) and PMC XML
+files (the JATS XML served by PubMed Central). For each indicator it
+returns whether the indicator was found and, when found, the sentence or
+statement that triggered the detection.
+
+| Indicator | What it captures | TXT | PMC XML |
+|----|----|:--:|:--:|
+| Conflicts of interest | A COI / competing-interests disclosure | `rt_coi` | `rt_coi_pmc` |
+| Funding | A funding / financial-support statement | `rt_fund` | `rt_fund_pmc` |
+| Protocol registration | Registration on a trial / review registry | `rt_register` | `rt_register_pmc` |
+| Novelty | Claims of novelty (“for the first time”) | `rt_novelty` | `rt_novelty_pmc` |
+| Replication | Replication / independent-validation components | `rt_replication` | `rt_replication_pmc` |
+| Data sharing | Data deposited or made openly available | `rt_data_code` | `rt_data_code_pmc` |
+| Code sharing | Source code / scripts made available | `rt_data_code` | `rt_data_code_pmc` |
+
+`rt_all` and `rt_all_pmc` run the COI, funding, registration, novelty
+and replication detectors together in a single pass. Data and code
+sharing are exposed separately through `rt_data_code` /
+`rt_data_code_pmc`.
+
+The package and its validation are described in Serghiou et al.,
+*Assessment of transparency indicators across the biomedical literature:
+How open is open?* (PLOS Biology, 2021,
+<doi:10.1371/journal.pbio.3001107>).
+
+## How detection works
+
+### Article parsing
+
+PMC XML is parsed with `xml2`. The XML root is standardized to the
+`<article>` node (the package accepts the OAI-PMH, EFetch
+`<pmc-articleset>` and bare `<article>` shapes), the namespace is
+optionally stripped (`remove_ns = TRUE`), and the text is split into the
+sections where each indicator usually appears: acknowledgments,
+footnotes / author notes, the body, the methods, the abstract and
+supplementary material. TXT files are read whole and split into
+paragraphs.
+
+### Rule-based detection
+
+Detection is **rule-based and interpretable**: each indicator is a
+curated set of regular expressions applied to the relevant sections,
+rather than a machine learning model. This keeps the output auditable
+(the matched statement is returned) and reproducible.
+
+- **Conflicts of interest.** Detected from structured COI footnotes
+  (`fn-type = "conflict"`), from section titles (“Conflicts of
+  interest”, “Competing interests”, “Declaration of interest”, “Duality
+  of interest”), and from a set of text patterns covering financial
+  relationships, consulting, fees, board membership, patents and
+  explicit “no competing interests” declarations. Honoraria-to-subjects
+  and reference text are masked to reduce false positives.
+- **Funding.** Detected from the XML `<funding-group>` element, from
+  funding section titles, and from text patterns such as “supported by”,
+  “funded by”, “grant from / number”, named funders and award types.
+  Acknowledged funding is required to use explicit funding language (a
+  funding verb tied to a funder), so a bare mention of an institution or
+  the word “support” is not enough. No-funding declarations are
+  excluded.
+- **Protocol registration.** Detected from registry identifiers
+  (ClinicalTrials.gov `NCT`, PROSPERO `CRD`, ISRCTN, ANZCTR `ACTRN`,
+  DRKS, IRCT, UMIN, ChiCTR) and from registration phrasing in the
+  methods or footnotes.
+- **Novelty and replication.** Detected from claim patterns such as “for
+  the first time”, “to our knowledge”, “novel finding” (novelty) and
+  “replicate”, “independently validated”, “confirmatory cohort”
+  (replication), with negation filters (“failed to replicate”).
+- **Data and code sharing.** Detected by a native detector
+  (`.detect_data_code`) built from public facts and validated
+  statements: field-specific accession schemes (GEO `GSE`, SRA /
+  BioProject `PRJNA`, PDB, ArrayExpress, dbGaP, ProteomeXchange, Dryad /
+  Zenodo / figshare DOIs, …), repository URLs and names, deposit /
+  availability / data-availability-statement language, and supplement
+  and file-format signals. Crucially it distinguishes **sharing** (“data
+  were deposited in GEO”) from **reuse** (“data were downloaded from
+  GEO”) and excludes “available on request”. Code repositories (GitHub,
+  GitLab, Bitbucket) only count as data when paired with a data noun, so
+  a code-only GitHub link is not mistaken for data sharing.
+
+## Usage: PMC XML
+
+The package ships an example PMC XML file. We use it below; replace the
+path with your own file to analyze a different article.
+
+``` r
+
+xml_path <- system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparent"
+)
+```
+
+### All indicators at once
+
+`rt_all_pmc` returns COI, funding, registration, novelty and replication
+in one call, together with the matched statement text and article
+metadata.
+
+``` r
+
+all_indicators <- rt_all_pmc(xml_path, remove_ns = TRUE)
+
+dplyr::glimpse(
+  all_indicators[, c("pmid", "is_coi_pred", "is_fund_pred",
+                     "is_register_pred", "is_novelty_pred", "is_replication_pred")]
+)
+#> Rows: 1
+#> Columns: 6
+#> $ pmid                <chr> "32171256"
+#> $ is_coi_pred         <lgl> TRUE
+#> $ is_fund_pred        <lgl> TRUE
+#> $ is_register_pred    <lgl> FALSE
+#> $ is_novelty_pred     <lgl> FALSE
+#> $ is_replication_pred <lgl> FALSE
+```
+
+### Individual indicators
+
+``` r
+
+coi <- rt_coi_pmc(xml_path, remove_ns = TRUE)
+c(is_coi = coi$is_coi_pred, text = substr(coi$coi_text, 1, 120))
+#>                                                                                                                     is_coi 
+#>                                                                                                                     "TRUE" 
+#>                                                                                                                       text 
+#> "Competing interests In the past 36 months, J.D.W. received research support through the Collaboration for Research Integ"
+```
+
+``` r
+
+fund <- rt_fund_pmc(xml_path, remove_ns = TRUE)
+c(is_fund = fund$is_fund_pred, text = substr(fund$fund_text, 1, 120))
+#>                                                                                                                    is_fund 
+#>                                                                                                                     "TRUE" 
+#>                                                                                                                       text 
+#> "Funding This research received no specific grant from any funding agency in the public, commercial, or not-for-profit se"
+```
+
+``` r
+
+register <- rt_register_pmc(xml_path, remove_ns = TRUE)
+register$is_register_pred
+#> [1] FALSE
+```
+
+### Data and code sharing
+
+Data and code detection is native and needs no external packages.
+
+``` r
+
+data_code <- rt_data_code_pmc(xml_path, remove_ns = TRUE)
+
+dplyr::glimpse(
+  data_code[, c("is_open_data", "open_data_statements",
+                "is_open_code", "open_code_statements")]
+)
+#> Rows: 1
+#> Columns: 4
+#> $ is_open_data         <lgl> TRUE
+#> $ open_data_statements <chr> "Availability of data and materialsData will be s…
+#> $ is_open_code         <lgl> FALSE
+#> $ open_code_statements <chr> ""
+```
+
+## Usage: TXT files
+
+To analyze a PDF, first convert it to TXT with `rt_read_pdf` (this needs
+the poppler `pdftotext` utility installed), then run the TXT detectors.
+The chunks below are illustrative and are not executed when the vignette
+is built.
+
+``` r
+
+pdf_path <- system.file(
+  "extdata", "PMID32171256-PMC7071725.pdf", package = "rtransparent"
+)
+article <- rt_read_pdf(pdf_path)
+writeLines(article, "article.txt")
+
+rt_coi("article.txt")
+rt_fund("article.txt")
+rt_register("article.txt")
+rt_data_code("article.txt")
+rt_all("article.txt")   # COI, funding, registration, novelty, replication
+```
+
+## Downloading PMC XML
+
+PMC full-text XML can be downloaded by PMCID. The package exposes
+nothing for this, but the `europepmc` (CRAN) or `metareadr` packages
+work well; the following is illustrative.
+
+``` r
+
+# europepmc::epmc_ftxt("PMC7071725")            # returns the XML document
+# metareadr::mt_read_pmcoa("7071725", "article.xml")
+```
+
+## Validation
+
+The detectors were validated against the human-labeled gold standard of
+Serghiou et al. (2021). On the held-out XML test set the current package
+reaches roughly: COI 97% accuracy, funding 97%, protocol registration
+98%. The native data/code detector reaches code 68% sensitivity / 94%
+specificity and data 64% sensitivity / 95% specificity (see
+`inst/benchmark/` and `data-raw/benchmark/` in the source repository for
+the reproducible benchmark).
+
+## Naming convention and dependencies
+
+Functions that operate on TXT files do not end in `_pmc`; functions that
+operate on PMC XML end in `_pmc`. Data and code detection is implemented
+natively and no longer requires the `oddpub` or `tokenizers` packages.
