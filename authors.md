@@ -13,13 +13,13 @@ Source:
 [`DESCRIPTION`](https://github.com/choxos/rtransparent/blob/HEAD/DESCRIPTION)
 
 Serghiou S, Sofi-Mahmudi A (2026). *rtransparent: Identifies indicators
-of transparency*. R package version 0.4.1,
+of transparency*. R package version 0.4.2,
 <https://github.com/choxos/rtransparent>.
 
     @Manual{,
       title = {rtransparent: Identifies indicators of transparency},
       author = {Stylianos Serghiou and Ahmad Sofi-Mahmudi},
       year = {2026},
-      note = {R package version 0.4.1},
+      note = {R package version 0.4.2},
       url = {https://github.com/choxos/rtransparent},
     }

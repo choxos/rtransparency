@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   rtransparent: rtransparent.html
-last_built: 2026-06-16T19:38Z
+last_built: 2026-06-16T19:43Z
 urls:
   reference: https://choxos.github.io/rtransparent/reference
   article: https://choxos.github.io/rtransparent/articles

@@ -1,5 +1,13 @@
 # Changelog
 
+## rtransparent 0.4.2
+
+- Added a pkgdown documentation website at
+  <https://choxos.github.io/rtransparent>.
+- Corrected the
+  [`rt_data_code_pmc_list()`](https://choxos.github.io/rtransparent/reference/rt_data_code_pmc_list.md)
+  documentation example.
+
 ## rtransparent 0.4.1
 
 - Fixed the exported

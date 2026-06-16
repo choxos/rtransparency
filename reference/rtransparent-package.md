@@ -7,14 +7,20 @@ certain indicators of transparency.
 
 Useful links:
 
-- <http://github.com/serghiou/rtransparent>
+- <https://github.com/choxos/rtransparent>
 
-- Report bugs at <http://github.com/serghiou/rtransparent/issues>
+- <https://choxos.github.io/rtransparent>
+
+- Report bugs at <https://github.com/choxos/rtransparent/issues>
 
 ## Author
 
-**Maintainer**: Stylianos Serghiou <stelios.serghiou@gmail.com>
+**Maintainer**: Ahmad Sofi-Mahmudi <a.sofimahmudi@gmail.com>
+([ORCID](https://orcid.org/0000-0001-6829-0823))
 
 Authors:
+
+- Ahmad Sofi-Mahmudi <a.sofimahmudi@gmail.com>
+  ([ORCID](https://orcid.org/0000-0001-6829-0823))
 
 - Stylianos Serghiou <stelios.serghiou@gmail.com>

@@ -26,7 +26,8 @@ Detection is rule-based and interpretable (curated regular expressions
 over the relevant article sections), so the output is auditable and
 reproducible. See the vignette
 ([`vignette("rtransparent")`](https://choxos.github.io/rtransparent/articles/rtransparent.md))
-for the methodology.
+for the methodology, and the package website at
+<https://choxos.github.io/rtransparent> for full documentation.
 
 ## Authors
 

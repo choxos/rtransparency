@@ -33,3 +33,16 @@ rt_data_code_pmc_list(filenames, remove_ns = T, specificity = "low")
 A dataframe of results. Takes a median of 200ms per article.
 
 ## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# Paths to PMC XML files
+filepath <- system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparent"
+)
+filepaths <- list(filepath)
+
+# Identify and extract indicators of data and code sharing
+results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
+} # }
+```
