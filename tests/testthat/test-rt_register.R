@@ -1,6 +1,6 @@
 test_that("get_ct_1 detects NCT numbers with registration context", {
   article_with_nct <- c(
-    "The study was pre-registered on ClinicalTrials.gov (NCT12345678).",
+    "The study was pre-registered: NCT12345678.",
     "Methods were approved by the IRB."
   )
   article_without_nct <- c(
