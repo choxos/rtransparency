@@ -1,3 +1,20 @@
+# Ensure the optional data/code detection dependencies are available.
+.check_data_code_deps <- function() {
+  pkgs <- c("oddpub", "tokenizers")
+  missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]
+  if (length(missing)) {
+    stop(
+      "Data and code detection requires the ",
+      paste(missing, collapse = " and "), " package",
+      if (length(missing) > 1) "s" else "", ". ",
+      "Install tokenizers from CRAN and oddpub from GitHub ",
+      "(remotes::install_github(\"quest-bih/oddpub\")).",
+      call. = FALSE
+    )
+  }
+}
+
+
 #' Tokenize NLM XML files
 #'
 #' The code for this was modified from the oddpub package.
@@ -358,6 +375,8 @@ rt_data_pmc_specific <- function(filename) {
 #' @export
 rt_data_code_pmc <- function(filename, remove_ns = T, specificity = "low") {
 
+  .check_data_code_deps()
+
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
 
@@ -454,6 +473,8 @@ rt_data_code_pmc <- function(filename, remove_ns = T, specificity = "low") {
 rt_data_code_pmc_list <- function(filenames,
                                   remove_ns = T,
                                   specificity = "low") {
+
+  .check_data_code_deps()
 
   # Avoid automated checking warning in R package development
   doi <- NULL

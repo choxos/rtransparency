@@ -18,6 +18,8 @@
 #' @export
 rt_data_code <- function(filename) {
 
+  .check_data_code_deps()
+
   # Read TXT file
   article <- readr::read_file(filename)
 
