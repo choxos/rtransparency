@@ -1,5 +1,61 @@
 # Changelog
 
+## rtransparent 0.6.1
+
+Precision and recall fixes from an independent manual review of a sample
+of open-access PMC articles:
+
+- Replication: a bare internal training/validation split (a single
+  dataset divided into a training cohort and a validation cohort) is no
+  longer counted as replication, since it is model development rather
+  than an independent confirmation in a new sample. External or
+  independent validation still counts.
+- Novelty: firstness claims that carry an adverbial are now detected,
+  for example “the first to date to report …” and “the first ever study
+  to characterize …”.
+- Data: the generic publisher line “The online version contains
+  supplementary material available at ”, which appears in every article
+  of some journals, is no longer treated as a data-availability
+  statement on its own.
+
+## rtransparent 0.6.0
+
+- Substantially improved detector recall, guided by an external
+  validation set of 1,000 open-access PMC articles:
+  - Novelty and replication detection now scan the full article body and
+    recognize many more phrasings (firstness and knowledge-gap claims
+    for novelty; internal, external and independent-validation claims
+    for replication), while new suppressors keep generic “validation”
+    and future-work wording out.
+  - Data and code sharing detection gained high-specificity patterns for
+    in-article and supplement availability statements, repository-hosted
+    data, and explicit code-availability wording, and new vetoes for
+    supplement boilerplate, result tables, local file paths and
+    tool/package-use mentions.
+  - Registration detection added negation guards (“not registered”, “not
+    applicable”, IRB-only numbers) and broader registry coverage.
+- The reproducible data/code benchmark now gives data 71.3% sensitivity
+  / 99.0% specificity and code 83.5% sensitivity / 99.5% specificity;
+  `rt_accuracy` was updated to these estimates.
+- Internal helper functions are now marked `@noRd`, so the manual and
+  the pkgdown reference present only the public API.
+- Hardened
+  [`rt_summary()`](https://choxos.github.io/rtransparent/reference/rt_summary.md)
+  and
+  [`rt_score()`](https://choxos.github.io/rtransparent/reference/rt_score.md)
+  so indicator columns must be logical or numeric 0/1 values, with `NA`
+  allowed.
+- Added a reproducible external validation harness under
+  `data-raw/external-validation/`.
+
+## rtransparent 0.5.1
+
+- Corrected the license declaration from `GPL-3 + file LICENSE` to
+  `GPL-3`. The package is plain GPL-3 with no additional terms, so the
+  `+ file LICENSE` form (which signals extra restrictions in the
+  `LICENSE` file) was misleading; the full GPL-3 text is still provided
+  in `LICENSE` for reference.
+
 ## rtransparent 0.5.0
 
 - New corpus-level summary tools, for turning per-article detector
@@ -15,8 +71,8 @@
   - [`rt_plot()`](https://choxos.github.io/rtransparent/reference/rt_plot.md)
     draws a prevalence bar chart or a prevalence-over-time line chart
     (requires `ggplot2`).
-- New datasets: `rt_accuracy` (validated detector sensitivity and
-  specificity, used by
+- New datasets: `rt_accuracy` (detector sensitivity and specificity
+  estimates, used by
   [`rt_summary()`](https://choxos.github.io/rtransparent/reference/rt_summary.md))
   and `rt_demo` (a small simulated corpus for the examples).
 - New vignette,
@@ -45,7 +101,7 @@
 ## rtransparent 0.4.2
 
 - Added a pkgdown documentation website at
-  <https://choxos.github.io/rtransparent>.
+  <https://choxos.github.io/rtransparent/>.
 - Corrected the
   [`rt_data_code_pmc_list()`](https://choxos.github.io/rtransparent/reference/rt_data_code_pmc_list.md)
   documentation example.
@@ -79,12 +135,12 @@
 
 - Data and code sharing detection is now implemented natively
   (`R/data_code.R`) and no longer requires the `oddpub` package at
-  runtime. On the held-out validation set the native detector scores
-  data 64% sensitivity / 95% specificity and code 68% sensitivity / 94%
-  specificity (the published paper reports about 76% and 59%
-  sensitivity). Code detection already exceeds the paper’s sensitivity
-  and the data precision matches the original oddpub; data sensitivity
-  is being improved toward oddpub’s ~84%.
+  runtime. On the XML benchmark used at the time, the native detector
+  scored data 64% sensitivity / 95% specificity and code 68% sensitivity
+  / 94% specificity (the published paper reports about 76% and 59%
+  sensitivity). Code detection already exceeded the paper’s sensitivity
+  and the data precision matched the original `oddpub`; data sensitivity
+  was being improved toward `oddpub`’s ~84%.
 - `rt_data_code`, `rt_data_code_pmc` and `rt_data_code_pmc_list` were
   rewritten to use the native detector and return `is_open_data` /
   `is_open_code` with the matched statement text. They no longer depend
@@ -105,15 +161,14 @@
 ## rtransparent 0.3.3
 
 - Improved funding specificity from 78% to 96% on the held-out XML test
-  set (accuracy 86% to 97%) by tightening
-  [`get_fund_acknow_new()`](https://choxos.github.io/rtransparent/reference/get_fund_acknow_new.md).
-  It previously flagged any acknowledgment that merely named an
-  institution or used the word “support”, so competing-interest
-  statements, generic thanks, data-availability statements and
-  affiliations were misread as funding. It now requires explicit funding
-  language: a funding verb directed at a funder, an institutional
-  “support/funding of the …”, a grant or award identifier, or a named
-  award. Sensitivity is unchanged at 100% on the test set.
+  set (accuracy 86% to 97%) by tightening `get_fund_acknow_new()`. It
+  previously flagged any acknowledgment that merely named an institution
+  or used the word “support”, so competing-interest statements, generic
+  thanks, data-availability statements and affiliations were misread as
+  funding. It now requires explicit funding language: a funding verb
+  directed at a funder, an institutional “support/funding of the …”, a
+  grant or award identifier, or a named award. Sensitivity is unchanged
+  at 100% on the test set.
 
 ## rtransparent 0.3.2
 
@@ -122,11 +177,10 @@
   gold standard of Serghiou et al. (2021) and reports sensitivity,
   specificity, PPV, NPV and accuracy with bootstrap confidence
   intervals, alongside the published Fig 2 numbers.
-- Fixed
-  [`.reroot_xml()`](https://choxos.github.io/rtransparent/reference/dot-reroot_xml.md)
-  to handle bare `<article>` and NCBI EFetch `<pmc-articleset>` roots.
-  Previously it returned an empty document for anything other than the
-  PMC OAI-PMH format, which silently suppressed all detection.
+- Fixed `.reroot_xml()` to handle bare `<article>` and NCBI EFetch
+  `<pmc-articleset>` roots. Previously it returned an empty document for
+  anything other than the PMC OAI-PMH format, which silently suppressed
+  all detection.
 - Fixed unqualified `str_detect()`/`regex()` calls in the funding
   detector that errored on articles lacking a structured funding
   statement.

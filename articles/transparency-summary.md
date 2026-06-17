@@ -23,7 +23,7 @@ indicators:
 ``` r
 
 library(rtransparent)
-#> rtransparent 0.5.0: identify indicators of transparency (conflicts of interest, funding,
+#> rtransparent 0.6.1: identify indicators of transparency (conflicts of interest, funding,
 #> protocol registration, novelty, replication, and data and code sharing) in
 #> biomedical articles. GitHub: https://github.com/choxos/rtransparent | vignette("rtransparent")
 
@@ -97,9 +97,9 @@ knitr::kable(
 A text-mining detector is not perfect, so the **observed** prevalence is
 a biased estimate of the **true** prevalence.
 [`rt_summary()`](https://choxos.github.io/rtransparent/reference/rt_summary.md)
-corrects for this using each detector’s validated sensitivity and
-specificity (the Rogan-Gladen estimator). The correction is on by
-default and adds `adj_percent`, `adj_low` and `adj_high`:
+corrects for this using each detector’s sensitivity and specificity
+estimates (the Rogan-Gladen estimator). The correction is on by default
+and adds `adj_percent`, `adj_low` and `adj_high`:
 
 ``` r
 
@@ -115,8 +115,8 @@ knitr::kable(
 | Conflicts of interest |       69.6 |        70.0 |   67.3 |    72.6 |
 | Funding disclosure    |       79.0 |        78.8 |   76.4 |    81.1 |
 | Protocol registration |       26.5 |        27.5 |   25.0 |    30.2 |
-| Data sharing          |       16.8 |        19.8 |   16.4 |    23.6 |
-| Code sharing          |        8.4 |         3.9 |    1.6 |     6.7 |
+| Data sharing          |       16.8 |        22.4 |   19.6 |    25.6 |
+| Code sharing          |        8.4 |         9.5 |    7.8 |    11.6 |
 | Novelty               |       49.7 |          NA |     NA |      NA |
 | Replication           |        9.1 |          NA |     NA |      NA |
 
@@ -132,14 +132,16 @@ rt_accuracy
 #> 1 is_coi_pred      Conflicts of interest       0.992       0.995 Serghiou et al…
 #> 2 is_fund_pred     Funding disclosure          0.997       0.981 Serghiou et al…
 #> 3 is_register_pred Protocol registration       0.955       0.997 Serghiou et al…
-#> 4 is_open_data     Data sharing                0.643       0.95  rtransparent n…
-#> 5 is_open_code     Code sharing                0.679       0.94  rtransparent n…
+#> 4 is_open_data     Data sharing                0.713       0.99  rtransparent n…
+#> 5 is_open_code     Code sharing                0.835       0.995 rtransparent n…
 ```
 
-Novelty and replication have no validated accuracy here, so their
-corrected values are `NA`. To use your own validation (or the published
-`oddpub` values for data and code), pass any table with `variable`,
-`sensitivity` and `specificity` columns:
+Novelty and replication have no bundled accuracy estimates here, so
+their corrected values are `NA`. The data/code values are reproducible
+benchmark estimates for the native detector, not untouched
+external-validation estimates. To use your own validation (or the
+published `oddpub` values for data and code), pass any table with
+`variable`, `sensitivity` and `specificity` columns:
 
 ``` r
 
@@ -150,7 +152,7 @@ rt_summary(rt_demo, indicators = "is_open_data", accuracy = my_acc)[,
 #> # A tibble: 1 × 3
 #>   label        percent adj_percent
 #>   <chr>          <dbl>       <dbl>
-#> 1 Data sharing    16.8        16.6
+#> 1 Data sharing    16.8        21.1
 ```
 
 ## How many practices per article

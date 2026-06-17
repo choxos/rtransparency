@@ -19,7 +19,7 @@ specificity (the Rogan-Gladen estimator)."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rtransparent</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,11 +73,12 @@ specificity (the Rogan-Gladen estimator).</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>A data frame with one row per article. Indicator columns are
-logical (or 0/1) and named as in [rt_all_pmc()]: `is_coi_pred`,
+<dd><p>A data frame with one row per article. Indicator columns must be
+logical or numeric 0/1 and named as in [rt_all_pmc()]: `is_coi_pred`,
 `is_fund_pred`, `is_register_pred`, `is_open_data`, `is_open_code`,
 `is_novelty_pred`, `is_replication_pred`. `NA` marks an article that was not
-assessed for that indicator and is excluded from its denominator.</p></dd>
+assessed for that indicator and is excluded from its denominator. Other
+values are rejected rather than silently coerced.</p></dd>
 
 
 <dt id="arg-indicators">indicators<a class="anchor" aria-label="anchor" href="#arg-indicators"></a></dt>
@@ -128,8 +129,8 @@ sensitivity and specificity using `accuracy`. Indicators absent from
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> is_coi_pred Conf…       <span style="text-decoration: underline;">1</span>200        835   69.6     66.9       72.1       70.0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> is_fund_pr… Fund…       <span style="text-decoration: underline;">1</span>200        948   79       76.6       81.2       78.8 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> is_registe… Prot…       <span style="text-decoration: underline;">1</span>200        318   26.5     24.1       29.1       27.5 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> is_open_da… Data…       <span style="text-decoration: underline;">1</span>200        201   16.8     14.7       19.0       19.8 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> is_open_co… Code…       <span style="text-decoration: underline;">1</span>200        101    8.42     6.98      10.1        3.90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> is_open_da… Data…       <span style="text-decoration: underline;">1</span>200        201   16.8     14.7       19.0       22.4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> is_open_co… Code…       <span style="text-decoration: underline;">1</span>200        101    8.42     6.98      10.1        9.54</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> is_novelty… Nove…       <span style="text-decoration: underline;">1</span>200        596   49.7     46.8       52.5       <span style="color: #BB0000;">NA</span>   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> is_replica… Repl…       <span style="text-decoration: underline;">1</span>200        109    9.08     7.59      10.8       <span style="color: #BB0000;">NA</span>   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: adj_low &lt;dbl&gt;, adj_high &lt;dbl&gt;</span></span>

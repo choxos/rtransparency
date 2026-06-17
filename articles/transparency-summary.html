@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparent</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,7 +76,7 @@ that kind of summary, using <code><a href="../reference/rt_summary.html">rt_summ
 indicators:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/choxos/rtransparent" class="external-link">rtransparent</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; rtransparent 0.5.0: identify indicators of transparency (conflicts of interest, funding,</span></span>
+<span><span class="co">#&gt; rtransparent 0.6.1: identify indicators of transparency (conflicts of interest, funding,</span></span>
 <span><span class="co">#&gt; protocol registration, novelty, replication, and data and code sharing) in</span></span>
 <span><span class="co">#&gt; biomedical articles. GitHub: https://github.com/choxos/rtransparent | vignette("rtransparent")</span></span>
 <span></span>
@@ -201,7 +201,7 @@ and its 95% confidence interval:</p>
 <p>A text-mining detector is not perfect, so the
 <strong>observed</strong> prevalence is a biased estimate of the
 <strong>true</strong> prevalence. <code><a href="../reference/rt_summary.html">rt_summary()</a></code> corrects for
-this using each detector’s validated sensitivity and specificity (the
+this using each detector’s sensitivity and specificity estimates (the
 Rogan-Gladen estimator). The correction is on by default and adds
 <code>adj_percent</code>, <code>adj_low</code> and
 <code>adj_high</code>:</p>
@@ -244,16 +244,16 @@ Rogan-Gladen estimator). The correction is on by default and adds
 <tr class="even">
 <td align="left">Data sharing</td>
 <td align="right">16.8</td>
-<td align="right">19.8</td>
-<td align="right">16.4</td>
-<td align="right">23.6</td>
+<td align="right">22.4</td>
+<td align="right">19.6</td>
+<td align="right">25.6</td>
 </tr>
 <tr class="odd">
 <td align="left">Code sharing</td>
 <td align="right">8.4</td>
-<td align="right">3.9</td>
-<td align="right">1.6</td>
-<td align="right">6.7</td>
+<td align="right">9.5</td>
+<td align="right">7.8</td>
+<td align="right">11.6</td>
 </tr>
 <tr class="even">
 <td align="left">Novelty</td>
@@ -280,10 +280,12 @@ Rogan-Gladen estimator). The correction is on by default and adds
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> is_coi_pred      Conflicts of interest       0.992       0.995 Serghiou et al…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> is_fund_pred     Funding disclosure          0.997       0.981 Serghiou et al…</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> is_register_pred Protocol registration       0.955       0.997 Serghiou et al…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> is_open_data     Data sharing                0.643       0.95  rtransparent n…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> is_open_code     Code sharing                0.679       0.94  rtransparent n…</span></span></code></pre></div>
-<p>Novelty and replication have no validated accuracy here, so their
-corrected values are <code>NA</code>. To use your own validation (or the
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> is_open_data     Data sharing                0.713       0.99  rtransparent n…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> is_open_code     Code sharing                0.835       0.995 rtransparent n…</span></span></code></pre></div>
+<p>Novelty and replication have no bundled accuracy estimates here, so
+their corrected values are <code>NA</code>. The data/code values are
+reproducible benchmark estimates for the native detector, not untouched
+external-validation estimates. To use your own validation (or the
 published <code>oddpub</code> values for data and code), pass any table
 with <code>variable</code>, <code>sensitivity</code> and
 <code>specificity</code> columns:</p>
@@ -295,7 +297,7 @@ with <code>variable</code>, <code>sensitivity</code> and
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
 <span><span class="co">#&gt;   label        percent adj_percent</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Data sharing    16.8        16.6</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Data sharing    16.8        21.1</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

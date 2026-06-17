@@ -11,7 +11,7 @@ describe how many practices an article adheres to."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rtransparent</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,9 +72,10 @@ practices.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>`data` as a tibble with the integer count column added. Tabulate it
-  (for example with [table()] or `dplyr::count()`) for the distribution of
-  the number of practices met.</p>
+    <p>`data` as a tibble with the integer count column added. Rows with no
+  assessed indicators receive `NA` for the count. Tabulate it (for example
+  with [table()] or `dplyr::count()`) for the distribution of the number of
+  practices met.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

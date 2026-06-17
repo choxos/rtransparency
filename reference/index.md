@@ -1,5 +1,12 @@
 # Package index
 
+## Package
+
+- [`rtransparent`](https://choxos.github.io/rtransparent/reference/rtransparent-package.md)
+  [`rtransparent-package`](https://choxos.github.io/rtransparent/reference/rtransparent-package.md)
+  : rtransparent: Identify indicators of transparency in the published
+  literature
+
 ## Run all detectors
 
 Detect every indicator in one pass.
@@ -73,6 +80,6 @@ Corpus-level prevalence, per-article scores and plots.
 ## Datasets
 
 - [`rt_accuracy`](https://choxos.github.io/rtransparent/reference/rt_accuracy.md)
-  : Validated detector accuracy
+  : Detector accuracy estimates
 - [`rt_demo`](https://choxos.github.io/rtransparent/reference/rt_demo.md)
   : Simulated transparency indicators for a corpus of articles

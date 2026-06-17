@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparent</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@
                         <h4 data-toc-skip class="author">Stylianos
 Serghiou</h4>
             
-            <h4 data-toc-skip class="date">2026-06-16</h4>
+            <h4 data-toc-skip class="date">2026-06-17</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/choxos/rtransparent/blob/HEAD/vignettes/rtransparent.Rmd" class="external-link"><code>vignettes/rtransparent.Rmd</code></a></small>
       <div class="d-none name"><code>rtransparent.Rmd</code></div>
@@ -199,9 +199,9 @@ finding” (novelty) and “replicate”, “independently validated”,
 replicate”).</li>
 <li>
 <strong>Data and code sharing.</strong> Detected by a native
-detector (<code>.detect_data_code</code>) built from public facts and
-validated statements: field-specific accession schemes (GEO
-<code>GSE</code>, SRA / BioProject <code>PRJNA</code>, PDB,
+detector (<code>.detect_data_code</code>) built from public repository
+facts and curated benchmark statements: field-specific accession schemes
+(GEO <code>GSE</code>, SRA / BioProject <code>PRJNA</code>, PDB,
 ArrayExpress, dbGaP, ProteomeXchange, Dryad / Zenodo / figshare DOIs,
 …), repository URLs and names, deposit / availability /
 data-availability-statement language, and supplement and file-format
@@ -319,13 +319,15 @@ illustrative.</p>
 <div class="section level2">
 <h2 id="validation">Validation<a class="anchor" aria-label="anchor" href="#validation"></a>
 </h2>
-<p>The detectors were validated against the human-labeled gold standard
-of Serghiou et al. (2021). On the held-out XML test set the current
-package reaches roughly: COI 97% accuracy, funding 97%, protocol
-registration 98%. The native data/code detector reaches code 68%
-sensitivity / 94% specificity and data 64% sensitivity / 95% specificity
-(see <code>inst/benchmark/</code> and <code>data-raw/benchmark/</code>
-in the source repository for the reproducible benchmark).</p>
+<p>The detectors were benchmarked against the human-labeled XML
+benchmark of Serghiou et al. (2021). The current package reaches
+roughly: COI 97% accuracy, funding 97%, protocol registration 98%. The
+native data/code detector reaches code 84% sensitivity / 99% specificity
+and data 71% sensitivity / 99% specificity (see
+<code>inst/benchmark/</code> and <code>data-raw/benchmark/</code> in the
+source repository for the reproducible benchmark). The native data/code
+values are reproducible benchmark and regression estimates, not
+untouched external-validation estimates.</p>
 </div>
 <div class="section level2">
 <h2 id="naming-convention-and-dependencies">Naming convention and dependencies<a class="anchor" aria-label="anchor" href="#naming-convention-and-dependencies"></a>

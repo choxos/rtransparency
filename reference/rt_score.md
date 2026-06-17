@@ -32,9 +32,10 @@ rt_score(data, indicators = NULL, name = "n_indicators")
 
 ## Value
 
-\`data\` as a tibble with the integer count column added. Tabulate it
-(for example with \[table()\] or \`dplyr::count()\`) for the
-distribution of the number of practices met.
+\`data\` as a tibble with the integer count column added. Rows with no
+assessed indicators receive \`NA\` for the count. Tabulate it (for
+example with \[table()\] or \`dplyr::count()\`) for the distribution of
+the number of practices met.
 
 ## See also
 

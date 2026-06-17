@@ -25,12 +25,13 @@ rt_summary(
 
 - data:
 
-  A data frame with one row per article. Indicator columns are logical
-  (or 0/1) and named as in \[rt_all_pmc()\]: \`is_coi_pred\`,
-  \`is_fund_pred\`, \`is_register_pred\`, \`is_open_data\`,
-  \`is_open_code\`, \`is_novelty_pred\`, \`is_replication_pred\`. \`NA\`
-  marks an article that was not assessed for that indicator and is
-  excluded from its denominator.
+  A data frame with one row per article. Indicator columns must be
+  logical or numeric 0/1 and named as in \[rt_all_pmc()\]:
+  \`is_coi_pred\`, \`is_fund_pred\`, \`is_register_pred\`,
+  \`is_open_data\`, \`is_open_code\`, \`is_novelty_pred\`,
+  \`is_replication_pred\`. \`NA\` marks an article that was not assessed
+  for that indicator and is excluded from its denominator. Other values
+  are rejected rather than silently coerced.
 
 - indicators:
 
@@ -81,8 +82,8 @@ rt_summary(rt_demo)
 #> 1 is_coi_pred Conf…       1200        835   69.6     66.9       72.1       70.0 
 #> 2 is_fund_pr… Fund…       1200        948   79       76.6       81.2       78.8 
 #> 3 is_registe… Prot…       1200        318   26.5     24.1       29.1       27.5 
-#> 4 is_open_da… Data…       1200        201   16.8     14.7       19.0       19.8 
-#> 5 is_open_co… Code…       1200        101    8.42     6.98      10.1        3.90
+#> 4 is_open_da… Data…       1200        201   16.8     14.7       19.0       22.4 
+#> 5 is_open_co… Code…       1200        101    8.42     6.98      10.1        9.54
 #> 6 is_novelty… Nove…       1200        596   49.7     46.8       52.5       NA   
 #> 7 is_replica… Repl…       1200        109    9.08     7.59      10.8       NA   
 #> # ℹ 2 more variables: adj_low <dbl>, adj_high <dbl>
