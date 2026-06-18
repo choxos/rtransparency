@@ -37,6 +37,8 @@ One detector per indicator, for PMC JATS XML files.
 - [`rt_data_code_pmc_list()`](https://choxos.github.io/rtransparent/reference/rt_data_code_pmc_list.md)
   : Identify and extract Data and Code sharing from a list of PMC XML
   files.
+- [`rt_ai_pmc()`](https://choxos.github.io/rtransparent/reference/rt_ai_pmc.md)
+  : Identify disclosure of generative-AI use from a PMC XML file.
 
 ## Individual indicators (text)
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## rtransparent 0.8.0
+
+- New **AI-disclosure** indicator.
+  [`rt_ai_pmc()`](https://choxos.github.io/rtransparent/reference/rt_ai_pmc.md)
+  detects whether an article discloses the use (or non-use) of
+  generative AI or AI-assisted tools in preparing the manuscript, as
+  journals have asked of authors since 2023. It recognizes positive
+  disclosures (“the authors used ChatGPT to improve the readability of
+  the manuscript”), negative disclosures (“no generative AI was used in
+  the preparation of this work”) and dedicated “Declaration of
+  generative AI” sections, while not flagging articles that merely use
+  AI as their research method. Because the practice did not exist before
+  2023, the indicator is only evaluated for articles published in 2023
+  or later; earlier articles return `NA` (`is_ai_pred`), and the
+  publication `year` is reported. The indicator is included in
+  [`rt_all_pmc()`](https://choxos.github.io/rtransparent/reference/rt_all_pmc.md)
+  and recognized by
+  [`rt_summary()`](https://choxos.github.io/rtransparent/reference/rt_summary.md).
+  On the 1,000-article open-access validation set (almost all published
+  2024-2026) it flags about 16% of articles, with high precision on
+  inspection.
+
 ## rtransparent 0.7.1
 
 - Code sharing recall improved. The detector now recognizes analysis
