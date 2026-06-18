@@ -104,3 +104,20 @@ test_that("generic publisher supplement boilerplate is not open data on its own"
   r2 <- det("Data availability: all sequencing data have been deposited in GEO under accession GSE123456.")
   expect_true(r2$is_open_data)
 })
+
+test_that("data included within the article/manuscript is detected", {
+  expect_true(det(
+    "Availability of data and materials: All data supporting the findings are within the manuscript."
+  )$is_open_data)
+  expect_true(det(
+    "The dataset supporting the conclusions of this article is included within the article."
+  )$is_open_data)
+  expect_true(det(
+    "The data analyzed during the current study are included in this published article."
+  )$is_open_data)
+  expect_true(det(
+    "All data supporting the findings in this study are included in the manuscript and its additional files."
+  )$is_open_data)
+  # A bare mention of data in a results sentence is not an availability statement.
+  expect_false(det("The clinical data of the patients are summarized in Table 1.")$is_open_data)
+})

@@ -299,6 +299,20 @@
     "authors confirm that the data supporting the findings.{0,120}included within",
     "datasets? presented in (this|the) study can be found in online repositories",
     "all relevant data and details of resources can be found within the article and (its )?supplementary information",
+    # Generalized "the data supporting the findings are included within the
+    # article/manuscript" forms. These are availability statements (the data is
+    # in the article/supplement), not mere mentions of data: they require a data
+    # noun, a support/generation verb and an inclusion-in-article phrase.
+    paste0("(all |the )?(relevant |raw |complete |original |minimal |full )?",
+           "data ?(set|sets)? .{0,55}",
+           "(supporting|support|underlying|generated|analy[sz]ed|used to support|presented) ",
+           ".{0,70}(included|available|contained|provided|found|reported|present(ed)?) ",
+           ".{0,25}(within|in|inside) (the |this )?(published |present )?(article|paper|manuscript)\\b"),
+    paste0("(all |the )?(relevant |raw |complete |original |minimal |full )?",
+           "data ?(set|sets)? .{0,55}",
+           "(supporting|support|underlying|generated|analy[sz]ed|used to support|presented) ",
+           ".{0,45}(are|is|were|was) within (the |this )?(published |present )?",
+           "(article|paper|manuscript)\\b"),
     public_source_data,
     sep = "|"
   )
