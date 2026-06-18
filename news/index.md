@@ -1,5 +1,16 @@
 # Changelog
 
+## rtransparent 0.8.15
+
+- Funding: treat “was not supported by any funding” as the absence of
+  funding. A funding section can be titled “Funding” yet declare no
+  funding (“The study was not supported by any funding.”); the
+  funding-title route counted the section’s presence as a funding
+  disclosure because this phrasing was missing from the no-funding
+  negation. It is now recognized alongside the other no-funding
+  statements. The held-out funding benchmark is unchanged (sensitivity
+  100%, specificity 95.7%). Added regression tests.
+
 ## rtransparent 0.8.14
 
 - Funding: do not read an author conflict-of-interest disclosure as
