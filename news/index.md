@@ -1,5 +1,27 @@
 # Changelog
 
+## rtransparent 0.8.13
+
+- Code sharing: do not mistake a “Web Resources” / “URLs” list for
+  shared code. Genomics papers commonly list the external tools and
+  databases they used as “Name: URL, Name: URL, …” (for example ANNOVAR,
+  BWA, GATK and third-party GitHub tools such as Delly, Lumpy and
+  Manta). Such a resource list cites software the authors used, not code
+  they released, but the GitHub URLs made it register as code sharing. A
+  list of three or more “label: URL” entries is now vetoed. The held-out
+  code benchmark is unchanged (sensitivity 88.1%, specificity 99.5%).
+
+- Funding: do not count an open-access publishing arrangement as
+  research funding. Statements such as “Open Access funding enabled and
+  organized by Projekt DEAL” (or by CAUL, IReL and similar library
+  consortia) pay the article-processing charge and are not a
+  research-funding disclosure, but the “funding … by ” wording in the
+  acknowledgments was registering as funding. The open-access funding
+  noun phrase is now stripped before funding acknowledgments are
+  scanned, so a genuine grant declared in the same statement is still
+  detected. The held-out funding benchmark is unchanged (sensitivity
+  100%, specificity 95.7%). Added regression tests.
+
 ## rtransparent 0.8.12
 
 - Funding: detect funding declared only through the structured
