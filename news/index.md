@@ -1,5 +1,28 @@
 # Changelog
 
+## rtransparent 0.8.3
+
+Further fixes from the manual validation on a fresh sample of 1,000
+open-access PMC articles from 2023:
+
+- Data sharing: recognize a repository deposit when a superscript
+  reference number is glued to the repository name during text
+  extraction (for example “the database was stored on Mendeley Data20”).
+  The “data” token was no longer recognized once a digit was attached to
+  it, so the deposit was missed. The data-noun pattern now tolerates a
+  trailing reference number. The change does not match the unrelated
+  word “database”. The held-out data benchmark is unchanged (sensitivity
+  76.5%, specificity 99.0%).
+- Registration: detect a PROSPERO registration that does not quote the
+  CRD identifier (for example “the review protocol was registered in
+  PROSPERO”, “Registered to PROSPERO”). The detector previously required
+  a CRD number. It now also flags the past-tense verb “registered” next
+  to PROSPERO, while still not matching the registry’s own name
+  (“International Prospective Register of Systematic Reviews”) or a “not
+  registered” statement. The registration benchmark is unchanged at
+  98.1%.
+- Added regression tests for both.
+
 ## rtransparent 0.8.2
 
 - Code sharing: detect repository-hosted code when the same sentence
