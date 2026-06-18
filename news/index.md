@@ -1,5 +1,15 @@
 # Changelog
 
+## rtransparent 0.8.11
+
+- Code sharing: do not mistake medical billing codes for software. A
+  statement such as “generate a list of CPT billing codes” (Current
+  Procedural Terminology) was counted as code sharing because of the
+  word “codes”; CPT, billing, procedural and reimbursement codes are now
+  vetoed, alongside the ICD and diagnosis codes already handled. The
+  held-out code benchmark is unchanged (sensitivity 88.1%, specificity
+  99.5%). Added regression tests.
+
 ## rtransparent 0.8.10
 
 - Funding: do not count common “no funding” declarations as a funding
