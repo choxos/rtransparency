@@ -1,5 +1,18 @@
 # Changelog
 
+## rtransparent 0.8.10
+
+- Funding: do not count common “no funding” declarations as a funding
+  disclosure. The no-funding negation already covered many phrasings but
+  missed several frequent ones, most importantly “(this research)
+  received no specific grant from any funding agency”, as well as “no
+  funds, grants or other support were received”, “no funds have been
+  received” and “(authors) have not received any funding”. These are now
+  treated as the absence of funding, matching the detector’s handling of
+  the other no-funding statements. The held-out funding benchmark is
+  unchanged (sensitivity 100%, specificity 95.7%). Added regression
+  tests.
+
 ## rtransparent 0.8.9
 
 - [`rt_data_code_pmc()`](https://choxos.github.io/rtransparent/reference/rt_data_code_pmc.md)
