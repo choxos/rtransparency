@@ -12,7 +12,7 @@ rt_accuracy
 
 ## Format
 
-A tibble with 5 rows and 5 columns:
+A tibble with 6 rows and 5 columns:
 
 - variable:
 
@@ -54,7 +54,12 @@ the package's reproducible benchmark and regression estimates are used
 instead (see \`inst/benchmark\`). These data/code estimates are not an
 untouched external validation of the native detector; supply your own
 values to \[rt_summary()\] via its \`accuracy\` argument when you have
-study-specific or externally validated estimates.
+study-specific or externally validated estimates. Novelty's estimate
+comes from a maintainer-built hand-labeled gold set (see
+\`inst/benchmark/results_novelty_replication.md\`). Replication and
+AI-use disclosure are not included (replication has too few gold
+positives for a stable sensitivity), so \[rt_summary()\] reports them
+uncorrected.
 
 ## See also
 
