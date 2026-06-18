@@ -155,3 +155,25 @@ test_that(".which_replication_validation_1 ignores internal train/validation spl
     info = "External or independent validation is a replication-like component"
   )
 })
+
+
+test_that("future or required validation is not counted as replication", {
+  future <- c(
+    "External validation with multicenter cohorts is essential before clinical implementation.",
+    "This finding requires validation in independent cohorts.",
+    "These results highlight the need for external validation in larger cohorts.",
+    "The model should be validated in prospective clinical trials."
+  )
+  done <- c(
+    "We externally validated the model in an independent validation cohort.",
+    "The model was confirmed in an external validation cohort."
+  )
+  for (s in future) {
+    expect_true(rtransparent:::.negate_replication_1(s),
+                info = paste("future validation should be suppressed:", s))
+  }
+  for (s in done) {
+    expect_false(rtransparent:::.negate_replication_1(s),
+                 info = paste("performed validation should not be suppressed:", s))
+  }
+})

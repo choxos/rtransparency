@@ -252,6 +252,17 @@ rt_replication <- function(filename) {
     "(would )?require external validation",
     "external validation .{0,80}(is )?required",
     "regression-derived formulas require external validation",
+    # Future / required validation framed as not-yet-done. Gated on a modal or
+    # need word so genuine performed validation ("we externally validated",
+    # "in the external validation cohort the model achieved") is not suppressed.
+    "(external|independent|prospective|further) validation .{0,80}(essential|warranted|needed|necessary|require(s|d)?|recommended|important|encouraged|pending|lacking|awaited)",
+    "(essential|warranted|needed|necessary|require(s|d)?|recommended|important|future|should be|must be|remains? to be|yet to be|need(s|ed)? to be|will be|would be|to be) .{0,40}(externally |independently |prospectively |further )?validat(e|ed|ion)",
+    "\\brequires? .{0,40}validat(e|ed|ion)",
+    "validat(e|ed|ion)\\b.{0,40}\\b(require(s|d)?|warrant(s|ed)?|needed|necessary|essential|recommended)\\b",
+    "need(s|ed)? (for |to )?.{0,30}(external |independent |prospective |further )?validat(e|ed|ion)",
+    "validation .{0,40}(cohorts?|samples?|trials?|populations?|studies) .{0,30}(essential|warranted|needed|necessary|required|recommended|before)",
+    "essential before (clinical )?(implementation|application|use|adoption|practice)",
+    "validated in (a |an )?(future |prospective )?clinical trials?",
     "validation in the future",
     "should be (replicated|validated)",
     "future studies? should replicat",
