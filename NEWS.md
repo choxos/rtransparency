@@ -1,5 +1,10 @@
 <div align="justify">
 
+# rtransparent 0.8.0
+
+* New **AI-disclosure** indicator. `rt_ai_pmc()` detects whether an article discloses the use (or non-use) of generative AI or AI-assisted tools in preparing the manuscript, as journals have asked of authors since 2023. It recognizes positive disclosures ("the authors used ChatGPT to improve the readability of the manuscript"), negative disclosures ("no generative AI was used in the preparation of this work") and dedicated "Declaration of generative AI" sections, while not flagging articles that merely use AI as their research method. Because the practice did not exist before 2023, the indicator is only evaluated for articles published in 2023 or later; earlier articles return `NA` (`is_ai_pred`), and the publication `year` is reported. The indicator is included in `rt_all_pmc()` and recognized by `rt_summary()`. On the 1,000-article open-access validation set (almost all published 2024-2026) it flags about 16% of articles, with high precision on inspection.
+
+
 # rtransparent 0.7.1
 
 * Code sharing recall improved. The detector now recognizes analysis code shared in supplementary or additional files ("the Matlab code can be found in the Supplementary Methods", "R code is contained in Additional file 7", "Source code 1") and explicit "Availability of source code" sections. On the held-out benchmark of Serghiou et al. (2021), code sensitivity rises from 83.5% to 88.1% with specificity unchanged at 99.5% (PPV 99.0%); `rt_accuracy` was updated. The patterns are gated on a language prefix or the word "script" so non-analysis "codes" (ICD, diagnosis, qualitative) are not matched. Added regression tests.

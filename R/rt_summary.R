@@ -15,12 +15,12 @@
     variable = c(
       "is_coi_pred", "is_fund_pred", "is_register_pred",
       "is_open_data", "is_open_code",
-      "is_novelty_pred", "is_replication_pred"
+      "is_novelty_pred", "is_replication_pred", "is_ai_pred"
     ),
     label = c(
       "Conflicts of interest", "Funding disclosure",
       "Protocol registration", "Data sharing", "Code sharing",
-      "Novelty", "Replication"
+      "Novelty", "Replication", "AI disclosure"
     )
   )
 }

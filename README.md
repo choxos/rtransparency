@@ -18,6 +18,8 @@ It detects seven indicators:
 - **Novelty** claims (`rt_novelty`, `rt_novelty_pmc`)
 - **Replication** components (`rt_replication`, `rt_replication_pmc`)
 - **Data sharing** and **code sharing** (`rt_data_code`, `rt_data_code_pmc`)
+- **AI disclosure** (`rt_ai_pmc`): use or non-use of generative AI in writing the
+  manuscript, evaluated only for articles published in 2023 or later
 
 `rt_all` / `rt_all_pmc` run COI, funding, registration, novelty and replication
 together; `rt_meta_pmc` returns article metadata from a PMC XML file.

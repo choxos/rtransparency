@@ -27,6 +27,7 @@ reference:
   - rt_replication_pmc
   - rt_data_code_pmc
   - rt_data_code_pmc_list
+  - rt_ai_pmc
 - title: Individual indicators (text)
   desc: One detector per indicator, for plain-text (PDF-derived) files.
   contents:

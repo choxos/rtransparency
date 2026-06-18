@@ -327,9 +327,10 @@ rt_all_pmc <- function(filename, remove_ns = F, all_meta = F) {
 
   novelty_ls     <- .rt_novelty_pmc(article_ls)
   replication_ls <- .rt_replication_pmc(article_ls)
+  ai_ls          <- .get_ai_pmc(article_xml)
 
 
   status_ls <- list(is_success = T)
   tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls,
-                      novelty_ls, replication_ls, status_ls))
+                      novelty_ls, replication_ls, ai_ls, status_ls))
 }
