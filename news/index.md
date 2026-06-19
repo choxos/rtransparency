@@ -1,5 +1,24 @@
 # Changelog
 
+## rtransparent 0.9.7
+
+Corpus-scale batch processing.
+
+- **New
+  [`rt_all_pmc_dir()`](https://choxos.github.io/rtransparent/reference/rt_all_pmc_dir.md).**
+  Processes every PMC XML in a directory (or a vector of paths) through
+  [`rt_all_pmc()`](https://choxos.github.io/rtransparent/reference/rt_all_pmc.md)
+  in a single call. The run is resumable (with `output`, results are
+  written to a CSV in chunks and a re-run skips files already recorded),
+  isolates per-file failures (a malformed file yields an
+  `is_success = FALSE` row instead of aborting the run), shows a
+  progress bar, and can run in parallel via the optional `furrr` package
+  and an active
+  [`future::plan()`](https://future.futureverse.org/reference/plan.html).
+
+- `furrr` and `future` are added to Suggests; they are used only for
+  `rt_all_pmc_dir(parallel = TRUE)`.
+
 ## rtransparent 0.9.6
 
 The hand-labeled 2023 validation sample reaches 1000 articles.

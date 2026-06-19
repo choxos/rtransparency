@@ -153,12 +153,14 @@ reproducible example.
 
 ## Run all detectors
 
-Detect every indicator in one pass.
+Detect every indicator in one pass, for one file or a whole corpus.
 
 - [`rt_all()`](https://choxos.github.io/rtransparent/reference/rt_all.md)
   : Identify and extract statements of COI, Funding and Registration.
 - [`rt_all_pmc()`](https://choxos.github.io/rtransparent/reference/rt_all_pmc.md)
   : Identify and extract all transparency indicators from a PMC XML.
+- [`rt_all_pmc_dir()`](https://choxos.github.io/rtransparent/reference/rt_all_pmc_dir.md)
+  : Identify transparency indicators across many PMC XML files.
 
 ## Individual indicators (PMC XML)
 
