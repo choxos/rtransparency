@@ -1,5 +1,67 @@
 # Changelog
 
+## rtransparent 0.9.1
+
+This release overhauls the novelty detector for both recall and
+precision, fixes two long-standing bugs in the public PMC entry points,
+and corrects mislabeled articles in the 2023 validation sample.
+
+- **Novelty recall.** Fixed a core gap: the “first to \<verb\>” rule was
+  missing many common verbs (confirm, validate, find, discover, prove,
+  predict and others), so canonical claims such as “the first study to
+  confirm …” went undetected. The relevance pre-filter was also widened
+  to a cheap superset of the pattern cues, so genuine claims placed in
+  results or discussion sections are no longer discarded before the
+  precise rules run. New patterns recognize “first \<research object\>
+  to \<verb\>” (technology, technique, approach, method, tool, model and
+  similar), the author-voice idiom “we provide the first evidence that
+  …”, superlative and “fails to”/“no such study” gaps introduced by “to
+  our knowledge” (whether the gap precedes or follows the phrase), and
+  the passive “a novel \<object\> was developed/detected”.
+
+- **Novelty precision.** Bare “new” is no longer treated as a novelty
+  cue (it is far too frequent in non-priority contexts such as “a new
+  model” or “new insights”); procedural “we first \<verb\> …, then …” no
+  longer counts as a priority claim; and the weak “this novel \<term\>”
+  pattern was removed. Gap claims (“previously un…”, “has not been
+  studied”) must now be tied to the present study rather than to
+  background or a cited work. New suppression rules drop firstness that
+  is attributed (“not the first”, an author
+
+  - “et al” near the cue), historical (a past year), epidemiological
+    (“the first case of X was confirmed in …”), an enumeration (“first
+    time point”, “the first method involves …”), or a personal or
+    specimen encounter (“captured for the first time”).
+
+- **Measured effect.** On the independent 2023 sample, novelty rose from
+  sensitivity 77.2 / specificity 89.6 (PPV 71.0) to 86.3 / 94.9 (PPV
+  85.4). On the novelty/replication gold set it rose from 76.5 / 90.8 to
+  83.8 / 95.2; the `rt_accuracy` novelty estimate used by
+  [`rt_summary()`](https://choxos.github.io/rtransparent/reference/rt_summary.md)
+  was updated accordingly (0.765/0.908 to 0.838/0.952). Replication is
+  unchanged.
+
+- **Bug fix: duplicated columns.**
+  [`rt_novelty_pmc()`](https://choxos.github.io/rtransparent/reference/rt_novelty_pmc.md)
+  and
+  [`rt_replication_pmc()`](https://choxos.github.io/rtransparent/reference/rt_replication_pmc.md)
+  raised “Column names … must not be duplicated” because their
+  identifier output duplicated the prediction and text columns supplied
+  by the internal detector. Both now return a single, well-formed row.
+  ([`rt_all_pmc()`](https://choxos.github.io/rtransparent/reference/rt_all_pmc.md),
+  which calls the internal detectors directly, was never affected.)
+
+- **Validation labels.** Corrected eleven novelty labels in the 2023
+  sample that were assigned in error during fast batch labeling: seven
+  clear author priority claims had been marked FALSE, and four
+  enumeration, ordinal or “new method” mentions with no priority claim
+  had been marked TRUE. The committed benchmark and the
+  novelty/replication gold set were rebuilt from the corrected labels.
+
+- The held-out Serghiou et al. (2021) conflicts-of-interest, funding,
+  registration, data and code benchmarks are unchanged; no detector
+  other than novelty was modified.
+
 ## rtransparent 0.9.0
 
 This is a feature release centered on the novelty and replication
