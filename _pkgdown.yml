@@ -21,10 +21,11 @@ reference:
   contents:
   - rtransparent-package
 - title: Run all detectors
-  desc: Detect every indicator in one pass.
+  desc: Detect every indicator in one pass, for one file or a whole corpus.
   contents:
   - rt_all
   - rt_all_pmc
+  - rt_all_pmc_dir
 - title: Individual indicators (PMC XML)
   desc: One detector per indicator, for PMC JATS XML files.
   contents:
