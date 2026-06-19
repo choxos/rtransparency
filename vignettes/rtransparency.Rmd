@@ -116,6 +116,14 @@ returned) and reproducible.
   research method (not for writing) is not counted. Only evaluated for 2023
   onward.
 
+## Languages
+
+Conflict-of-interest and funding statements are detected not only in English but
+also in **Spanish, Portuguese, French, German and Italian**, using
+language-distinctive patterns matched on transliterated (accent-stripped) text.
+The German conflict-of-interest detection rate, for example, rose from 33% to
+97% once these were added. The other indicators are English-only for now.
+
 # Usage: PMC XML
 
 The package ships an example PMC XML file. We use it below; replace the path
@@ -177,6 +185,17 @@ dplyr::glimpse(
 )
 ```
 
+`rt_all_pmc` and `rt_data_code_pmc` also return `open_data_links` and
+`open_code_links`: the repository and accession URLs extracted from the
+statements, ready to pass to FAIR-assessment tooling such as
+[`rfuji`](https://github.com/choxos/rfuji). Article metadata (title, journal,
+identifiers, dates) is available separately via `rt_meta_pmc`.
+
+```{r}
+meta <- rt_meta_pmc(xml_path, remove_ns = TRUE)
+dplyr::glimpse(meta[, c("pmid", "doi")])
+```
+
 ## AI-use disclosure
 
 `rt_ai_pmc` reports the publication `year`, the year-gated prediction
@@ -206,6 +225,37 @@ rt_fund("article.txt")
 rt_register("article.txt")
 rt_data_code("article.txt")
 rt_all("article.txt")   # COI, funding, registration, novelty, replication
+```
+
+# Processing many articles
+
+`rt_all_pmc_dir()` runs all eight indicators over an entire directory (or a
+vector of file paths) in one call, designed for corpus-scale analysis.
+
+```{r, eval = FALSE}
+# Sequential, in memory
+res <- rt_all_pmc_dir("path/to/xml", remove_ns = TRUE)
+
+# Resumable and parallel: results are written to a CSV in chunks, a re-run skips
+# files already recorded, and a malformed file yields an is_success = FALSE row
+# instead of aborting the run.
+future::plan("multisession")
+res <- rt_all_pmc_dir(
+  "path/to/xml", remove_ns = TRUE, output = "results.csv", parallel = TRUE
+)
+```
+
+# Summarizing a corpus
+
+With one row per article, `rt_summary()` reports per-indicator prevalence with a
+Wilson confidence interval and a sensitivity/specificity-corrected (Rogan-Gladen)
+prevalence; `rt_score()` adds a per-article count of openness practices; and
+`rt_plot()` draws prevalence bars and yearly trends. The
+`transparency-summary` vignette covers this in depth.
+
+```{r}
+data(rt_demo)            # a small simulated example shipped with the package
+rt_summary(rt_demo)[, c("indicator", "percent", "adj_percent")]
 ```
 
 # Downloading PMC XML
