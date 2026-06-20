@@ -1,6 +1,7 @@
 # rtransparency
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/rtransparency)](https://CRAN.R-project.org/package=rtransparency)
 [![R-CMD-check](https://github.com/choxos/rtransparency/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/choxos/rtransparency/actions/workflows/R-CMD-check.yaml)
 [![pkgdown](https://github.com/choxos/rtransparency/actions/workflows/pkgdown.yaml/badge.svg)](https://choxos.github.io/rtransparency/)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
