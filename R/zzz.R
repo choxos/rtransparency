@@ -8,8 +8,8 @@ utils::globalVariables(c(".", "rt_accuracy"))
   version <- utils::packageVersion(pkgname)
   packageStartupMessage(sprintf(paste0(
     "rtransparency %s: identify indicators of transparency (conflicts of ",
-    "interest, funding,\nprotocol registration, novelty, replication, and data ",
-    "and code sharing) in\nbiomedical articles. GitHub: ",
+    "interest, funding,\nprotocol registration, novelty, replication, data and ",
+    "code sharing, and AI-use\ndisclosure) in biomedical articles. GitHub: ",
     "https://github.com/choxos/rtransparency | vignette(\"rtransparency\")"),
     version
   ))

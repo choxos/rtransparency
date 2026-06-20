@@ -163,48 +163,6 @@
 }
 
 
-# Function copied from the oddpub package included here to avoid using `:::`.
-# Need to use here because this package is re-implementing tokenization.
-# Author: Nico Riedel.
-.correct_tokenization <- function(PDF_text)
-{
-  PDF_text_corrected <- PDF_text
-  sentence_paste_idx <- PDF_text %>%
-    stringr::str_sub(-13, -1) %>%
-    stringr::str_detect("accession nr.|accession no.|ccession nos.|ccession nrs.") %>%
-    which()
-
-  #for all indicies do a pairwise pasting
-  if(length(sentence_paste_idx) > 0)
-  {
-    for(i in 1:length(sentence_paste_idx))
-    {
-      PDF_text_corrected <- .paste_idx(PDF_text_corrected, sentence_paste_idx[i]-(i-1))
-    }
-  }
-
-  return(PDF_text_corrected)
-}
-
-#helper function for .correct_tokenization
-#pastes together sentences where tokenization needs to be corrected by index
-.paste_idx <- function(PDF_text, idx)
-{
-  #create dummy sentences such that the indexing always works correctly,
-  #even with only one element in PDF_text
-  PDF_text_pasted <- c("x", PDF_text, "x")
-  idx <- idx + 1 #shift idx due to dummy sentence
-
-  PDF_text_pasted <- c(PDF_text_pasted[1:(idx-1)],
-                       paste(PDF_text_pasted[idx], PDF_text_pasted[idx+1]),
-                       PDF_text_pasted[(idx+2):length(PDF_text_pasted)])
-  #remove dummy elemets
-  PDF_text_pasted <- PDF_text_pasted[c(-1, -length(PDF_text_pasted))]
-
-  return(PDF_text_pasted)
-}
-
-
 #' Find the index of the references
 #'
 #' Returns the index with the elements of interest. More generic than _1.

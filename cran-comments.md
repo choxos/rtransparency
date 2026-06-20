@@ -21,4 +21,8 @@ in the Description field and in `inst/CITATION`.
 * Examples that require network access (NCBI fetch) or the external `pdftotext`
   utility are wrapped in `\dontrun{}`.
 * The package is self-contained: data and code sharing detection is implemented
-  natively and does not depend on the GitHub-only / AGPL `oddpub` package.
+  natively and does not depend on (or contain code from) the GitHub-only / AGPL
+  `oddpub` package. `rt_read_pdf()` is an original wrapper around the poppler
+  `pdftotext` command-line utility. The only adapted code is an internal,
+  benchmark-only NCBI OAI fallback derived from `metareadr::mt_read_pmcoa()`
+  (GPL-3); its author, Stylianos Serghiou, is credited in `Authors@R`.

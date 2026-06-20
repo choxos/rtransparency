@@ -71,18 +71,35 @@ test_that(".rt_coi_pmc ignores AI-only disclosure sections", {
 })
 
 
-test_that("rt_coi returns correct tibble structure on TXT file", {
-  skip_if_not(
-    file.exists(system.file("extdata", "PMID32171256-PMC7071725.pdf",
-                            package = "rtransparency")),
-    "Example PDF not available"
-  )
+test_that("rt_read_pdf -> writeLines -> text detector workflow works end to end", {
+  pdf <- system.file("extdata", "PMID32171256-PMC7071725.pdf",
+                     package = "rtransparency")
+  skip_if(pdf == "", "Example PDF not available")
+  skip_if(unname(Sys.which("pdftotext")) == "", "pdftotext (poppler) not on PATH")
 
-  txt_file <- system.file("extdata", "PMID32171256-PMC7071725.pdf",
-                          package = "rtransparency")
-  skip_if(nchar(txt_file) == 0, "Example file not found")
+  # rt_read_pdf() returns the extracted text as a character string, NOT a path.
+  article_txt <- rt_read_pdf(pdf)
+  expect_type(article_txt, "character")
+  expect_length(article_txt, 1L)
+  expect_gt(nchar(article_txt), 1000L)
 
-  # Just check structure when file is present
-  # (full integration test requires .txt format)
-  expect_true(TRUE)
+  # The README/vignette workflow: write the text to a .txt file, then run the
+  # text detectors against that file path.
+  txt <- tempfile(pattern = "PMID32171256-PMC7071725-", fileext = ".txt")
+  on.exit(unlink(txt), add = TRUE)
+  writeLines(article_txt, txt)
+  expect_true(file.exists(txt))
+
+  # No path-length warning, and the reported article is the file's basename
+  # (not the article text mistaken for a filename).
+  coi <- expect_no_warning(rt_coi(txt))
+  expect_s3_class(coi, "data.frame")
+  expect_true("is_coi_pred" %in% names(coi))
+  expect_equal(coi$article, basename(txt))
+  expect_lt(nchar(coi$article), 100L)
+
+  ai <- rt_ai(txt)
+  expect_true("is_ai_pred" %in% names(ai))
+  expect_equal(ai$article, basename(txt))
+  expect_false(is.na(ai$is_ai_pred))
 })
