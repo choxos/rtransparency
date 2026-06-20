@@ -43,7 +43,15 @@ in the literature.
 - **Plain text vs XML.** The plain-text detectors share the same logic
   as the PMC XML detectors but cannot use XML-structural cues (tagged
   funding groups, conflict footnotes, section types), so a few
-  statements detectable in XML are not detectable in plain text.
+  statements detectable in XML are not detectable in plain text. The
+  plain-text AI detector
+  [`rt_ai()`](https://choxos.github.io/rtransparency/reference/rt_ai.md)
+  is a special case: with no publication date and no section structure
+  available, it applies **no 2023 year gate** (it never returns `NA`)
+  and scans the whole document, so the caller must restrict it to
+  2023-or-later articles and tolerate a higher false-positive rate on
+  AI-method papers than
+  [`rt_ai_pmc()`](https://choxos.github.io/rtransparency/reference/rt_ai_pmc.md).
 - **Accuracy correction.**
   [`rt_summary()`](https://choxos.github.io/rtransparency/reference/rt_summary.md)
   can correct apparent prevalence using bundled sensitivity/specificity
@@ -77,13 +85,13 @@ res[, c("is_coi_pred", "is_fund_pred", "is_open_data", "is_open_code")]
 
 The data- and code-availability links the detector extracts
 (`open_data_links`, `open_code_links`) can be passed to FAIR-assessment
-tooling such as [`rfuji`](https://github.com/choxos/rfuji), an R client
-for the F-UJI FAIR assessment service, to score the findability and
-accessibility of the shared resources.
+tooling such as [`rfair`](https://github.com/choxos/rfair), a native R
+implementation of FAIR data and software assessment, to score the
+findability and accessibility of the shared resources.
 
 ``` r
 
 res <- rt_all_pmc("article.xml", remove_ns = TRUE)
 links <- strsplit(res$open_data_links, " ; ")[[1]]
-# rfuji::assess_fair(links)
+# rfair::assess_fair(links)
 ```

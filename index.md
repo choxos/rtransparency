@@ -20,7 +20,7 @@ reproducible accuracy benchmarks.
 | **Replication** | A replication or external/independent validation was performed | `rt_replication_pmc` | `rt_replication` |
 | **Data sharing** | The authors’ own data are made available (repository, accession, or in-article) | `rt_data_code_pmc` | `rt_data_code` |
 | **Code sharing** | The authors’ own analysis code is shared | `rt_data_code_pmc` | `rt_data_code` |
-| **AI disclosure** | A statement discloses generative-AI use in manuscript preparation (2023+) | `rt_ai_pmc` | — |
+| **AI disclosure** | A statement discloses generative-AI use in manuscript preparation (2023+) | `rt_ai_pmc` | `rt_ai` |
 
 Conflicts of interest and AI disclosure are **disclosure-based**: a
 statement on the topic counts whether the disclosure is positive or
@@ -120,7 +120,17 @@ txt_path <- rt_read_pdf("article.pdf")   # needs poppler's pdftotext
 
 rt_all(txt_path)                         # COI, funding, registration, novelty, replication
 rt_coi(txt_path)                         # or one indicator at a time
+rt_ai(txt_path)                          # generative-AI-use disclosure
 ```
+
+[`rt_ai()`](https://choxos.github.io/rtransparency/reference/rt_ai.md)
+is the plain-text counterpart of
+[`rt_ai_pmc()`](https://choxos.github.io/rtransparency/reference/rt_ai_pmc.md).
+Because a text file carries no reliable publication date, it applies
+**no 2023 year gate** (it returns `TRUE`/`FALSE`, never `NA`) and cannot
+confine the scan to back-matter sections, so restrict its use to
+2023-or-later articles and expect a slightly higher false-positive rate
+on papers that use AI as a research method.
 
 ## Summarizing a corpus
 
@@ -157,7 +167,7 @@ rt_summary(rt_demo, accuracy = my_acc)   # correct with your own values
 
 The data- and code-availability links the detector extracts
 (`open_data_links`, `open_code_links`) can be passed to FAIR-assessment
-tooling such as [`rfuji`](https://github.com/choxos/rfuji) to score the
+tooling such as [`rfair`](https://github.com/choxos/rfair) to score the
 findability and accessibility of the shared resources.
 
 ## Validation

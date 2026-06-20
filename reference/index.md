@@ -60,6 +60,8 @@ One detector per indicator, for plain-text (PDF-derived) files.
   files.
 - [`rt_data_code()`](https://choxos.github.io/rtransparency/reference/rt_data_code.md)
   : Identify and extract Data and Code statements in TXT files.
+- [`rt_ai()`](https://choxos.github.io/rtransparency/reference/rt_ai.md)
+  : Identify disclosure of generative-AI use from a TXT file.
 
 ## Metadata and input
 

@@ -22,6 +22,17 @@ First stable release, and a rename.
   [`rt_all_pmc_dir()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc_dir.md),
   and accuracy correction for seven of the eight indicators.
 
+- **New
+  [`rt_ai()`](https://choxos.github.io/rtransparency/reference/rt_ai.md)**,
+  a plain-text detector for generative-AI-use disclosure, the text
+  counterpart of
+  [`rt_ai_pmc()`](https://choxos.github.io/rtransparency/reference/rt_ai_pmc.md).
+  Because a text file carries no reliable publication date,
+  [`rt_ai()`](https://choxos.github.io/rtransparency/reference/rt_ai.md)
+  applies no 2023 year gate (`is_ai_pred` is always `TRUE`/`FALSE`,
+  never `NA`) and cannot confine the scan to back-matter sections;
+  restrict it to articles from 2023 onward.
+
 ## rtransparent 0.9.11
 
 Citation, documentation, and packaging polish.
@@ -35,7 +46,7 @@ Citation, documentation, and packaging polish.
   interest and AI, data offered “upon request” excluded, novelty and
   replication as claim detection, language coverage), the output schema,
   and how to pass extracted data- and code-availability links to
-  FAIR-assessment tooling such as `rfuji`.
+  FAIR-assessment tooling such as `rfair`.
 
 ## rtransparent 0.9.10
 

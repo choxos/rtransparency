@@ -146,7 +146,7 @@ found, the sentence or statement that triggered the detection.</p>
 <td>AI-use disclosure</td>
 <td>A statement that generative AI was (or was not) used to prepare the
 manuscript</td>
-<td align="center">—</td>
+<td align="center"><code>rt_ai</code></td>
 <td align="center"><code>rt_ai_pmc</code></td>
 </tr>
 </tbody>
@@ -154,8 +154,9 @@ manuscript</td>
 <p><code>rt_all_pmc</code> runs all eight detectors together in a single
 pass: COI, funding, registration, novelty, replication, data sharing,
 code sharing and AI-use disclosure. (<code>rt_all</code> covers the
-first five from TXT; data, code and AI are PMC XML only, the last
-because the year gate needs the publication date.)</p>
+first five from TXT; data, code and AI also have standalone TXT
+detectors, <code>rt_data_code</code> and <code>rt_ai</code>, but are not
+part of the <code>rt_all</code> wrapper.)</p>
 <p>AI-use disclosure is the newest indicator. Journals have asked
 authors to disclose any use of generative AI (ChatGPT and similar) in
 preparing a manuscript only since 2023, so <code>rt_ai_pmc</code>
@@ -335,7 +336,7 @@ needs no external packages.</p>
 <p><code>rt_all_pmc</code> and <code>rt_data_code_pmc</code> also return
 <code>open_data_links</code> and <code>open_code_links</code>: the
 repository and accession URLs extracted from the statements, ready to
-pass to FAIR-assessment tooling such as <a href="https://github.com/choxos/rfuji" class="external-link"><code>rfuji</code></a>. Article
+pass to FAIR-assessment tooling such as <a href="https://github.com/choxos/rfair" class="external-link"><code>rfair</code></a>. Article
 metadata (title, journal, identifiers, dates) is available separately
 via <code>rt_meta_pmc</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -378,7 +379,16 @@ illustrative and are not executed when the vignette is built.</p>
 <span><span class="fu"><a href="../reference/rt_fund.html">rt_fund</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/rt_register.html">rt_register</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/rt_data_code.html">rt_data_code</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/rt_ai.html">rt_ai</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span>    <span class="co"># generative-AI-use disclosure</span></span>
 <span><span class="fu"><a href="../reference/rt_all.html">rt_all</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span>   <span class="co"># COI, funding, registration, novelty, replication</span></span></code></pre></div>
+<p><code>rt_ai</code> is the plain-text counterpart of
+<code>rt_ai_pmc</code>. A text file carries no reliable publication
+date, so <code>rt_ai</code> applies no 2023 year gate
+(<code>is_ai_pred</code> is always <code>TRUE</code> or
+<code>FALSE</code>, never <code>NA</code>) and cannot confine the scan
+to back-matter sections the way the XML detector does. Restrict it to
+articles published in 2023 or later, and expect a slightly higher
+false-positive rate on papers that use AI as a research method.</p>
 </div>
 <div class="section level2">
 <h2 id="processing-many-articles">Processing many articles<a class="anchor" aria-label="anchor" href="#processing-many-articles"></a>

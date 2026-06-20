@@ -172,7 +172,13 @@ benchmark in <code>inst/benchmark/</code>.</li>
 <strong>Plain text vs XML.</strong> The plain-text detectors share
 the same logic as the PMC XML detectors but cannot use XML-structural
 cues (tagged funding groups, conflict footnotes, section types), so a
-few statements detectable in XML are not detectable in plain text.</li>
+few statements detectable in XML are not detectable in plain text. The
+plain-text AI detector <code><a href="../reference/rt_ai.html">rt_ai()</a></code> is a special case: with no
+publication date and no section structure available, it applies
+<strong>no 2023 year gate</strong> (it never returns <code>NA</code>)
+and scans the whole document, so the caller must restrict it to
+2023-or-later articles and tolerate a higher false-positive rate on
+AI-method papers than <code><a href="../reference/rt_ai_pmc.html">rt_ai_pmc()</a></code>.</li>
 <li>
 <strong>Accuracy correction.</strong> <code><a href="../reference/rt_summary.html">rt_summary()</a></code> can
 correct apparent prevalence using bundled sensitivity/specificity
@@ -205,13 +211,13 @@ stable estimate).</li>
 </h2>
 <p>The data- and code-availability links the detector extracts
 (<code>open_data_links</code>, <code>open_code_links</code>) can be
-passed to FAIR-assessment tooling such as <a href="https://github.com/choxos/rfuji" class="external-link"><code>rfuji</code></a>, an R
-client for the F-UJI FAIR assessment service, to score the findability
-and accessibility of the shared resources.</p>
+passed to FAIR-assessment tooling such as <a href="https://github.com/choxos/rfair" class="external-link"><code>rfair</code></a>, a native
+R implementation of FAIR data and software assessment, to score the
+findability and accessibility of the shared resources.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="st">"article.xml"</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">links</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">open_data_links</span>, <span class="st">" ; "</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co"># rfuji::assess_fair(links)</span></span></code></pre></div>
+<span><span class="co"># rfair::assess_fair(links)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

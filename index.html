@@ -123,7 +123,7 @@
 <td><strong>AI disclosure</strong></td>
 <td>A statement discloses generative-AI use in manuscript preparation (2023+)</td>
 <td><code>rt_ai_pmc</code></td>
-<td>—</td>
+<td><code>rt_ai</code></td>
 </tr>
 </tbody>
 </table>
@@ -200,7 +200,9 @@
 <code class="sourceCode R"><span><span class="va">txt_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_read_pdf.html">rt_read_pdf</a></span><span class="op">(</span><span class="st">"article.pdf"</span><span class="op">)</span>   <span class="co"># needs poppler's pdftotext</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/rt_all.html">rt_all</a></span><span class="op">(</span><span class="va">txt_path</span><span class="op">)</span>                         <span class="co"># COI, funding, registration, novelty, replication</span></span>
-<span><span class="fu"><a href="reference/rt_coi.html">rt_coi</a></span><span class="op">(</span><span class="va">txt_path</span><span class="op">)</span>                         <span class="co"># or one indicator at a time</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/rt_coi.html">rt_coi</a></span><span class="op">(</span><span class="va">txt_path</span><span class="op">)</span>                         <span class="co"># or one indicator at a time</span></span>
+<span><span class="fu"><a href="reference/rt_ai.html">rt_ai</a></span><span class="op">(</span><span class="va">txt_path</span><span class="op">)</span>                          <span class="co"># generative-AI-use disclosure</span></span></code></pre></div>
+<p><code><a href="reference/rt_ai.html">rt_ai()</a></code> is the plain-text counterpart of <code><a href="reference/rt_ai_pmc.html">rt_ai_pmc()</a></code>. Because a text file carries no reliable publication date, it applies <strong>no 2023 year gate</strong> (it returns <code>TRUE</code>/<code>FALSE</code>, never <code>NA</code>) and cannot confine the scan to back-matter sections, so restrict its use to 2023-or-later articles and expect a slightly higher false-positive rate on papers that use AI as a research method.</p>
 </div>
 <div class="section level2">
 <h2 id="summarizing-a-corpus">Summarizing a corpus<a class="anchor" aria-label="anchor" href="#summarizing-a-corpus"></a>
@@ -228,7 +230,7 @@
 <div class="section level2">
 <h2 id="linking-to-fair-assessment">Linking to FAIR assessment<a class="anchor" aria-label="anchor" href="#linking-to-fair-assessment"></a>
 </h2>
-<p>The data- and code-availability links the detector extracts (<code>open_data_links</code>, <code>open_code_links</code>) can be passed to FAIR-assessment tooling such as <a href="https://github.com/choxos/rfuji" class="external-link"><code>rfuji</code></a> to score the findability and accessibility of the shared resources.</p>
+<p>The data- and code-availability links the detector extracts (<code>open_data_links</code>, <code>open_code_links</code>) can be passed to FAIR-assessment tooling such as <a href="https://github.com/choxos/rfair" class="external-link"><code>rfair</code></a> to score the findability and accessibility of the shared resources.</p>
 </div>
 <div class="section level2">
 <h2 id="validation">Validation<a class="anchor" aria-label="anchor" href="#validation"></a>
