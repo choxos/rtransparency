@@ -42,12 +42,13 @@ and, when found, the sentence or statement that triggered the detection.
 | Replication | Replication / independent-validation components | `rt_replication` | `rt_replication_pmc` |
 | Data sharing | Data deposited or made openly available | `rt_data_code` | `rt_data_code_pmc` |
 | Code sharing | Source code / scripts made available | `rt_data_code` | `rt_data_code_pmc` |
-| AI-use disclosure | A statement that generative AI was (or was not) used to prepare the manuscript | — | `rt_ai_pmc` |
+| AI-use disclosure | A statement that generative AI was (or was not) used to prepare the manuscript | `rt_ai` | `rt_ai_pmc` |
 
 `rt_all_pmc` runs all eight detectors together in a single pass: COI, funding,
 registration, novelty, replication, data sharing, code sharing and AI-use
-disclosure. (`rt_all` covers the first five from TXT; data, code and AI are PMC
-XML only, the last because the year gate needs the publication date.)
+disclosure. (`rt_all` covers the first five from TXT; data, code and AI also have
+standalone TXT detectors, `rt_data_code` and `rt_ai`, but are not part of the
+`rt_all` wrapper.)
 
 AI-use disclosure is the newest indicator. Journals have asked authors to
 disclose any use of generative AI (ChatGPT and similar) in preparing a
@@ -188,7 +189,7 @@ dplyr::glimpse(
 `rt_all_pmc` and `rt_data_code_pmc` also return `open_data_links` and
 `open_code_links`: the repository and accession URLs extracted from the
 statements, ready to pass to FAIR-assessment tooling such as
-[`rfuji`](https://github.com/choxos/rfuji). Article metadata (title, journal,
+[`rfair`](https://github.com/choxos/rfair). Article metadata (title, journal,
 identifiers, dates) is available separately via `rt_meta_pmc`.
 
 ```{r}
@@ -224,8 +225,16 @@ rt_coi("article.txt")
 rt_fund("article.txt")
 rt_register("article.txt")
 rt_data_code("article.txt")
+rt_ai("article.txt")    # generative-AI-use disclosure
 rt_all("article.txt")   # COI, funding, registration, novelty, replication
 ```
+
+`rt_ai` is the plain-text counterpart of `rt_ai_pmc`. A text file carries no
+reliable publication date, so `rt_ai` applies no 2023 year gate (`is_ai_pred` is
+always `TRUE` or `FALSE`, never `NA`) and cannot confine the scan to back-matter
+sections the way the XML detector does. Restrict it to articles published in 2023
+or later, and expect a slightly higher false-positive rate on papers that use AI
+as a research method.
 
 # Processing many articles
 

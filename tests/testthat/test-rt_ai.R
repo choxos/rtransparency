@@ -86,3 +86,45 @@ test_that(".detect_ai_disclosure ignores named models used as research objects",
                  info = paste("should NOT detect:", s))
   }
 })
+
+# Write `text` to a temp .txt whose name carries `pmid`, run rt_ai(), return row.
+.run_rt_ai_txt <- function(text, pmid = "12345678") {
+  f <- tempfile(pattern = paste0("PMID", pmid, "-"), fileext = ".txt")
+  writeLines(text, f)
+  on.exit(unlink(f), add = TRUE)
+  rt_ai(f)
+}
+
+test_that("rt_ai flags positive and negative AI disclosures in TXT", {
+  pos <- list(
+    "Declaration of generative AI. During the preparation of this work the authors used ChatGPT to improve the readability of the manuscript.",
+    "No generative AI or AI-assisted technologies were used in the preparation of this manuscript.",
+    "We acknowledge the use of the Gemini large language model to refine the language of this manuscript."
+  )
+  for (s in pos) {
+    expect_true(.run_rt_ai_txt(s)$is_ai_pred, info = paste("should detect:", s))
+  }
+})
+
+test_that("rt_ai does not flag AI used as a research method or articles with no AI", {
+  neg <- list(
+    "We trained a large language model on clinical notes to predict hospital readmission.",
+    "This randomized trial enrolled 200 patients with hypertension across three centers."
+  )
+  for (s in neg) {
+    expect_false(.run_rt_ai_txt(s)$is_ai_pred, info = paste("should NOT detect:", s))
+  }
+})
+
+test_that("rt_ai rejoins a tool name hyphenated across a line break", {
+  r <- .run_rt_ai_txt("The authors used Chat-\nGPT to polish the language of the manuscript.")
+  expect_true(r$is_ai_pred)
+})
+
+test_that("rt_ai returns the documented schema, the PMID and never NA (no year gate)", {
+  r <- .run_rt_ai_txt("The authors used ChatGPT to improve the manuscript wording.", pmid = "99887766")
+  expect_identical(names(r), c("article", "pmid", "is_ai_pred", "ai_text"))
+  expect_equal(r$pmid, "99887766")
+  expect_false(is.na(r$is_ai_pred))            # TXT applies no 2023 year gate
+  expect_gt(nchar(r$ai_text), 0)
+})

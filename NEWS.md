@@ -19,6 +19,12 @@ First stable release, and a rename.
   detection, plain-text and PMC XML parity, corpus-scale batch processing with
   `rt_all_pmc_dir()`, and accuracy correction for seven of the eight indicators.
 
+* **New `rt_ai()`**, a plain-text detector for generative-AI-use disclosure, the
+  text counterpart of `rt_ai_pmc()`. Because a text file carries no reliable
+  publication date, `rt_ai()` applies no 2023 year gate (`is_ai_pred` is always
+  `TRUE`/`FALSE`, never `NA`) and cannot confine the scan to back-matter
+  sections; restrict it to articles from 2023 onward.
+
 # rtransparent 0.9.11
 
 Citation, documentation, and packaging polish.
@@ -30,7 +36,7 @@ Citation, documentation, and packaging polish.
   and does not capture (disclosure-based conflicts of interest and AI, data
   offered "upon request" excluded, novelty and replication as claim detection,
   language coverage), the output schema, and how to pass extracted data- and
-  code-availability links to FAIR-assessment tooling such as `rfuji`.
+  code-availability links to FAIR-assessment tooling such as `rfair`.
 
 # rtransparent 0.9.10
 
