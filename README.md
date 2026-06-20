@@ -6,6 +6,7 @@
 [![pkgdown](https://github.com/choxos/rtransparency/actions/workflows/pkgdown.yaml/badge.svg)](https://choxos.github.io/rtransparency/)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20775089.svg)](https://doi.org/10.5281/zenodo.20775089)
 <!-- badges: end -->
 
 <div align="justify">
