@@ -1,7 +1,11 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://choxos.github.io/rtransparency/404.html</loc></url>
+<url><loc>https://choxos.github.io/rtransparency/CODE_OF_CONDUCT.html</loc></url>
+<url><loc>https://choxos.github.io/rtransparency/CONTRIBUTING.html</loc></url>
 <url><loc>https://choxos.github.io/rtransparency/LICENSE-text.html</loc></url>
+<url><loc>https://choxos.github.io/rtransparency/PULL_REQUEST_TEMPLATE.html</loc></url>
 <url><loc>https://choxos.github.io/rtransparency/ROADMAP.html</loc></url>
+<url><loc>https://choxos.github.io/rtransparency/SECURITY.html</loc></url>
 <url><loc>https://choxos.github.io/rtransparency/articles/ai-disclosure.html</loc></url>
 <url><loc>https://choxos.github.io/rtransparency/articles/index.html</loc></url>
 <url><loc>https://choxos.github.io/rtransparency/articles/rtransparency.html</loc></url>
