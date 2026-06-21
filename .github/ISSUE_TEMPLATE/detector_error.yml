@@ -1,0 +1,53 @@
+name: Detector false positive or false negative
+description: Report an incorrect transparency-indicator prediction
+title: "[Detector]: "
+labels: ["detector", "triage"]
+body:
+  - type: dropdown
+    id: indicator
+    attributes:
+      label: Indicator
+      options:
+        - Conflicts of interest
+        - Funding
+        - Protocol registration
+        - Novelty
+        - Replication / external validation
+        - Data sharing
+        - Code sharing
+        - AI disclosure
+    validations:
+      required: true
+  - type: dropdown
+    id: error_type
+    attributes:
+      label: Error type
+      options:
+        - False positive
+        - False negative
+        - Incorrect extracted text
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: excerpt
+    attributes:
+      label: Relevant excerpt
+      description: Paste only the legally shareable text/XML excerpt needed to understand the error.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Package output
+      description: Paste the relevant `rtransparency` output.
+      render: r
+    validations:
+      required: true
+  - type: input
+    id: article
+    attributes:
+      label: Article identifier
+      description: PMID, PMCID, DOI, or other identifier if shareable.
+    validations:
+      required: false

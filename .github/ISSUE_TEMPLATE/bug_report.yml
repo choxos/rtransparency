@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible package bug
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please include a minimal reproducible example.
+        Do not upload copyrighted full-text articles unless their license permits it.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reprex
+    attributes:
+      label: Minimal reproducible example
+      description: Include the smallest code and text/XML excerpt needed to reproduce the problem.
+      render: r
+    validations:
+      required: true
+  - type: dropdown
+    id: input_type
+    attributes:
+      label: Input type
+      options:
+        - PMC XML
+        - TXT / PDF-derived text
+        - Batch processing
+        - Summary or plotting
+        - Package installation/check
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: session
+    attributes:
+      label: Session info
+      description: Paste the output of `sessionInfo()`.
+      render: r
+    validations:
+      required: true
