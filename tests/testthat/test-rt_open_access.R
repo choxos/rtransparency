@@ -76,3 +76,15 @@ test_that("rt_oa_pmc returns is_success = FALSE on a malformed file", {
   r <- rt_oa_pmc(f, remove_ns = TRUE)
   expect_false(r$is_success)
 })
+
+test_that("is_open_access is excluded from rt_accuracy, consistent with the benchmark", {
+  # Open-access licensing is deterministic structured extraction; its specificity
+  # is not estimable from the OA subset, so it is not in the correction table and
+  # rt_summary() reports it uncorrected. This guards against re-introducing a
+  # 1.000/1.000 row that would contradict results_oa_reporting.md.
+  data(rt_accuracy, package = "rtransparency")
+  expect_false("is_open_access" %in% rt_accuracy$variable)
+  expect_true("is_reporting_pred" %in% rt_accuracy$variable)
+  # is_open_access is still a recognized indicator for summary/plot.
+  expect_true("is_open_access" %in% rtransparency:::.rt_indicator_registry()$variable)
+})

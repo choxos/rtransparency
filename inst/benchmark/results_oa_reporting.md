@@ -33,9 +33,18 @@ Detected **precision-first**: a guideline counts only in an author-level
 reporting context; common-word acronyms (ARRIVE, CARE, RECORD, REMARK, SPIRIT,
 PROCESS) require the upper-case form beside a guideline noun; spelled-out names
 match directly; and a veto removes animal-welfare, clinical/treatment,
-non-adherence, guideline-discourse/background, and quality-assessment-of-included
--studies mentions. The named guideline is returned. Coverage spans the EQUATOR
-catalogue (CONSORT, PRISMA and extensions, STROBE, ARRIVE, STARD, TRIPOD, COREQ,
-SRQR, SQUIRE, CHEERS, CARE, PROCESS, STROCSS, RAMESES) and the wider reportilo
-guideline list. Residual misses are mostly non-English statements; residual
-false positives are guidelines named in a borderline context judged not followed.
+non-adherence, guideline-discourse/background, and quality-assessment-of-
+included-studies mentions. The named guideline is returned. Coverage spans the
+EQUATOR catalogue (CONSORT, PRISMA and extensions, STROBE, ARRIVE, STARD,
+TRIPOD, COREQ, SRQR, SQUIRE, CHEERS, CARE, PROCESS, STROCSS, RAMESES) and the
+wider reportilo guideline list. Residual misses are mostly non-English
+statements; residual false positives are guidelines named in a borderline
+context judged not followed.
+
+## Reproducing
+
+The PMC XML corpus is **not committed** (too large for an R package): the script
+fetches each article by PMCID from NCBI EFetch into `$RT_XML_DIR`
+(default `/tmp/newcache/xml`) and caches it. Set `RT_NO_FETCH=1` to validate
+strictly against a pre-populated cache; the run then aborts if any XML is
+missing rather than writing a partial benchmark.

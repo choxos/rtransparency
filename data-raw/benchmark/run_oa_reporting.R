@@ -41,8 +41,14 @@ pred <- do.call(rbind, lapply(seq_len(n_total), function(i) {
   data.frame(pmcid = id, oa = oa$is_open_access, oa_license = oa$oa_license,
              rep = rp$is_reporting_pred, guideline = rp$reporting_guideline, stringsAsFactors = FALSE)
 }))
-if (missing > 0) cat(sprintf("WARNING: %d/%d articles had no usable XML%s\n", missing, n_total,
-                             if (no_fetch) " (RT_NO_FETCH set)" else ""))
+if (missing > 0) {
+  msg <- sprintf("%d/%d articles had no usable XML.", missing, n_total)
+  # In formal no-fetch mode a missing file is a hard error, so a partial run can
+  # never silently overwrite the benchmark with a weakened estimate.
+  if (no_fetch) stop(msg, " RT_NO_FETCH is set; aborting rather than writing a partial benchmark.",
+                     call. = FALSE)
+  cat("WARNING:", msg, " (fetched the rest from NCBI)\n")
+}
 
 m <- merge(labels, pred, by = "pmcid")
 asl <- function(x) { x <- toupper(trimws(as.character(x)))
@@ -118,12 +124,19 @@ sprintf("open-access subset contains only %d non-open article(s) (classified", o
 "reporting context; common-word acronyms (ARRIVE, CARE, RECORD, REMARK, SPIRIT,",
 "PROCESS) require the upper-case form beside a guideline noun; spelled-out names",
 "match directly; and a veto removes animal-welfare, clinical/treatment,",
-"non-adherence, guideline-discourse/background, and quality-assessment-of-included",
-"-studies mentions. The named guideline is returned. Coverage spans the EQUATOR",
-"catalogue (CONSORT, PRISMA and extensions, STROBE, ARRIVE, STARD, TRIPOD, COREQ,",
-"SRQR, SQUIRE, CHEERS, CARE, PROCESS, STROCSS, RAMESES) and the wider reportilo",
-"guideline list. Residual misses are mostly non-English statements; residual",
-"false positives are guidelines named in a borderline context judged not followed.")
+"non-adherence, guideline-discourse/background, and quality-assessment-of-",
+"included-studies mentions. The named guideline is returned. Coverage spans the",
+"EQUATOR catalogue (CONSORT, PRISMA and extensions, STROBE, ARRIVE, STARD,",
+"TRIPOD, COREQ, SRQR, SQUIRE, CHEERS, CARE, PROCESS, STROCSS, RAMESES) and the",
+"wider reportilo guideline list. Residual misses are mostly non-English",
+"statements; residual false positives are guidelines named in a borderline",
+"context judged not followed.", "",
+"## Reproducing", "",
+"The PMC XML corpus is **not committed** (too large for an R package): the script",
+"fetches each article by PMCID from NCBI EFetch into `$RT_XML_DIR`",
+"(default `/tmp/newcache/xml`) and caches it. Set `RT_NO_FETCH=1` to validate",
+"strictly against a pre-populated cache; the run then aborts if any XML is",
+"missing rather than writing a partial benchmark.")
 writeLines(md, "inst/benchmark/results_oa_reporting.md")
 
 cat(sprintf("OA        : Sens %.1f Spec NA (neg=%d) license-type %.1f%% (%d/%d)\n", oa["sens"], oa_neg, lic, lic_num, lic_den))

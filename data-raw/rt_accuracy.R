@@ -19,32 +19,34 @@
 # representative 2023 1000-article sample; earlier releases omitted replication
 # for lack of a stable positive sample.
 
-# For open-access licensing and reporting-guideline use the estimates come from a
-# hand-labeled validation of the full 1000-article 2023 sample (every article
-# read and labeled by the maintainer; see inst/benchmark/results_oa_reporting.md).
-# Open-access licensing is read from the structured JATS <license> element and is
-# near-deterministic (license-type exact-match 99.8%); its specificity rests on
-# few negatives in the open-access subset, so it is effectively a ceiling.
+# For reporting-guideline use the estimate comes from a hand-labeled validation of
+# the full 1000-article 2023 sample (every article read and labeled by the
+# maintainer; see inst/benchmark/results_oa_reporting.md).
+#
+# Open-access licensing is deliberately NOT in this table: it is structured
+# metadata extraction from the JATS <license> element (license-type exact-match
+# 99.8%), not a behavioral detector, and its specificity is not estimable from
+# the open-access subset (a single negative). rt_summary() therefore reports its
+# prevalence uncorrected, like AI-use disclosure.
 
 rt_accuracy <- tibble::tibble(
   variable = c(
     "is_coi_pred", "is_fund_pred", "is_register_pred",
     "is_open_data", "is_open_code", "is_novelty_pred", "is_replication_pred",
-    "is_open_access", "is_reporting_pred"
+    "is_reporting_pred"
   ),
   label = c(
     "Conflicts of interest", "Funding disclosure",
     "Protocol registration", "Data sharing", "Code sharing", "Novelty",
-    "Replication", "Open-access license", "Reporting guideline"
+    "Replication", "Reporting guideline"
   ),
-  sensitivity = c(0.992, 0.997, 0.955, 0.765, 0.881, 0.838, 0.928, 1.000, 0.938),
-  specificity = c(0.995, 0.981, 0.997, 0.990, 0.995, 0.952, 0.985, 1.000, 0.990),
+  sensitivity = c(0.992, 0.997, 0.955, 0.765, 0.881, 0.838, 0.928, 0.938),
+  specificity = c(0.995, 0.981, 0.997, 0.990, 0.995, 0.952, 0.985, 0.990),
   source = c(
     rep("Serghiou et al. 2021, PLOS Biology (doi:10.1371/journal.pbio.3001107)", 3),
     rep("rtransparency native detector, reproducible benchmark and regression estimate (inst/benchmark)", 2),
     "rtransparency novelty/replication hand-labeled benchmark (inst/benchmark/results_novelty_replication.md)",
     "rtransparency replication-enriched validation, sensitivity n=111 positives; specificity from the 2023 1000-article sample (inst/benchmark/results_replication_enriched.md)",
-    "rtransparency hand-labeled validation, 1000-article 2023 sample (inst/benchmark/results_oa_reporting.md); structured-license detection, prevalence-limited specificity",
     "rtransparency hand-labeled validation, 1000-article 2023 sample, 65 positives (inst/benchmark/results_oa_reporting.md)"
   )
 )

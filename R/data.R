@@ -21,7 +21,7 @@
 #' prevalence is too low in unselected literature for a stable estimate), so
 #' [rt_summary()] reports it uncorrected.
 #'
-#' @format A tibble with 9 rows and 5 columns:
+#' @format A tibble with 8 rows and 5 columns:
 #' \describe{
 #'   \item{variable}{Indicator column name, as returned by [rt_all_pmc()].}
 #'   \item{label}{Human-readable indicator name.}

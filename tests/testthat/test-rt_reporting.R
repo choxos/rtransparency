@@ -69,7 +69,9 @@ test_that("rt_reporting does not fire on guideline discourse, background, or ext
     "Adherence to CONSORT among the reviewed trials was low.",
     "The CONSORT checklist was used to assess reporting quality of the included trials.",
     "The Consolidated Standards of Reporting Trials statement provides guidance for trial reporting.",
-    "STROBE is a tool for reporting observational studies."
+    "STROBE is a tool for reporting observational studies.",
+    "PRISMA provides a framework for reporting systematic reviews.",
+    "The EQUATOR guidelines present a framework for transparent reporting."
   )
   for (s in neg) expect_false(.run_rt_reporting(s)$is_reporting_pred, info = s)
 })

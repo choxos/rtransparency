@@ -137,8 +137,8 @@
     "(checklist|guideline|statement|criteria|tool|instrument)\\b[^.]{0,30}(was|were|is|are|to be|been) used to (assess|evaluate|rate|appraise|grade|judge|examine|measure|check)\\b[^.]{0,70}(included|eligible|reviewed|primary|original|identified|selected|retrieved|each|all|these|those|the) (studies|trials|articles|papers|rcts|reviews|reports|publications)",
     "used to (assess|evaluate|rate|appraise|grade|judge|measure)\\b[^.]{0,40}(reporting (quality|completeness)|methodological quality)",
     # Background description of a guideline, not adherence to it.
-    "(provide|offer|give)(s|d)? guidance",
-    "\\b(is|are|was|were) (a |an |the )?(framework|tool|guide|resource|method) for (the )?reporting",
+    "(provide|offer|give|present|propose|introduce|describe)(s|d)? (a |an |the )?(framework|tool|guide|guidance|checklist|standard|resource|method|structure|basis|set of) ",
+    "\\b(is|are|was|were) (a |an |the )?(framework|tool|guide|resource|method|standard|set) for (the )?reporting",
     "(statement|guidelines?|guidance|checklist|criteria) (provides?|offers?|describes?|outlines?|aims? to|is intended|is meant|was developed|were developed|standardiz)",
     "(trials|studies) (that )?conform(ed|ing|s)? to",
     "reporting of the (reviewed|included|individual|primary) (trials|studies)",
