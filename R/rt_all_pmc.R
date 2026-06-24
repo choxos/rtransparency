@@ -246,12 +246,14 @@
 #' Identify and extract all transparency indicators from a PMC XML.
 #'
 #' Takes a PMC XML and returns relevant meta-data, as well as whether the article
-#'     carries each of the eight transparency indicators: Conflicts of Interest
+#'     carries each of the ten transparency indicators: Conflicts of Interest
 #'     (COI), Funding, Protocol Registration, Novelty, Replication, Data sharing,
-#'     Code sharing and disclosure of generative-AI use. Where a statement is
-#'     found, the relevant text is also extracted. This is the single-call entry
-#'     point; it covers the same data and code detection as
-#'     [rt_data_code_pmc()] and the same AI detection as [rt_ai_pmc()].
+#'     Code sharing, disclosure of generative-AI use, Open-access licensing and
+#'     Reporting-guideline use. Where a statement is found, the relevant text is
+#'     also extracted. This is the single-call entry point; it covers the same
+#'     data and code detection as [rt_data_code_pmc()], the same AI detection as
+#'     [rt_ai_pmc()], the same licensing detection as [rt_oa_pmc()] and the same
+#'     reporting-guideline detection as [rt_reporting_pmc()].
 #'
 #' @param filename The name of the PMC XML as a string.
 #' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
@@ -259,8 +261,10 @@
 #' @return A dataframe of results. It returns the unique identifiers of the
 #'     article, whether each indicator of transparency was identified
 #'     (`is_coi_pred`, `is_fund_pred`, `is_register_pred`, `is_novelty_pred`,
-#'     `is_replication_pred`, `is_open_data`, `is_open_code` and the year-gated
-#'     `is_ai_pred`), the relevant text identified, whether it was identified
+#'     `is_replication_pred`, `is_open_data`, `is_open_code`, the year-gated
+#'     `is_ai_pred`, `is_open_access` with the `oa_license`, and
+#'     `is_reporting_pred` with the named `reporting_guideline`), the relevant
+#'     text identified, whether it was identified
 #'     through a dedicated XML tag (such variables include "pmc" in their name,
 #'     e.g. “fund_pmc_source”) and whether each labelling function identified
 #'     relevant text or not. The labeling functions are returned to add
@@ -367,9 +371,15 @@ rt_all_pmc <- function(filename, remove_ns = F, all_meta = F) {
     open_code_links = paste(dc_code_links, collapse = " ; ")
   )
 
+  # Open-access status and reuse license (same detector as rt_oa_pmc()), and
+  # reporting-guideline use (same detector as rt_reporting_pmc(), reusing the
+  # already-extracted article sections to avoid a second parse).
+  oa_ls <- .get_oa_pmc(article_xml)
+  reporting_ls <- .get_reporting_pmc(article_xml)
+
 
   status_ls <- list(is_success = T)
   tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls,
                       novelty_ls, replication_ls, ai_ls, data_code_ls,
-                      status_ls))
+                      oa_ls, reporting_ls, status_ls))
 }

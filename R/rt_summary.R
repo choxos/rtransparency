@@ -15,12 +15,14 @@
     variable = c(
       "is_coi_pred", "is_fund_pred", "is_register_pred",
       "is_open_data", "is_open_code",
-      "is_novelty_pred", "is_replication_pred", "is_ai_pred"
+      "is_novelty_pred", "is_replication_pred", "is_ai_pred",
+      "is_open_access", "is_reporting_pred"
     ),
     label = c(
       "Conflicts of interest", "Funding disclosure",
       "Protocol registration", "Data sharing", "Code sharing",
-      "Novelty", "Replication", "AI disclosure"
+      "Novelty", "Replication", "AI disclosure",
+      "Open-access license", "Reporting guideline"
     )
   )
 }
@@ -110,10 +112,10 @@
 #' @param data A data frame with one row per article. Indicator columns must be
 #'   logical or numeric 0/1 and named as in [rt_all_pmc()]: `is_coi_pred`,
 #'   `is_fund_pred`, `is_register_pred`, `is_open_data`, `is_open_code`,
-#'   `is_novelty_pred`, `is_replication_pred` and `is_ai_pred`. `NA` marks an
-#'   article that was not assessed for that indicator (for example `is_ai_pred`
-#'   before 2023) and is excluded from its denominator. Other values are rejected
-#'   rather than silently coerced.
+#'   `is_novelty_pred`, `is_replication_pred`, `is_ai_pred`, `is_open_access` and
+#'   `is_reporting_pred`. `NA` marks an article that was not assessed for that
+#'   indicator (for example `is_ai_pred` before 2023) and is excluded from its
+#'   denominator. Other values are rejected rather than silently coerced.
 #' @param indicators Optional character vector of indicator columns to
 #'   summarize. Defaults to every recognized indicator present in `data`.
 #' @param by Optional name of a grouping column (for example a publication year,

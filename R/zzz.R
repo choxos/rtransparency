@@ -9,7 +9,8 @@ utils::globalVariables(c(".", "rt_accuracy"))
   packageStartupMessage(sprintf(paste0(
     "rtransparency %s: identify indicators of transparency (conflicts of ",
     "interest, funding,\nprotocol registration, novelty, replication, data and ",
-    "code sharing, and AI-use\ndisclosure) in biomedical articles. GitHub: ",
+    "code sharing, AI-use disclosure,\nopen-access licensing and reporting-",
+    "guideline use) in biomedical articles. GitHub: ",
     "https://github.com/choxos/rtransparency | vignette(\"rtransparency\")"),
     version
   ))

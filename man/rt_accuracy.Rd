@@ -5,7 +5,7 @@
 \alias{rt_accuracy}
 \title{Detector accuracy estimates}
 \format{
-A tibble with 7 rows and 5 columns:
+A tibble with 9 rows and 5 columns:
 \describe{
   \item{variable}{Indicator column name, as returned by [rt_all_pmc()].}
   \item{label}{Human-readable indicator name.}

@@ -38,6 +38,8 @@ reference:
   - rt_data_code_pmc
   - rt_data_code_pmc_list
   - rt_ai_pmc
+  - rt_oa_pmc
+  - rt_reporting_pmc
 - title: Individual indicators (text)
   desc: One detector per indicator, for plain-text (PDF-derived) files.
   contents:
@@ -48,6 +50,8 @@ reference:
   - rt_replication
   - rt_data_code
   - rt_ai
+  - rt_oa
+  - rt_reporting
 - title: Metadata and input
   desc: Article metadata and PDF-to-text conversion.
   contents:
