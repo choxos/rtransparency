@@ -1,3 +1,3 @@
-"indicator","n","positives","negatives","sensitivity","specificity","ppv","accuracy","sens_lo","sens_hi","spec_lo","spec_hi"
-"Open-access license",1000,999,1,100,100,100,100,100,100,100,100
-"Reporting guideline",1000,65,935,93.8,99,87.1,98.7,87.7,98.5,98.3,99.6
+"indicator","n","positives","negatives","sensitivity","specificity","ppv","accuracy","sens_lo","sens_hi","spec_lo","spec_hi","license_type_match","license_type_num","license_type_den","basis"
+"Open-access license",1000,999,1,100,NA,100,100,100,100,NA,NA,99.8,997,999,"structured <license> extraction; specificity prevalence-limited (1 negative)"
+"Reporting guideline",1000,65,935,93.8,99,87.1,98.7,87.7,98.5,98.3,99.6,NA,NA,NA,"hand-labeled, precision-first detector"

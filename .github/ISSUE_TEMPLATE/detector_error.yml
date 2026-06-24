@@ -16,6 +16,8 @@ body:
         - Data sharing
         - Code sharing
         - AI disclosure
+        - Open-access license
+        - Reporting guideline
     validations:
       required: true
   - type: dropdown

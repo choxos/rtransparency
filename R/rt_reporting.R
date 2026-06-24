@@ -133,6 +133,13 @@
     "(included|eligible|reviewed|primary|original|individual|selected|identified|retrieved|each) (studies|trials|articles|papers|reviews|reports|rcts|publications)\\b[^.]{0,60}(adher|follow|conform|comply|report(ed|ing)?|used|use of)",
     "(adherence|compliance|conformity|reporting (quality|completeness)) (to|with|of) .{0,40}(among|across|in|by|of) (the )?(included|eligible|reviewed|primary|original|identified)",
     "(reporting (quality|completeness)|risk of bias)\\b[^.]{0,40}(was|were) (assessed|evaluated|examined|rated|appraised|judged)",
+    # A checklist USED TO ASSESS other (included/reviewed) studies, not followed.
+    "(checklist|guideline|statement|criteria|tool|instrument)\\b[^.]{0,30}(was|were|is|are|to be|been) used to (assess|evaluate|rate|appraise|grade|judge|examine|measure|check)\\b[^.]{0,70}(included|eligible|reviewed|primary|original|identified|selected|retrieved|each|all|these|those|the) (studies|trials|articles|papers|rcts|reviews|reports|publications)",
+    "used to (assess|evaluate|rate|appraise|grade|judge|measure)\\b[^.]{0,40}(reporting (quality|completeness)|methodological quality)",
+    # Background description of a guideline, not adherence to it.
+    "(provide|offer|give)(s|d)? guidance",
+    "\\b(is|are|was|were) (a |an |the )?(framework|tool|guide|resource|method) for (the )?reporting",
+    "(statement|guidelines?|guidance|checklist|criteria) (provides?|offers?|describes?|outlines?|aims? to|is intended|is meant|was developed|were developed|standardiz)",
     "(trials|studies) (that )?conform(ed|ing|s)? to",
     "reporting of the (reviewed|included|individual|primary) (trials|studies)",
     sep = "|"

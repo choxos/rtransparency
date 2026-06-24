@@ -28,3 +28,7 @@ in the Description field and in `inst/CITATION`.
   `pdftotext` command-line utility. The only adapted code is an internal,
   benchmark-only NCBI OAI fallback derived from `metareadr::mt_read_pmcoa()`
   (GPL-3); its author, Stylianos Serghiou, is credited in `Authors@R`.
+* The README carries the standard CRAN status badge, whose link
+  (`https://CRAN.R-project.org/package=rtransparency`) is not yet live and
+  returns 404 until this submission is accepted; it resolves on acceptance. R's
+  own URL check exempts this canonical CRAN package URL.
