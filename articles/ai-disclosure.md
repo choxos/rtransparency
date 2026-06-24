@@ -67,7 +67,7 @@ articles where the indicator applies.
 
 [`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
 includes the indicator, so a single pass over a corpus already carries
-`year` and `is_ai_pred` alongside the other seven indicators:
+`year` and `is_ai_pred` alongside the other nine indicators:
 
 ``` r
 

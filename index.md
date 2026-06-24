@@ -98,8 +98,8 @@ rt_meta_pmc(xml, remove_ns = TRUE)       # article metadata
 ## Corpus-scale processing
 
 [`rt_all_pmc_dir()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc_dir.md)
-runs all eight indicators over an entire directory (or a vector of
-paths). It is built for large corpora:
+runs all ten indicators over an entire directory (or a vector of paths).
+It is built for large corpora:
 
 ``` r
 
@@ -167,7 +167,7 @@ rt_plot(rt_demo, type = "trend", year = "year")   # prevalence over time
 ```
 
 The accuracy correction uses the bundled `rt_accuracy` table (detector
-sensitivity and specificity for seven indicators). Supply your own
+sensitivity and specificity for nine indicators). Supply your own
 estimates:
 
 ``` r
