@@ -14,7 +14,7 @@ same AI detection as \[rt_ai_pmc()\], the same licensing detection as
 ## Usage
 
 ``` r
-rt_all_pmc(filename, remove_ns = F, all_meta = F)
+rt_all_pmc(filename, remove_ns = FALSE, all_meta = FALSE)
 ```
 
 ## Arguments
@@ -52,11 +52,13 @@ labelling function returns NA it means that it was not run.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Path to PMC XML.
-filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+# \donttest{
+# Path to a bundled example PMC XML file.
+filepath <- system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+)
 
 # Identify and extract meta-data and indicators of transparency.
-results_table <- rt_all_pmc(filepath, remove_ns = T, all_meta = T)
-} # }
+results_table <- rt_all_pmc(filepath, remove_ns = TRUE, all_meta = TRUE)
+# }
 ```

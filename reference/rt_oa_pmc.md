@@ -12,7 +12,7 @@ does not.
 ## Usage
 
 ``` r
-rt_oa_pmc(filename, remove_ns = F)
+rt_oa_pmc(filename, remove_ns = FALSE)
 ```
 
 ## Arguments
@@ -34,10 +34,15 @@ none is found), the license statement (\`oa_text\`) and \`is_success\`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
 rt_oa_pmc(filepath, remove_ns = TRUE)
-} # }
+#> # A tibble: 1 × 9
+#>   pmid     pmcid_pmc pmcid_uid doi    filename is_open_access oa_license oa_text
+#>   <chr>    <chr>     <chr>     <chr>  <chr>    <lgl>          <chr>      <chr>  
+#> 1 32171256 ""        ""        10.11… /home/r… TRUE           CC-BY-4.0  https:…
+#> # ℹ 1 more variable: is_success <lgl>
+# }
 ```

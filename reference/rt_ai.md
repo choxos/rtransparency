@@ -38,11 +38,19 @@ publication-year gate.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Path to a TXT file.
-filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.txt"
+# \donttest{
+# Write a short example article to a temporary text file.
+filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+writeLines(
+  "The authors used ChatGPT to assist with drafting this manuscript.",
+  filepath
+)
 
 # Identify and extract an AI-use disclosure.
 rt_ai(filepath)
-} # }
+#> # A tibble: 1 × 4
+#>   article                     pmid     is_ai_pred ai_text                       
+#>   <chr>                       <chr>    <lgl>      <chr>                         
+#> 1 PMID00000000-PMC0000000.txt 00000000 TRUE       "The authors used ChatGPT to …
+# }
 ```

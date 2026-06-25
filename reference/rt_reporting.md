@@ -31,7 +31,17 @@ whether a reporting-guideline statement was found
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-rt_reporting("article.txt")
-} # }
+# \donttest{
+# Write a short example article to a temporary text file.
+filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+writeLines(
+  "This systematic review was reported following the PRISMA 2020 guideline.",
+  filepath
+)
+rt_reporting(filepath)
+#> # A tibble: 1 × 5
+#>   article             pmid  is_reporting_pred reporting_guideline reporting_text
+#>   <chr>               <chr> <lgl>             <chr>               <chr>         
+#> 1 PMID00000000-PMC00… 0000… TRUE              PRISMA              This systemat…
+# }
 ```

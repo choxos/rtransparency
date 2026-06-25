@@ -7,7 +7,7 @@ Data or Code exist, it will extract the relevant text for each.
 ## Usage
 
 ``` r
-rt_data_code_pmc_list(filenames, remove_ns = T, specificity = "low")
+rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = "low")
 ```
 
 ## Arguments
@@ -32,7 +32,7 @@ A dataframe of results, one row per file.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 # Paths to PMC XML files
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
@@ -41,5 +41,5 @@ filepaths <- list(filepath)
 
 # Identify and extract indicators of data and code sharing
 results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
-} # }
+# }
 ```

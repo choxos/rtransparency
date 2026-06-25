@@ -7,7 +7,7 @@ Funding statement exists, it extracts it.
 ## Usage
 
 ``` r
-rt_fund_pmc(filename, remove_ns = F)
+rt_fund_pmc(filename, remove_ns = FALSE)
 ```
 
 ## Arguments
@@ -35,11 +35,13 @@ future definitions of Funding may differ from the one we used.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Path to PMC XML.
-filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+# \donttest{
+# Path to a bundled example PMC XML file.
+filepath <- system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+)
 
 # Identify and extract meta-data and indicators of transparency.
-results_table <- rt_fund_pmc(filepath, remove_ns = T)
-} # }
+results_table <- rt_fund_pmc(filepath, remove_ns = TRUE)
+# }
 ```

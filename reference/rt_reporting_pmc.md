@@ -11,7 +11,7 @@ does not count.
 ## Usage
 
 ``` r
-rt_reporting_pmc(filename, remove_ns = F)
+rt_reporting_pmc(filename, remove_ns = FALSE)
 ```
 
 ## Arguments
@@ -34,10 +34,15 @@ and \`is_success\`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
 rt_reporting_pmc(filepath, remove_ns = TRUE)
-} # }
+#> # A tibble: 1 × 9
+#>   pmid  pmcid_pmc pmcid_uid doi   filename is_reporting_pred reporting_guideline
+#>   <chr> <chr>     <chr>     <chr> <chr>    <lgl>             <chr>              
+#> 1 3217… ""        ""        10.1… /home/r… FALSE             ""                 
+#> # ℹ 2 more variables: reporting_text <chr>, is_success <lgl>
+# }
 ```

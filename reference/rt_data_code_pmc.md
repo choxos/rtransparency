@@ -9,7 +9,7 @@ longer depends on `oddpub` or `tokenizers`.
 ## Usage
 
 ``` r
-rt_data_code_pmc(filename, remove_ns = T, specificity = "low")
+rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
 ```
 
 ## Arguments
@@ -43,7 +43,7 @@ separated by `" ; "`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 # Path to PMC XML
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
@@ -51,5 +51,5 @@ filepath <- system.file(
 
 # Identify and extract indicators of data and code sharing
 results_table <- rt_data_code_pmc(filepath, remove_ns = TRUE)
-} # }
+# }
 ```

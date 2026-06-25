@@ -9,7 +9,7 @@ published in 2023 or later; for earlier articles \`is_ai_pred\` is
 ## Usage
 
 ``` r
-rt_ai_pmc(filename, remove_ns = F)
+rt_ai_pmc(filename, remove_ns = FALSE)
 ```
 
 ## Arguments
@@ -31,10 +31,14 @@ statement (\`ai_text\`) and \`is_success\`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
 rt_ai_pmc(filepath, remove_ns = TRUE)
-} # }
+#> # A tibble: 1 × 9
+#>   pmid    pmcid_pmc pmcid_uid doi   filename  year is_ai_pred ai_text is_success
+#>   <chr>   <chr>     <chr>     <chr> <chr>    <int> <lgl>      <chr>   <lgl>     
+#> 1 321712… ""        ""        10.1… /home/r…  2020 NA         ""      TRUE      
+# }
 ```

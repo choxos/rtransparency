@@ -61,9 +61,16 @@ A \`ggplot\` object.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 data(rt_demo)
-rt_plot(rt_demo)                          # prevalence bar chart
-rt_plot(rt_demo, type = "trend", year = "year")
-} # }
+# \donttest{
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  rt_plot(rt_demo)                          # prevalence bar chart
+  rt_plot(rt_demo, type = "trend", year = "year")
+}
+#> Warning: Removed 13 rows containing missing values or values outside the scale range
+#> (`geom_line()`).
+#> Warning: Removed 13 rows containing missing values or values outside the scale range
+#> (`geom_point()`).
+
+# }
 ```

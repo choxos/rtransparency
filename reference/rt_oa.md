@@ -33,7 +33,20 @@ canonical license (\`oa_license\`) and the license statement
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-rt_oa("article.txt")
-} # }
+# \donttest{
+# Write a short example article to a temporary text file.
+filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+writeLines(
+  paste(
+    "This is an open access article distributed under the terms of the",
+    "Creative Commons Attribution License (CC BY 4.0)."
+  ),
+  filepath
+)
+rt_oa(filepath)
+#> # A tibble: 1 × 5
+#>   article                     pmid     is_open_access oa_license oa_text        
+#>   <chr>                       <chr>    <lgl>          <chr>      <chr>          
+#> 1 PMID00000000-PMC0000000.txt 00000000 TRUE           CC-BY-4.0  This is an ope…
+# }
 ```
