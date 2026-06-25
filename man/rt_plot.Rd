@@ -41,10 +41,12 @@ Produces a `ggplot` of either the prevalence of each indicator (a bar chart)
 or the prevalence over time (a line chart). Requires the `ggplot2` package.
 }
 \examples{
-\dontrun{
 data(rt_demo)
-rt_plot(rt_demo)                          # prevalence bar chart
-rt_plot(rt_demo, type = "trend", year = "year")
+\donttest{
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  rt_plot(rt_demo)                          # prevalence bar chart
+  rt_plot(rt_demo, type = "trend", year = "year")
+}
 }
 }
 \seealso{

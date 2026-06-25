@@ -12,7 +12,7 @@
   a <-
     dict$conflict_title %>%
     .encase() %>%
-    grep(article, ignore.case = T)
+    grep(article, ignore.case = TRUE)
 
   if (!!length(a)) {
 
@@ -43,10 +43,10 @@
   conflict_3 <- "interest"
 
   conflict_regex_1 <- paste0(conflict_1, txt, conflict_2, txt, conflict_3)
-  is_conflict_1 <- grep(conflict_regex_1, article, perl = T, ignore.case = T)
+  is_conflict_1 <- grep(conflict_regex_1, article, perl = TRUE, ignore.case = TRUE)
 
   conflict_regex_2 <- paste0(conflict_1, txt, conflict_3, txt, conflict_2)
-  is_conflict_2 <- grep(conflict_regex_2, article, perl = T, ignore.case = T)
+  is_conflict_2 <- grep(conflict_regex_2, article, perl = TRUE, ignore.case = TRUE)
 
   return(unique(c(is_conflict_1, is_conflict_2)))
 }
@@ -94,7 +94,7 @@
 #' @noRd
 .which_disclosure_1 <- function(article, dict) {
 
-  a <- agrep("disclosure", article, ignore.case = T)
+  a <- agrep("disclosure", article, ignore.case = TRUE)
   is_financial <- agrepl("financial disclosure", article[a])
 
   if (any(is_financial)) {
@@ -131,10 +131,10 @@
   commerce_2 <- "(sponsored|financed|funded|interest(|s)|benefit|relationship)"
 
   commercial_regex_1 <- paste0(commerce_0, txt, commerce_1, txt, commerce_2)
-  is_commercial_1 <- grep(commercial_regex_1, article, perl = T)
+  is_commercial_1 <- grep(commercial_regex_1, article, perl = TRUE)
 
   commercial_regex_2 <- paste0(commerce_0, txt, commerce_2, txt, commerce_1)
-  is_commercial_2 <- grep(commercial_regex_2, article, perl = T)
+  is_commercial_2 <- grep(commercial_regex_2, article, perl = TRUE)
 
   return(unique(c(is_commercial_1, is_commercial_2)))
 }
@@ -163,9 +163,9 @@
   benefit_regex_3 <-
     paste0("commercial", txt, "benefit|gain", txt, "received")
 
-  is_benefit_1 <- grep(benefit_regex_1, article, perl = T)
-  is_benefit_2 <- grep(benefit_regex_2, article, perl = T)
-  is_benefit_3 <- grep(benefit_regex_3, article, perl = T)
+  is_benefit_1 <- grep(benefit_regex_1, article, perl = TRUE)
+  is_benefit_2 <- grep(benefit_regex_2, article, perl = TRUE)
+  is_benefit_3 <- grep(benefit_regex_3, article, perl = TRUE)
 
   return(unique(c(is_benefit_1, is_benefit_2, is_benefit_3)))
 }
@@ -189,7 +189,7 @@
   consultant_2 <- "for"
 
   consultant_regex <- paste0(consultant_0, txt, consultant_1, txt, consultant_2)
-  is_consultant <- grep(consultant_regex, article, perl = T)
+  is_consultant <- grep(consultant_regex, article, perl = TRUE)
 
   return(is_consultant)
 }
@@ -205,7 +205,7 @@
 #' @noRd
 .which_brief <- function(article) {
 
-  grep("Brief explanation for [A-Za-z]+:", article, ignore.case = T, fixed = F)
+  grep("Brief explanation for [A-Za-z]+:", article, ignore.case = TRUE, fixed = FALSE)
 
 }
 
@@ -267,7 +267,7 @@
 #' @noRd
 .which_grants_1 <- function(article) {
 
-  grep("received grants", article, perl = T)
+  grep("received grants", article, perl = TRUE)
 
 }
 
@@ -301,7 +301,7 @@
 
   c(received, fees) %>%
     paste(collapse = dict$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -335,7 +335,7 @@
 
   c(name_consults, consults_name) %>%
     .encase() %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -375,7 +375,7 @@
 
   c(commercial_relation, financial_relation) %>%
     .encase %>%
-    grep(article, perl = T, ignore.case = T)
+    grep(article, perl = TRUE, ignore.case = TRUE)
 
 }
 
@@ -403,7 +403,7 @@
 
   c(declare, connection) %>%
     paste(collapse = "\\s*") %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -448,7 +448,7 @@
     sponsored_financialy
   ) %>%
     .encase() %>%
-    grep(article, perl = T, ignore.case = T)
+    grep(article, perl = TRUE, ignore.case = TRUE)
 
 }
 
@@ -471,7 +471,7 @@
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = dict$txt) %>%
-    grep(article, perl = T, ignore.case = T)
+    grep(article, perl = TRUE, ignore.case = TRUE)
 
 }
 
@@ -493,7 +493,7 @@
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = dict$txt) %>%
-    grep(article, perl = T, ignore.case = T)
+    grep(article, perl = TRUE, ignore.case = TRUE)
 
 }
 
@@ -514,7 +514,7 @@
 
   c(sci_advisor, of) %>%
     paste(collapse = dict$txt) %>%
-    grep(article, ignore.case = T, perl = T)
+    grep(article, ignore.case = TRUE, perl = TRUE)
 
 }
 
@@ -529,7 +529,7 @@
 #' @noRd
 .which_paid_1 <- function(article, dict) {
 
-  grep(" paid ", article, ignore.case = T, perl = T)
+  grep(" paid ", article, ignore.case = TRUE, perl = TRUE)
 
 }
 
@@ -554,7 +554,7 @@
 
   any_board <- paste0(partake, txt, preps, txt, "[Bb]oard")
 
-  grep(any_board, article, perl = T)
+  grep(any_board, article, perl = TRUE)
 }
 
 
@@ -569,7 +569,7 @@
 #' @noRd
 .which_no_coi_1 <- function(article, dict) {
 
-  grep("[Nn]o[a-zA-Z\\s]+conflict", article, perl = T)
+  grep("[Nn]o[a-zA-Z\\s]+conflict", article, perl = TRUE)
 
 }
 
@@ -608,7 +608,7 @@
 
   c(funders, had, no, role, in_prep) %>%
     paste(collapse = dict$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -628,10 +628,10 @@
   no <- dict$no %>% .bound() %>% .encase()
   no_conflict <- paste(no, "conflict|compet", sep = dict$txt)
 
-  has_capital_c <- grepl("C(?i)onflict(?-i)|C(?i)ompet(?-i)", article, perl = T)
+  has_capital_c <- grepl("C(?i)onflict(?-i)|C(?i)ompet(?-i)", article, perl = TRUE)
   has_negation <- grepl(no_conflict, article)
-  has_author <- grepl("[Aa]uthor", article, perl = T)
-  has_punct <- grepl("interest(|s)[.:;,]", article, ignore.case = T)
+  has_author <- grepl("[Aa]uthor", article, perl = TRUE)
+  has_punct <- grepl("interest(|s)[.:;,]", article, ignore.case = TRUE)
 
   any(c(has_capital_c, has_negation, has_author, has_punct))
 }
@@ -655,7 +655,7 @@
     magrittr::extract(words) %>%
     unlist() %>%
     .encase() %>%
-    grepl(article, perl = T)
+    grepl(article, perl = TRUE)
 
 }
 
@@ -673,9 +673,9 @@
 
   has_capital_d <- grepl("Disclos|DISCLOS", article)
   has_negation <- grepl(.encase(dict$No), article)
-  has_author <- grepl("[Aa]uthor[a-zA-Z\\s-]*[dD]isclo", article, perl = T)
-  has_punct <- grepl("disclosure(|s)[.:;,]", article, ignore.case = T)
-  has_online <- grepl("\\bonline\\b", article, ignore.case = T)
+  has_author <- grepl("[Aa]uthor[a-zA-Z\\s-]*[dD]isclo", article, perl = TRUE)
+  has_punct <- grepl("disclosure(|s)[.:;,]", article, ignore.case = TRUE)
+  has_online <- grepl("\\bonline\\b", article, ignore.case = TRUE)
 
   any(has_capital_d, has_negation, has_author, has_punct, has_online)
 }
@@ -696,7 +696,7 @@
   honorary_2 <- "[Hh]onorari(um|a)"
   honorary_regex <- paste0(honorary_1, dict$txt, honorary_2)
 
-  gsub(honorary_regex, "", article, perl = T)
+  gsub(honorary_regex, "", article, perl = TRUE)
 
 }
 
@@ -750,7 +750,7 @@
   a <-
     back_matter %>%
     xml2::xml_text() %>%
-    stringr::str_which(stringr::regex(coi_titles, ignore_case = T))
+    stringr::str_which(stringr::regex(coi_titles, ignore_case = TRUE))
 
   if (!!length(a)) {
 
@@ -799,7 +799,7 @@
   a <-
     front_matter %>%
     xml2::xml_text() %>%
-    stringr::str_which(stringr::regex(coi_titles, ignore_case = T))
+    stringr::str_which(stringr::regex(coi_titles, ignore_case = TRUE))
 
   if (!!length(a)) {
 
@@ -846,7 +846,7 @@
   a <-
     body_matter %>%
     xml2::xml_text() %>%
-    stringr::str_which(stringr::regex(coi_titles, ignore_case = T))
+    stringr::str_which(stringr::regex(coi_titles, ignore_case = TRUE))
 
   if (!!length(a)) {
 
@@ -964,11 +964,11 @@
 
   hi_relevance <-
     article %>%
-    stringr::str_detect(stringr::regex(hi_regex, ignore_case = T))
+    stringr::str_detect(stringr::regex(hi_regex, ignore_case = TRUE))
 
   lo_relevance <-
     article %>%
-    stringr::str_detect(stringr::regex(lo_regex, ignore_case = T))
+    stringr::str_detect(stringr::regex(lo_regex, ignore_case = TRUE))
 
 
   is_relevant_hi = any(hi_relevance)
@@ -1192,15 +1192,17 @@
 #'     in how this package is used, such as future definitions of COI that may
 #'     differ from the one we used.
 #' @examples
-#' \dontrun{
-#' # Path to PMC XML.
-#' filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+#' \donttest{
+#' # Path to a bundled example PMC XML file.
+#' filepath <- system.file(
+#'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+#' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_coi_pmc(filepath, remove_ns = T)
+#' results_table <- rt_coi_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_coi_pmc <- function(filename, remove_ns = F) {
+rt_coi_pmc <- function(filename, remove_ns = FALSE) {
 
   index <- integer()
   dict <- .create_synonyms()
@@ -1261,13 +1263,13 @@ rt_coi_pmc <- function(filename, remove_ns = F) {
 
   if (inherits(article_xml, "error")) {
 
-    return(tibble::tibble(filename, is_success = F))
+    return(tibble::tibble(filename, is_success = FALSE))
 
   }
 
 
   # Extract IDs
-  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, T)))
+  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, TRUE)))
 
 
   # Capture coi fn elements
@@ -1304,7 +1306,7 @@ rt_coi_pmc <- function(filename, remove_ns = F) {
 
   # Extract article text into a vector
   ack <- .xml_ack(article_xml)
-  body <- .xml_body(article_xml, get_last_two = T)
+  body <- .xml_body(article_xml, get_last_two = TRUE)
   footnotes <- .xml_footnotes(article_xml) %>% .obliterate_contribs()
   article <- c(footnotes, body, ack)
 
@@ -1313,12 +1315,12 @@ rt_coi_pmc <- function(filename, remove_ns = F) {
   hi <- "conflict|compet|disclos|declar|\\bcommercial"
   lo <- "fee(|s)\\b|honorari|\\bboard\\b|consult|relation|connection|\\bfinancial|\\b(co|co-)founder|\\bpaid\\b|speaker|\\bemployee|member\\b|funder"
 
-  hi_relevance <- stringr::str_detect(article, stringr::regex(hi, ignore_case = T))
-  lo_relevance <- stringr::str_detect(article, stringr::regex(lo, ignore_case = T))
+  hi_relevance <- stringr::str_detect(article, stringr::regex(hi, ignore_case = TRUE))
+  lo_relevance <- stringr::str_detect(article, stringr::regex(lo, ignore_case = TRUE))
 
   article <- article[(hi_relevance + lo_relevance) > 0]
   # rel_regex <- paste(hi_regex, lo_regex, sep = "|")
-  # article %<>% purrr::keep(~ str_detect(.x, regex(rel_regex, ignore_case = T)))
+  # article %<>% purrr::keep(~ str_detect(.x, regex(rel_regex, ignore_case = TRUE)))
 
   out$is_relevant_hi <- any(hi_relevance)
   out$is_relevant_lo <- any(lo_relevance)

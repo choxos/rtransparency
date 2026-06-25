@@ -4,7 +4,7 @@
 \alias{rt_reporting_pmc}
 \title{Identify use of a reporting guideline from a PMC XML file.}
 \usage{
-rt_reporting_pmc(filename, remove_ns = F)
+rt_reporting_pmc(filename, remove_ns = FALSE)
 }
 \arguments{
 \item{filename}{The filename of the PMC XML file to analyze.}
@@ -26,7 +26,7 @@ reporting or adherence verb, or a guideline noun such as "statement",
 "checklist" or "guideline"), so a bare citation does not count.
 }
 \examples{
-\dontrun{
+\donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )

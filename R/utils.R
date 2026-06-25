@@ -200,7 +200,7 @@
     lapply(.encase) %>%
     # lapply(.max_words) %>%
     paste() %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   # ref_synonyms <- c(
   #   "R(?i)eferences(?-i)(| [A-Z0-9]+.*)",
@@ -215,7 +215,7 @@
 
   # no "^" b/c of UTF-8 characters, e.g. "\\fReferences"
   # regex <- paste0("(", paste(ref_synonyms, collapse = "|"), ")$")
-  # ref_index <- grep(regex, article, perl = T)
+  # ref_index <- grep(regex, article, perl = TRUE)
 
   if (!!length(ref_index)) {
 
@@ -295,7 +295,7 @@
     # lapply(paste, "($|\\s+[A-Z]") %>%  # TODO: if too sensitive, uncomment
     lapply(.encase) %>%
     paste() %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   if (!!length(method_index)) {
 
@@ -319,11 +319,11 @@
   method_index <-
     synonyms %>%
     magrittr::extract(words[1]) %>%
-    lapply(.title_strict, within_text = T) %>%
+    lapply(.title_strict, within_text = TRUE) %>%
     lapply(paste, "[A-Z]", sep = "\\s*") %>%
     lapply(.encase) %>%
     paste() %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   if (!!length(method_index)) {
 
@@ -391,7 +391,7 @@
 #' @param space_first If TRUE space first (default), else space last.
 #' @return A vector of bounded strings.
 #' @noRd
-.max_words <- function(x, n_max = 3, space_first = T) {
+.max_words <- function(x, n_max = 3, space_first = TRUE) {
 
   if (space_first) {
 
@@ -415,7 +415,7 @@
 #' @param within_text Boolean defines whether a regex typical to a title found      within text should be created or not.
 #' @return A vector of strings with a suffix attached.
 #' @noRd
-.title <- function(x, within_text = F) {
+.title <- function(x, within_text = FALSE) {
 
   if (within_text) {
 
@@ -439,7 +439,7 @@
 #' @param within_text Boolean defines whether a regex typical to a title found      within text should be created or not.
 #' @return A vector of strings with a suffix attached.
 #' @noRd
-.title_strict <- function(x, within_text = F) {
+.title_strict <- function(x, within_text = FALSE) {
 
   if (within_text) {
 
@@ -1177,7 +1177,7 @@
   )
 
   # Not strict because they are meant to be used with no regex restrictions
-  # and with ignore.case = T. In 3909 XML files searching through titles,
+  # and with ignore.case = TRUE. In 3909 XML files searching through titles,
   # this worked perfectly with 100% specificity
   synonyms[["conflict_title"]] <- c(
     "C(?i)onflict(|s) of interest(|s)(?-i)",

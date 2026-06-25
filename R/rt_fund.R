@@ -31,7 +31,7 @@ get_support_1 <- function(article) {
   #   # lapply(.max_words) %>%
   #   paste(collapse = synonyms$txt) %>%
   #   paste(this_research, .) %>%
-  #   grep(article, perl = T)
+  #   grep(article, perl = TRUE)
 
 
   synonyms <- .create_synonyms()
@@ -56,7 +56,7 @@ get_support_1 <- function(article) {
   singular <-
     c(this_research, was_funded_by) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   if (!length(singular)) {
 
@@ -68,7 +68,7 @@ get_support_1 <- function(article) {
       lapply(.encase) %>%
       # lapply(.max_words) %>%
       paste(collapse = synonyms$txt) %>%
-      grep(article, perl = T)
+      grep(article, perl = TRUE)
 
   } else {
 
@@ -97,7 +97,7 @@ get_support_2 <- function(article) {
     lapply(.encase) %>%
     # lapply(.max_words) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   if (!length(singular)) {
 
@@ -109,7 +109,7 @@ get_support_2 <- function(article) {
       lapply(.encase) %>%
       # lapply(.max_words) %>%
       paste(collapse = synonyms$txt) %>%
-      grep(article, perl = T)
+      grep(article, perl = TRUE)
 
   } else {
 
@@ -145,7 +145,7 @@ get_support_3 <- function(article) {
     # lapply(.max_words) %>%
     paste(collapse = synonyms$txt) %>%
     paste(research_is, ., sep = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -173,7 +173,7 @@ get_support_4 <- function(article) {
     lapply(.encase) %>%
     # lapply(.max_words) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -195,9 +195,9 @@ get_support_5 <- function(article) {
     paste(collapse = synonyms$txt)
 
   start_of_sentence <- "(^\\s*|(:|\\.)\\s*|[A-Z][a-zA-Z]+\\s*)"
-  .max_words(start_of_sentence, n_max = 4, space_first = F) %>%
+  .max_words(start_of_sentence, n_max = 4, space_first = FALSE) %>%
     paste0(funded_by_award) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -234,7 +234,7 @@ get_support_6 <- function(article) {
   a <-
     c(acknowledge, support_foundation) %>%
     paste(collapse = " ") %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   b <-
     synonyms %>%
@@ -243,7 +243,7 @@ get_support_6 <- function(article) {
     lapply(.encase) %>%
     # lapply(.max_words) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   return(unique(c(a, b)))
 }
@@ -264,7 +264,7 @@ get_support_7 <- function(article) {
   a <- "Support"
   b <- .encase(synonyms$received)
   d <- .encase(synonyms$by)
-  grep(paste(a, b, d, sep = synonyms$txt), article, perl = T)
+  grep(paste(a, b, d, sep = synonyms$txt), article, perl = TRUE)
 
 }
 
@@ -289,7 +289,7 @@ get_support_8 <- function(article) {
 
   synonyms <- .create_synonyms()
   words <- c("foundation", "provide", "funding_financial", "for_of", "research")
-  max_words <- .max_words(" ", n_max = 3, space_first = F)
+  max_words <- .max_words(" ", n_max = 3, space_first = FALSE)
 
   # foundation <-
   #   synonyms %>%
@@ -313,14 +313,14 @@ get_support_8 <- function(article) {
 
   # c(foundation, funding_for_research) %>%
   #   paste(collapse = synonyms$txt) %>%
-  #   grep(article, perl = T)
+  #   grep(article, perl = TRUE)
 
   synonyms %>%
     magrittr::extract(words) %>%
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -350,7 +350,7 @@ get_support_9 <- function(article) {
   funding <-
     synonyms %>%
     magrittr::extract(words[2]) %>%
-    lapply(grep, pattern = "upport", value = T, invert = T) %>%
+    lapply(grep, pattern = "upport", value = TRUE, invert = TRUE) %>%
     lapply(.bound) %>%
     lapply(.encase)
 
@@ -363,7 +363,7 @@ get_support_9 <- function(article) {
 
   c(foundation, funding, research) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -394,7 +394,7 @@ get_support_10 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -440,7 +440,7 @@ get_developed_1 <- function(article) {
 
   c(this_research_is, developed, by_foundation) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -461,7 +461,7 @@ get_received_1 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = " ") %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -482,7 +482,7 @@ get_received_2 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -504,7 +504,7 @@ get_recipient_1 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -525,7 +525,7 @@ get_authors_1 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 
   # "[Ss]upport",
@@ -559,7 +559,7 @@ get_authors_2 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -582,7 +582,7 @@ get_thank_1 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -609,7 +609,7 @@ get_thank_2 <- function(article) {
 
   thank %>%
     paste("[0-9]{5}", sep = txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -638,7 +638,7 @@ get_fund_1 <- function(article) {
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
     paste(funding_for, ., sep = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -660,7 +660,7 @@ get_fund_2 <- function(article) {
     lapply(.title) %>%
     lapply(.encase) %>%
     paste() %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   if (length(a) > 0) {
 
@@ -674,10 +674,10 @@ get_fund_2 <- function(article) {
 
     synonyms %>%
       magrittr::extract(words) %>%
-      lapply(.title, within_text = T) %>%
+      lapply(.title, within_text = TRUE) %>%
       lapply(.encase) %>%
       paste() %>%
-      grep(article, perl = T)
+      grep(article, perl = TRUE)
 
   }
 }
@@ -699,7 +699,7 @@ get_fund_3 <- function(article) {
     magrittr::extract(words) %>%
     lapply(.encase) %>%
     paste("[A-Z]") %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -724,7 +724,7 @@ get_fund_acknow <- function(article) {
 
   c(funded_synonyms, "NIH (|\\()(R|P)[0-9]{2}", "awarded by") %>%
     .encase %>%
-    grep(article, perl = T, ignore.case = T)
+    grep(article, perl = TRUE, ignore.case = TRUE)
 
 }
 
@@ -751,7 +751,7 @@ get_fund_acknow_new <- function(article) {
     "\\b(fellowship|scholarship|studentship|bursary|stipend|endowment)\\b"
   )
 
-  grep(.encase(patterns), article, perl = T, ignore.case = T)
+  grep(.encase(patterns), article, perl = TRUE, ignore.case = TRUE)
 }
 
 
@@ -765,7 +765,7 @@ get_fund_acknow_new <- function(article) {
 #     lapply(.bound) %>%
 #     lapply(.encase)
 #
-#   grep(paste0(a, synonyms$txt, "[0-9]{3,10}"), article, perl = T)
+#   grep(paste0(a, synonyms$txt, "[0-9]{3,10}"), article, perl = TRUE)
 #
 # }
 
@@ -788,7 +788,7 @@ get_supported_1 <- function(article) {
     lapply(.encase) %>%
     paste(collapse = " ") %>%
     paste("[a-zA-Z]+") %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -811,7 +811,7 @@ get_financial_1 <- function(article) {
     lapply(.encase) %>%
     # lapply(.max_words) %>%
     paste() %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 
   if (length(a) > 0) {
@@ -826,11 +826,11 @@ get_financial_1 <- function(article) {
 
     synonyms %>%
       magrittr::extract(words) %>%
-      lapply(.title, within_text = T) %>%
+      lapply(.title, within_text = TRUE) %>%
       lapply(.encase) %>%
       # lapply(.max_words) %>%
       paste() %>%
-      grep(article, perl = T)
+      grep(article, perl = TRUE)
 
   }
 }
@@ -854,7 +854,7 @@ get_financial_2 <- function(article) {
     lapply(.encase) %>%
     # lapply(.max_words) %>%
     paste(collapse = " ") %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -878,7 +878,7 @@ get_financial_3 <- function(article) {
     lapply(.encase) %>%
     # lapply(.max_words) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -901,7 +901,7 @@ get_disclosure_1 <- function(article) {
     lapply(.title) %>%
     lapply(.encase) %>%
     paste(collapse = "|") %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
   out <- integer()
   if (!!length(a)) {
@@ -918,7 +918,7 @@ get_disclosure_1 <- function(article) {
         synonyms$funding_financial_award %>%
         lapply(.bound) %>%
         paste0(collapse = "|") %>%
-        grep(article[b], perl = T)
+        grep(article[b], perl = TRUE)
 
       if (!!length(d)) out <- c(out, a[i], b)
     }
@@ -942,7 +942,7 @@ get_disclosure_2 <- function(article) {
   disclosure <-
     synonyms %>%
     magrittr::extract(words[1]) %>%
-    lapply(.title, within_text = T)
+    lapply(.title, within_text = TRUE)
 
   funding <-
     synonyms %>%
@@ -952,7 +952,7 @@ get_disclosure_2 <- function(article) {
   c(disclosure, funding) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -979,7 +979,7 @@ get_grant_1 <- function(article) {
     lapply(.title) %>%
     lapply(.encase) %>%
     paste() %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 
   if (!!length(a)) {
@@ -999,14 +999,14 @@ get_grant_1 <- function(article) {
       synonyms %>%
       magrittr::extract(c("support", "funder")) %>%
       lapply(paste0, "(?-i)") %>%
-      lapply(.title, within_text = T) %>%
+      lapply(.title, within_text = TRUE) %>%
       unlist()
 
     grant %>%
       lapply(paste0, support) %>%
       unlist() %>%
       .encase() %>%
-      grep(article, perl = T)
+      grep(article, perl = TRUE)
 
   }
 }
@@ -1022,7 +1022,7 @@ get_grant_1 <- function(article) {
 get_french_1 <- function(article) {
 
   # This study was financed by... - avoiding specifics b/c of UTF-8 characters
-  grep("Cette.*tude.*financ.*par", article, perl = T, ignore.case = T)
+  grep("Cette.*tude.*financ.*par", article, perl = TRUE, ignore.case = TRUE)
 
 }
 
@@ -1036,7 +1036,7 @@ get_french_1 <- function(article) {
 #' @noRd
 get_project_acknow <- function(article) {
 
-  grep("project (no|num)", article, perl = T, ignore.case = T)
+  grep("project (no|num)", article, perl = TRUE, ignore.case = TRUE)
 
 }
 
@@ -1069,7 +1069,7 @@ get_common_1 <- function(article) {
 
   no_funding %>%
     paste(was_received, sep = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -1091,7 +1091,7 @@ get_common_2 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 }
 
 
@@ -1147,7 +1147,7 @@ get_common_4 <- function(article) {
 
   c(no_funding, for_this, research) %>%
     paste(collapse = synonyms$txt) %>%
-    grep(article, perl = T)
+    grep(article, perl = TRUE)
 
 }
 
@@ -1168,8 +1168,8 @@ get_common_5 <- function(article) {
     magrittr::extract(words) %>%
     lapply(.bound) %>%
     lapply(.encase) %>%
-    paste(collapse = .max_words(" ", space_first = F)) %>%
-    grep(article, perl = T)
+    paste(collapse = .max_words(" ", space_first = FALSE)) %>%
+    grep(article, perl = TRUE)
 
 }
 
@@ -1192,7 +1192,7 @@ get_acknow_1 <- function(article) {
   total_txt <- c(txt_0, txt_1, txt_2)
   indicator_regex <- paste0(total_txt, collapse = " ")
 
-  a <- grep(indicator_regex, article, perl = T, ignore.case = T)
+  a <- grep(indicator_regex, article, perl = TRUE, ignore.case = TRUE)
 
   if (length(a) > 0) {
     if (!is.na(article[a + 1])) {
@@ -1230,7 +1230,7 @@ get_acknow_2 <- function(article) {
   indicator_regex <- paste0(total_txt, collapse = " ")
   indicator_regex <- paste(txt_0, indicator_regex, sep = "|")
 
-  grep(indicator_regex, article, perl = T)
+  grep(indicator_regex, article, perl = TRUE)
 }
 
 
@@ -1292,7 +1292,7 @@ negate_disclosure_1 <- function(article) {
   funded <- .encase(funded_synonyms)
 
   regex <- paste(disclose, conflict, and, not, funded, sep = txt)
-  a <- grepl(regex, article, perl = T)
+  a <- grepl(regex, article, perl = TRUE)
 
   if (any(a)) {
 
@@ -1302,7 +1302,7 @@ negate_disclosure_1 <- function(article) {
 
     funded <- .encase(c(funded_synonyms, synonyms$funding))
     regex <- paste(disclose, funded, conflict, sep = txt)
-    grepl(regex, article, perl = T)
+    grepl(regex, article, perl = TRUE)
   }
 }
 
@@ -1356,7 +1356,7 @@ negate_disclosure_2 <- function(article) {
     .encase()
 
   regex <- paste(regex_1, regex_2, regex_3, sep = "|")
-  grepl(regex, article, perl = T)
+  grepl(regex, article, perl = TRUE)
 
 }
 
@@ -1378,7 +1378,7 @@ negate_conflict_1 <- function(article) {
     lapply(.title) %>%
     lapply(.encase) %>%
     paste() %>%
-    grepl(article, perl = T)
+    grepl(article, perl = TRUE)
 }
 
 
@@ -1399,7 +1399,7 @@ negate_absence_1 <- function(article) {
     lapply(.bound) %>%
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
-    grepl(article, perl = T) |
+    grepl(article, perl = TRUE) |
     grepl(
       paste(
         "\\bfunding\\s*:?\\s*none\\b",
@@ -1475,7 +1475,7 @@ obliterate_conflict_1 <- function(article) {
   c(regex_1, regex_2, regex_3) %>%
     lapply(.encase) %>%
     paste(collapse = "|") %>%
-    gsub("", article, perl = T)
+    gsub("", article, perl = TRUE)
 
 }
 
@@ -1509,11 +1509,11 @@ obliterate_disclosure_1 <- function(article) {
     lapply(.encase) %>%
     paste(collapse = synonyms$txt) %>%
     paste0(synonyms$txt, ., synonyms$txt, "($|.)") %>%
-    gsub("", article, perl = T)
+    gsub("", article, perl = TRUE)
 
   # disclosure_title %>%
   #   paste0("(", synonyms$txt, conflict_funded, synonyms$txt, ")") %>%
-  #   gsub("\\1", article, perl = T)
+  #   gsub("\\1", article, perl = TRUE)
 
 
   # if (any(a)) {
@@ -1524,7 +1524,7 @@ obliterate_disclosure_1 <- function(article) {
   #
   #   funded <- .encase(c(funded_synonyms, synonyms$funding))
   #   regex <- paste(disclose, funded, conflict, sep = txt)
-  #   grepl(regex, article, perl = T)
+  #   grepl(regex, article, perl = TRUE)
   # }
 
 }
@@ -1584,11 +1584,19 @@ obliterate_refs_1 <- function(article) {
 #'     are returned to add flexibility in how this package is used, such as
 #'     future definitions of COI that may differ from the one we used.
 #' @examples
-#' \dontrun{
-#' # Path to PMC XML.
-#' filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.txt"
+#' \donttest{
+#' # Write a short example article to a temporary text file.
+#' filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+#' writeLines(c(
+#'   "To our knowledge, this is the first study of its kind.",
+#'   "Conflicts of interest: none declared.",
+#'   "This work was supported by the National Institutes of Health (R01-000000).",
+#'   "The protocol was registered at ClinicalTrials.gov (NCT00000000).",
+#'   "All data and code are available at https://github.com/example/repo.",
+#'   "We independently replicated the original analysis."
+#' ), filepath)
 #'
-#' # Identify and extract meta-data and indicators of transparency.
+#' # Identify and extract the funding statement.
 #' results_table <- rt_fund(filepath)
 #' }
 #' @export

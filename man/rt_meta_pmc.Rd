@@ -4,7 +4,7 @@
 \alias{rt_meta_pmc}
 \title{Extract article metadata from a PMC XML file.}
 \usage{
-rt_meta_pmc(filename, remove_ns = F)
+rt_meta_pmc(filename, remove_ns = FALSE)
 }
 \arguments{
 \item{filename}{The path to the PMC XML file as a string.}
@@ -23,7 +23,7 @@ Reads a PMC XML file and returns its metadata as a one-row data frame:
     counts.
 }
 \examples{
-\dontrun{
+\donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )

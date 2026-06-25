@@ -7,7 +7,7 @@
 #     contains things such as the abstract,
 
 
-.xml_metadata <- function(article_xml, as_list = F) {
+.xml_metadata <- function(article_xml, as_list = FALSE) {
 
   # TODO: Consider adding: word count, number of titles, number of sections
   # TODO: Improve author format, e.g.
@@ -18,15 +18,15 @@
 
   # article_xml %>%
   #   xml2::xml_find_all(xpath = "//xref") %>%
-  #   xml2::xml_remove(free = T)
+  #   xml2::xml_remove(free = TRUE)
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//label") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//sup") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   xpath <- c(
     "front/journal-meta//journal-title",
@@ -81,7 +81,7 @@
 
   meta <-
     xpath %>%
-    lapply(.get_text, article_xml = article_xml, find_first = F) %>%
+    lapply(.get_text, article_xml = article_xml, find_first = FALSE) %>%
     rlang::set_names(var_names)
 
 
@@ -188,17 +188,17 @@
 
 
 # Tiny improvement over all meta-data, so not worth it
-.xml_metadata_unique <- function(article_xml, as_list = F) {
+.xml_metadata_unique <- function(article_xml, as_list = FALSE) {
 
   meta <- list()
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//label") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//sup") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   xpath <- c(
     "front/journal-meta//journal-title",
@@ -245,7 +245,7 @@
 
   meta <-
     xpath %>%
-    lapply(.get_text, article_xml = article_xml, find_first = F) %>%
+    lapply(.get_text, article_xml = article_xml, find_first = FALSE) %>%
     rlang::set_names(var_names)
 
 
@@ -345,7 +345,7 @@
 }
 
 
-.xml_metadata_lean <- function(article_xml, as_list = F) {
+.xml_metadata_lean <- function(article_xml, as_list = FALSE) {
 
   meta <- list()
 
@@ -370,7 +370,7 @@
 
   meta <-
     xpath %>%
-    lapply(.get_text, article_xml = article_xml, find_first = F) %>%
+    lapply(.get_text, article_xml = article_xml, find_first = FALSE) %>%
     rlang::set_names(var_names)
 
 
@@ -388,7 +388,7 @@
 
 
 # The complement of metadata_lean
-.xml_metadata_c <- function(article_xml, as_list = F) {
+.xml_metadata_c <- function(article_xml, as_list = FALSE) {
 
   # TODO: Consider adding: word count, number of titles, number of sections
   # TODO: Improve author format, e.g.
@@ -399,15 +399,15 @@
 
   # article_xml %>%
   #   xml2::xml_find_all(xpath = "//xref") %>%
-  #   xml2::xml_remove(free = T)
+  #   xml2::xml_remove(free = TRUE)
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//label") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//sup") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   xpath <- c(
     "front/article-meta/article-id[@pub-id-type = 'pmid']",
@@ -448,7 +448,7 @@
 
   meta <-
     xpath %>%
-    lapply(.get_text, article_xml = article_xml, find_first = F) %>%
+    lapply(.get_text, article_xml = article_xml, find_first = FALSE) %>%
     rlang::set_names(var_names)
 
 
@@ -550,7 +550,7 @@
 
 
 # Use this when retrieving all indicators and meta-data at the same time
-.xml_metadata_all <- function(article_xml, as_list = F) {
+.xml_metadata_all <- function(article_xml, as_list = FALSE) {
 
   # TODO: Consider adding: word count, number of titles, number of sections
   # TODO: Improve author format, e.g.
@@ -561,15 +561,15 @@
 
   # article_xml %>%
   #   xml2::xml_find_all(xpath = "//xref") %>%
-  #   xml2::xml_remove(free = T)
+  #   xml2::xml_remove(free = TRUE)
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//label") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   article_xml %>%
     xml2::xml_find_all(xpath = "//sup") %>%
-    xml2::xml_remove(free = T)
+    xml2::xml_remove(free = TRUE)
 
   xpath <- c(
     "front/journal-meta//journal-title",
@@ -616,7 +616,7 @@
 
   meta <-
     xpath %>%
-    lapply(.get_text, article_xml = article_xml, find_first = F) %>%
+    lapply(.get_text, article_xml = article_xml, find_first = FALSE) %>%
     rlang::set_names(var_names)
 
 
@@ -718,17 +718,17 @@
 
 # article_xml is the XML document as an xml_document class from package xml2.
 .xml_body <- function(article_xml,
-                      get_last_two = T,
-                      remove_refs = T,
-                      remove_tables = T,
-                      remove_titles = F) {
+                      get_last_two = TRUE,
+                      remove_refs = TRUE,
+                      remove_tables = TRUE,
+                      remove_titles = FALSE) {
 
   # Removes references to citations, tables, figures and supplements
   if (remove_refs) {
 
     article_xml %>%
       xml2::xml_find_all(xpath = "body//xref") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 
@@ -737,7 +737,7 @@
 
     article_xml %>%
       xml2::xml_find_all(xpath = "body//table-wrap") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 
@@ -746,7 +746,7 @@
 
     article_xml %>%
       xml2::xml_find_all(xpath = "body//title") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 
@@ -801,7 +801,7 @@
 }
 
 
-.xml_methods <- function(article_xml, with_refs = T) {
+.xml_methods <- function(article_xml, with_refs = TRUE) {
 
   # TODO Misses methods sections such as "Experimental section"
   # Use the same approach as in title_pmc to better capture what is needed
@@ -814,7 +814,7 @@
   # Remove labels
   # article_xml %>%
   #   xml2::xml_find_all(xpath = "//label") %>%
-  #   xml2::xml_remove(free = T)
+  #   xml2::xml_remove(free = TRUE)
 
   methods <-
     article_xml %>%
@@ -945,18 +945,18 @@
 
 
 .xml_preprocess <- function(article_xml,
-                            remove_refs = F,
-                            modify_refs = T,
-                            remove_tables = T,
-                            remove_labels = F,
-                            remove_titles = F) {
+                            remove_refs = FALSE,
+                            modify_refs = TRUE,
+                            remove_tables = TRUE,
+                            remove_labels = FALSE,
+                            remove_titles = FALSE) {
 
   # Removes references to citations, tables, figures and supplements
   if (remove_refs) {
 
     article_xml %>%
       xml2::xml_find_all(xpath = "//xref") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 
@@ -976,7 +976,7 @@
 
     article_xml %>%
       xml2::xml_find_all(xpath = "//table-wrap") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 
@@ -985,11 +985,11 @@
 
     article_xml %>%
       xml2::xml_find_all(xpath = "//label") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
     article_xml %>%
       xml2::xml_find_all(xpath = "//sup") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 
@@ -998,21 +998,21 @@
 
     article_xml %>%
       xml2::xml_find_all(xpath = "body//title") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 }
 
 
 
-.xml_footnotes <- function(article_xml, remove_labels = F, all = F) {
+.xml_footnotes <- function(article_xml, remove_labels = FALSE, all = FALSE) {
 
   # Remove labels if not already removed by a previous function
   if (remove_labels) {
 
     article_xml %>%
       xml2::xml_find_all(xpath = "//label") %>%
-      xml2::xml_remove(free = T)
+      xml2::xml_remove(free = TRUE)
 
   }
 
@@ -1160,10 +1160,10 @@
 #' Returns the file as an xml_document.
 #'
 #' @param filename The filepath to the PMC XML file of interest.
-#' @param remove_ns Whether to remove the XML namespace or not (default = F).
+#' @param remove_ns Whether to remove the XML namespace or not (default = FALSE).
 #' @return The PMC XML as an xml_document.
 #' @noRd
-.get_xml <- function(filename, remove_ns = F) {
+.get_xml <- function(filename, remove_ns = FALSE) {
 
   if (remove_ns) {
 
@@ -1204,6 +1204,6 @@
   )
 
   xpath %>%
-    purrr::map(~ .get_text(article_xml, .x, T)) %>%
+    purrr::map(~ .get_text(article_xml, .x, TRUE)) %>%
     rlang::set_names(c("pmid", "pmcid_pmc", "pmcid_uid", "doi"))
 }

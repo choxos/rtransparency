@@ -23,8 +23,17 @@ Commons Attribution License" statement). Plain text lacks the structured JATS
 contains.
 }
 \examples{
-\dontrun{
-rt_oa("article.txt")
+\donttest{
+# Write a short example article to a temporary text file.
+filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+writeLines(
+  paste(
+    "This is an open access article distributed under the terms of the",
+    "Creative Commons Attribution License (CC BY 4.0)."
+  ),
+  filepath
+)
+rt_oa(filepath)
 }
 }
 \seealso{

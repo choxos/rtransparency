@@ -4,7 +4,7 @@
 \alias{rt_oa_pmc}
 \title{Identify the open-access status and reuse license of a PMC XML file.}
 \usage{
-rt_oa_pmc(filename, remove_ns = F)
+rt_oa_pmc(filename, remove_ns = FALSE)
 }
 \arguments{
 \item{filename}{The filename of the PMC XML file to analyze.}
@@ -26,7 +26,7 @@ data mining, whereas a restrictive license (NC / ND) or retained copyright
 does not.
 }
 \examples{
-\dontrun{
+\donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )

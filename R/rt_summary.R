@@ -292,10 +292,12 @@ rt_score <- function(data, indicators = NULL, name = "n_indicators") {
 #'
 #' @seealso [rt_summary()]
 #' @examples
-#' \dontrun{
 #' data(rt_demo)
-#' rt_plot(rt_demo)                          # prevalence bar chart
-#' rt_plot(rt_demo, type = "trend", year = "year")
+#' \donttest{
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   rt_plot(rt_demo)                          # prevalence bar chart
+#'   rt_plot(rt_demo, type = "trend", year = "year")
+#' }
 #' }
 #' @importFrom rlang .data :=
 #' @export

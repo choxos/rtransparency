@@ -4,7 +4,7 @@
 \alias{rt_ai_pmc}
 \title{Identify disclosure of generative-AI use from a PMC XML file.}
 \usage{
-rt_ai_pmc(filename, remove_ns = F)
+rt_ai_pmc(filename, remove_ns = FALSE)
 }
 \arguments{
 \item{filename}{The filename of the PMC XML file to analyze.}
@@ -23,7 +23,7 @@ AI-assisted tools in preparing the manuscript, as required of articles since
 later; for earlier articles `is_ai_pred` is `NA`.
 }
 \examples{
-\dontrun{
+\donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )

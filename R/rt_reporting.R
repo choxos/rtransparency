@@ -254,14 +254,14 @@
 #'   (`reporting_guideline`), the matched statement (`reporting_text`) and
 #'   `is_success`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 #' )
 #' rt_reporting_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_reporting_pmc <- function(filename, remove_ns = F) {
+rt_reporting_pmc <- function(filename, remove_ns = FALSE) {
 
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
   if (inherits(article_xml, "error")) {
@@ -288,8 +288,14 @@ rt_reporting_pmc <- function(filename, remove_ns = F) {
 #'   guideline(s) named (`reporting_guideline`) and the matched statement
 #'   (`reporting_text`).
 #' @examples
-#' \dontrun{
-#' rt_reporting("article.txt")
+#' \donttest{
+#' # Write a short example article to a temporary text file.
+#' filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+#' writeLines(
+#'   "This systematic review was reported following the PRISMA 2020 guideline.",
+#'   filepath
+#' )
+#' rt_reporting(filepath)
 #' }
 #' @seealso [rt_reporting_pmc()] for the PMC XML detector.
 #' @export

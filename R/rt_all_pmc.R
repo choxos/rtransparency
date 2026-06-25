@@ -1,6 +1,6 @@
 
 #' @noRd
-.get_xml <- function(filename, remove_ns = F) {
+.get_xml <- function(filename, remove_ns = FALSE) {
 
   if (remove_ns) {
 
@@ -211,7 +211,7 @@
 
 #' @returns A list of PubMed IDs
 #' @noRd
-.get_ids <- function(article_xml, remove_ns = F) {
+.get_ids <- function(article_xml, remove_ns = FALSE) {
 
   xpath <- c(
     "front/article-meta/article-id[@pub-id-type = 'pmid']",
@@ -221,7 +221,7 @@
   )
 
   xpath %>%
-    purrr::map(~ .get_text(article_xml, .x, T)) %>%
+    purrr::map(~ .get_text(article_xml, .x, TRUE)) %>%
     rlang::set_names(c("pmid", "pmcid_pmc", "pmcid_uid", "doi"))
 }
 
@@ -273,22 +273,24 @@
 #'     returns NA it means that it was not run. `is_ai_pred` is `NA` for articles
 #'     published before 2023 (see [rt_ai_pmc()]).
 #' @examples
-#' \dontrun{
-#' # Path to PMC XML.
-#' filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+#' \donttest{
+#' # Path to a bundled example PMC XML file.
+#' filepath <- system.file(
+#'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+#' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_all_pmc(filepath, remove_ns = T, all_meta = T)
+#' results_table <- rt_all_pmc(filepath, remove_ns = TRUE, all_meta = TRUE)
 #' }
 #' @export
-rt_all_pmc <- function(filename, remove_ns = F, all_meta = F) {
+rt_all_pmc <- function(filename, remove_ns = FALSE, all_meta = FALSE) {
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
 
   if (inherits(article_xml, "error")) {
 
-     return(tibble::tibble(filename, is_success = F))
+     return(tibble::tibble(filename, is_success = FALSE))
 
   }
 
@@ -304,11 +306,11 @@ rt_all_pmc <- function(filename, remove_ns = F, all_meta = F) {
   # no metadata: 56ms
   if (all_meta) {
 
-    meta_ls <- .xml_metadata_all(article_xml, as_list = T)
+    meta_ls <- .xml_metadata_all(article_xml, as_list = TRUE)
 
   } else{
 
-    meta_ls <- .xml_metadata_lean(article_xml, as_list = T)
+    meta_ls <- .xml_metadata_lean(article_xml, as_list = TRUE)
 
   }
 
@@ -378,7 +380,7 @@ rt_all_pmc <- function(filename, remove_ns = F, all_meta = F) {
   reporting_ls <- .get_reporting_pmc(article_xml)
 
 
-  status_ls <- list(is_success = T)
+  status_ls <- list(is_success = TRUE)
   tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls,
                       novelty_ls, replication_ls, ai_ls, data_code_ls,
                       oa_ls, reporting_ls, status_ls))

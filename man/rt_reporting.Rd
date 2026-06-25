@@ -21,8 +21,14 @@ states that it followed a reporting guideline and which one, using the same
 precision-first rules.
 }
 \examples{
-\dontrun{
-rt_reporting("article.txt")
+\donttest{
+# Write a short example article to a temporary text file.
+filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+writeLines(
+  "This systematic review was reported following the PRISMA 2020 guideline.",
+  filepath
+)
+rt_reporting(filepath)
 }
 }
 \seealso{

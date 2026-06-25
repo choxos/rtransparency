@@ -22,7 +22,7 @@
 #'     identifiers.org \code{prefix:accession}) extracted from the statements,
 #'     separated by \code{" ; "}.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Path to PMC XML
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
@@ -32,7 +32,7 @@
 #' results_table <- rt_data_code_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_data_code_pmc <- function(filename, remove_ns = T, specificity = "low") {
+rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
@@ -82,7 +82,7 @@ rt_data_code_pmc <- function(filename, remove_ns = T, specificity = "low") {
 #'     \code{\link{rt_data_code_pmc}}.
 #' @return A dataframe of results, one row per file.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Paths to PMC XML files
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
@@ -93,7 +93,7 @@ rt_data_code_pmc <- function(filename, remove_ns = T, specificity = "low") {
 #' results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
 #' }
 #' @export
-rt_data_code_pmc_list <- function(filenames, remove_ns = T, specificity = "low") {
+rt_data_code_pmc_list <- function(filenames, remove_ns = TRUE, specificity = "low") {
 
   purrr::map_dfr(filenames, function(f) {
     rt_data_code_pmc(f, remove_ns = remove_ns, specificity = specificity)

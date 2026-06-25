@@ -27,9 +27,13 @@ declaration sections, so an article that uses AI purely as a research method
 is more likely to be flagged than under [rt_ai_pmc()].
 }
 \examples{
-\dontrun{
-# Path to a TXT file.
-filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.txt"
+\donttest{
+# Write a short example article to a temporary text file.
+filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+writeLines(
+  "The authors used ChatGPT to assist with drafting this manuscript.",
+  filepath
+)
 
 # Identify and extract an AI-use disclosure.
 rt_ai(filepath)

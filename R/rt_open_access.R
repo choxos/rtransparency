@@ -142,14 +142,14 @@
 #'   (`is_open_access`), the canonical license (`oa_license`, `""` when none is
 #'   found), the license statement (`oa_text`) and `is_success`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 #' )
 #' rt_oa_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_oa_pmc <- function(filename, remove_ns = F) {
+rt_oa_pmc <- function(filename, remove_ns = FALSE) {
 
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
   if (inherits(article_xml, "error")) {
@@ -178,8 +178,17 @@ rt_oa_pmc <- function(filename, remove_ns = F) {
 #'   whether the article is openly licensed (`is_open_access`), the canonical
 #'   license (`oa_license`) and the license statement (`oa_text`).
 #' @examples
-#' \dontrun{
-#' rt_oa("article.txt")
+#' \donttest{
+#' # Write a short example article to a temporary text file.
+#' filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+#' writeLines(
+#'   paste(
+#'     "This is an open access article distributed under the terms of the",
+#'     "Creative Commons Attribution License (CC BY 4.0)."
+#'   ),
+#'   filepath
+#' )
+#' rt_oa(filepath)
 #' }
 #' @seealso [rt_oa_pmc()] for the PMC XML detector.
 #' @export
