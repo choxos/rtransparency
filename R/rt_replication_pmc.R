@@ -86,9 +86,11 @@
 #'     article, whether a replication component was found, the relevant text
 #'     and whether each pattern-matching function identified relevant text.
 #' @examples
-#' \dontrun{
-#' # Path to PMC XML.
-#' filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+#' \donttest{
+#' # Path to a bundled example PMC XML file.
+#' filepath <- system.file(
+#'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+#' )
 #'
 #' # Identify and extract replication components.
 #' results_table <- rt_replication_pmc(filepath, remove_ns = TRUE)

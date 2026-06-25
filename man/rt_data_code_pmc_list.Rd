@@ -4,7 +4,7 @@
 \alias{rt_data_code_pmc_list}
 \title{Identify and extract Data and Code sharing from a list of PMC XML files.}
 \usage{
-rt_data_code_pmc_list(filenames, remove_ns = T, specificity = "low")
+rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = "low")
 }
 \arguments{
 \item{filenames}{A list of the PMC XML filenames as strings.}
@@ -23,7 +23,7 @@ Takes a list of PMC XML files and returns data related to the presence of
     or Code exist, it will extract the relevant text for each.
 }
 \examples{
-\dontrun{
+\donttest{
 # Paths to PMC XML files
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"

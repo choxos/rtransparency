@@ -135,14 +135,14 @@
 #'   disclosure was found (`is_ai_pred`, `NA` before 2023), the matched
 #'   statement (`ai_text`) and `is_success`.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 #' )
 #' rt_ai_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_ai_pmc <- function(filename, remove_ns = F) {
+rt_ai_pmc <- function(filename, remove_ns = FALSE) {
 
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
   if (inherits(article_xml, "error")) {
@@ -177,9 +177,13 @@ rt_ai_pmc <- function(filename, remove_ns = F) {
 #'   whether an AI-use disclosure was found (`is_ai_pred`) and the matched
 #'   statement (`ai_text`).
 #' @examples
-#' \dontrun{
-#' # Path to a TXT file.
-#' filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.txt"
+#' \donttest{
+#' # Write a short example article to a temporary text file.
+#' filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+#' writeLines(
+#'   "The authors used ChatGPT to assist with drafting this manuscript.",
+#'   filepath
+#' )
 #'
 #' # Identify and extract an AI-use disclosure.
 #' rt_ai(filepath)

@@ -4,7 +4,7 @@
 \alias{rt_register_pmc}
 \title{Identify and extract Conflicts of Interest statements in PMC XML files.}
 \usage{
-rt_register_pmc(filename, remove_ns = F)
+rt_register_pmc(filename, remove_ns = FALSE)
 }
 \arguments{
 \item{filename}{The name of the PMC XML as a string.}
@@ -31,11 +31,13 @@ Takes a PMC XML file and returns data related to the
     exists. If a Funding statement exists, it extracts it.
 }
 \examples{
-\dontrun{
-# Path to PMC XML.
-filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+\donttest{
+# Path to a bundled example PMC XML file.
+filepath <- system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+)
 
 # Identify and extract meta-data and indicators of transparency.
-results_table <- rt_register_pmc(filepath, remove_ns = T)
+results_table <- rt_register_pmc(filepath, remove_ns = TRUE)
 }
 }

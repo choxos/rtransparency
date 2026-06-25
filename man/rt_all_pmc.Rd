@@ -4,7 +4,7 @@
 \alias{rt_all_pmc}
 \title{Identify and extract all transparency indicators from a PMC XML.}
 \usage{
-rt_all_pmc(filename, remove_ns = F, all_meta = F)
+rt_all_pmc(filename, remove_ns = FALSE, all_meta = FALSE)
 }
 \arguments{
 \item{filename}{The name of the PMC XML as a string.}
@@ -37,11 +37,13 @@ Takes a PMC XML and returns relevant meta-data, as well as whether the article
     [rt_data_code_pmc()] and the same AI detection as [rt_ai_pmc()].
 }
 \examples{
-\dontrun{
-# Path to PMC XML.
-filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+\donttest{
+# Path to a bundled example PMC XML file.
+filepath <- system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+)
 
 # Identify and extract meta-data and indicators of transparency.
-results_table <- rt_all_pmc(filepath, remove_ns = T, all_meta = T)
+results_table <- rt_all_pmc(filepath, remove_ns = TRUE, all_meta = TRUE)
 }
 }

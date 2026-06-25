@@ -23,9 +23,11 @@ Takes a PMC XML file and returns data related to the presence of novelty
     "for the first time."
 }
 \examples{
-\dontrun{
-# Path to PMC XML.
-filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.xml"
+\donttest{
+# Path to a bundled example PMC XML file.
+filepath <- system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+)
 
 # Identify and extract novelty claims.
 results_table <- rt_novelty_pmc(filepath, remove_ns = TRUE)

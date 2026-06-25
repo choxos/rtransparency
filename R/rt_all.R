@@ -14,9 +14,17 @@
 #'     for example, future definitions of Registration may differ from the one
 #'     we used. If a labelling function returns NA it means that it was not run.
 #' @examples
-#' \dontrun{
-#' # Path to TXT.
-#' filepath <- "../inst/extdata/00003-PMID26637448-PMC4737611.txt"
+#' \donttest{
+#' # Write a short example article to a temporary text file.
+#' filepath <- file.path(tempdir(), "PMID00000000-PMC0000000.txt")
+#' writeLines(c(
+#'   "To our knowledge, this is the first study of its kind.",
+#'   "Conflicts of interest: none declared.",
+#'   "This work was supported by the National Institutes of Health (R01-000000).",
+#'   "The protocol was registered at ClinicalTrials.gov (NCT00000000).",
+#'   "All data and code are available at https://github.com/example/repo.",
+#'   "We independently replicated the original analysis."
+#' ), filepath)
 #'
 #' # Identify and extract indicators of transparency.
 #' results_table <- rt_all(filepath)

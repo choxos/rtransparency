@@ -29,7 +29,7 @@ rt_read_pdf <- function(filepath){
     stop("The provided filepath does not exist.")
   }
 
-  if (!grepl("\\.pdf$", filepath, ignore.case = T)) {
+  if (!grepl("\\.pdf$", filepath, ignore.case = TRUE)) {
     stop("The filepath of a PDF file should end in '.pdf'.")
   }
 

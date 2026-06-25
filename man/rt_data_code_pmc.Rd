@@ -4,7 +4,7 @@
 \alias{rt_data_code_pmc}
 \title{Identify and extract Data and Code sharing from PMC XML files.}
 \usage{
-rt_data_code_pmc(filename, remove_ns = T, specificity = "low")
+rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
 }
 \arguments{
 \item{filename}{The filename of the XML file to be analyzed as a string.}
@@ -35,7 +35,7 @@ Takes a PMC XML file and returns data related to the presence of Data or
     depends on \code{oddpub} or \code{tokenizers}.
 }
 \examples{
-\dontrun{
+\donttest{
 # Path to PMC XML
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"

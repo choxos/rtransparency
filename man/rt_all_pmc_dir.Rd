@@ -63,11 +63,11 @@ Parallelism uses \pkg{furrr}'s `future_map()` and honors whatever
 no plan it runs sequentially. Install \pkg{furrr} and \pkg{future} to use it.
 }
 \examples{
-\dontrun{
-# Process every XML in a folder, in parallel, resumably.
-future::plan("multisession")
-res <- rt_all_pmc_dir("path/to/xml", remove_ns = TRUE,
-                      output = "results.csv", parallel = TRUE)
+\donttest{
+# Process every PMC XML in a directory (here, the bundled example file).
+dir <- system.file("extdata", package = "rtransparency")
+out <- tempfile(fileext = ".csv")
+res <- rt_all_pmc_dir(dir, remove_ns = TRUE, output = out, parallel = FALSE)
 }
 }
 \seealso{

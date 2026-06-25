@@ -36,11 +36,11 @@
 #'   `output`). Files that could not be processed have `is_success = FALSE`.
 #' @seealso [rt_all_pmc()] for a single file.
 #' @examples
-#' \dontrun{
-#' # Process every XML in a folder, in parallel, resumably.
-#' future::plan("multisession")
-#' res <- rt_all_pmc_dir("path/to/xml", remove_ns = TRUE,
-#'                       output = "results.csv", parallel = TRUE)
+#' \donttest{
+#' # Process every PMC XML in a directory (here, the bundled example file).
+#' dir <- system.file("extdata", package = "rtransparency")
+#' out <- tempfile(fileext = ".csv")
+#' res <- rt_all_pmc_dir(dir, remove_ns = TRUE, output = out, parallel = FALSE)
 #' }
 #' @export
 rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
