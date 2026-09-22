@@ -26,7 +26,11 @@ AI-assisted tools in preparing the manuscript, as required of articles since
 later; for earlier articles `is_ai_pred` is `NA`.
 }
 \details{
-A disclosure can state use or non-use, and `is_ai_pred` counts
+The year gate uses the earliest publication year the XML records
+  (electronic, print or collection date), so an article first published
+  online in December 2022 is gated out even if its issue is dated 2023.
+
+  A disclosure can state use or non-use, and `is_ai_pred` counts
   both. `ai_used` separates them: `TRUE` when a disclosure states that AI
   was used, `FALSE` when it states that no AI was used, and `NA` when there
   is no disclosure or the use cannot be read from it (for example when only

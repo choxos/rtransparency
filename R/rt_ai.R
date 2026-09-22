@@ -237,7 +237,11 @@
 #'   disclosure was found (`is_ai_pred`, `NA` before 2023), the matched
 #'   statement (`ai_text`), what the disclosure says (`ai_used`, `ai_tools`,
 #'   `ai_purpose`; see Details) and `is_success`.
-#' @details A disclosure can state use or non-use, and `is_ai_pred` counts
+#' @details The year gate uses the earliest publication year the XML records
+#'   (electronic, print or collection date), so an article first published
+#'   online in December 2022 is gated out even if its issue is dated 2023.
+#'
+#'   A disclosure can state use or non-use, and `is_ai_pred` counts
 #'   both. `ai_used` separates them: `TRUE` when a disclosure states that AI
 #'   was used, `FALSE` when it states that no AI was used, and `NA` when there
 #'   is no disclosure or the use cannot be read from it (for example when only

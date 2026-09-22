@@ -10,8 +10,9 @@
 #' @param remove_ns Ignored since version 1.2.0 and kept for backward
 #'   compatibility. Default XML namespaces are now always removed, so a
 #'   namespaced PMC XML file gives the same result as a plain one.
-#' @param specificity Retained for backward compatibility; it no longer changes
-#'     the result. The native detector extracts a fixed, broad set of article
+#' @param specificity Deprecated and ignored (it has not changed the result
+#'     since the native detector replaced oddpub); supplying it gives a
+#'     warning, and it will be removed in a future release. The native detector extracts a fixed, broad set of article
 #'     text (body paragraphs and titles, back matter, footnotes and supplements)
 #'     and applies repository, accession and availability-statement patterns.
 #' @return A dataframe of results: the unique IDs of the article, whether data or
@@ -38,7 +39,12 @@
 #' results_table <- rt_data_code_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
+rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = NULL) {
+
+  if (!is.null(specificity)) {
+    warning("`specificity` is deprecated and ignored; it will be removed in a ",
+            "future release.", call. = FALSE)
+  }
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
@@ -103,7 +109,7 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
 #' results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
 #' }
 #' @export
-rt_data_code_pmc_list <- function(filenames, remove_ns = TRUE, specificity = "low") {
+rt_data_code_pmc_list <- function(filenames, remove_ns = TRUE, specificity = NULL) {
 
   purrr::map_dfr(filenames, function(f) {
     rt_data_code_pmc(f, remove_ns = remove_ns, specificity = specificity)

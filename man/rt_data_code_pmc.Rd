@@ -4,7 +4,7 @@
 \alias{rt_data_code_pmc}
 \title{Identify and extract Data and Code sharing from PMC XML files.}
 \usage{
-rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
+rt_data_code_pmc(filename, remove_ns = TRUE, specificity = NULL)
 }
 \arguments{
 \item{filename}{The filename of the XML file to be analyzed as a string.}
@@ -13,8 +13,9 @@ rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
 compatibility. Default XML namespaces are now always removed, so a
 namespaced PMC XML file gives the same result as a plain one.}
 
-\item{specificity}{Retained for backward compatibility; it no longer changes
-the result. The native detector extracts a fixed, broad set of article
+\item{specificity}{Deprecated and ignored (it has not changed the result
+since the native detector replaced oddpub); supplying it gives a
+warning, and it will be removed in a future release. The native detector extracts a fixed, broad set of article
 text (body paragraphs and titles, back matter, footnotes and supplements)
 and applies repository, accession and availability-statement patterns.}
 }

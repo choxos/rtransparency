@@ -4,7 +4,7 @@
 \alias{rt_data_code_pmc_list}
 \title{Identify and extract Data and Code sharing from a list of PMC XML files.}
 \usage{
-rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = "low")
+rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = NULL)
 }
 \arguments{
 \item{filenames}{A list of the PMC XML filenames as strings.}

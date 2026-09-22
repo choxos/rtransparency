@@ -1,4 +1,4 @@
-test_that("rt_all_pmc returns all eight indicators", {
+test_that("rt_all_pmc returns all ten indicators", {
   xml <- system.file("extdata", "PMID32171256-PMC7071725.xml",
                      package = "rtransparency")
   skip_if(xml == "")
@@ -7,12 +7,16 @@ test_that("rt_all_pmc returns all eight indicators", {
 
   indicator_cols <- c(
     "is_coi_pred", "is_fund_pred", "is_register_pred", "is_novelty_pred",
-    "is_replication_pred", "is_open_data", "is_open_code", "is_ai_pred"
+    "is_replication_pred", "is_open_data", "is_open_code", "is_ai_pred",
+    "is_open_access", "is_reporting_pred"
   )
   expect_true(all(indicator_cols %in% names(res)))
   # Statement-text columns for data/code come along too.
-  expect_true(all(c("open_data_statements", "open_code_statements") %in%
-                    names(res)))
+  expect_true(all(c("open_data_statements", "open_code_statements",
+                    "oa_license", "reporting_guideline", "ai_used",
+                    "has_das") %in% names(res)))
+  # rt_summary() recognizes every indicator column.
+  expect_setequal(rt_summary(res, adjust = FALSE)$indicator, indicator_cols)
   expect_true(isTRUE(res$is_success))
 })
 

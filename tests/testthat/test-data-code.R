@@ -274,3 +274,12 @@ test_that("rt_check_links reports status per unique link", {
   expect_equal(nrow(res), 2L)
   expect_true(res$is_ok[1])
 })
+
+
+test_that("the retired specificity argument warns", {
+  xml <- system.file("extdata", "PMID32171256-PMC7071725.xml",
+                     package = "rtransparency")
+  skip_if(xml == "")
+  expect_warning(rt_data_code_pmc(xml, specificity = "low"), "deprecated")
+  expect_silent(rt_data_code_pmc(xml))
+})

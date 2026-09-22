@@ -22,11 +22,11 @@ BugReports: https://github.com/choxos/rtransparency/issues
 Depends:
     R (>= 3.5.0)
 Imports:
-    dplyr,
+    dplyr (>= 1.0.0),
     magrittr,
-    purrr,
+    purrr (>= 1.0.0),
     readr,
-    rlang,
+    rlang (>= 1.0.0),
     stringi,
     stringr,
     tibble,
@@ -38,6 +38,7 @@ Suggests:
     ggplot2,
     jsonlite,
     knitr,
+    pdftools,
     readxl,
     rmarkdown,
     testthat (>= 3.0.0)
