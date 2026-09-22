@@ -283,3 +283,10 @@ test_that("the retired specificity argument warns", {
   expect_warning(rt_data_code_pmc(xml, specificity = "low"), "deprecated")
   expect_silent(rt_data_code_pmc(xml))
 })
+
+test_that("supplement notices and imputed-data tables are not data sharing", {
+  d <- function(x) rtransparency:::.detect_data_code(x)$is_open_data
+  expect_false(d("Supplementary data accompanying this article are available online at www.jpain.org."))
+  expect_false(d("The proportion of imputed data for each variable is shown in Supplementary Table S1."))
+  expect_true(d("The authors declare that all supporting data are available within the article (and Supplement)."))
+})

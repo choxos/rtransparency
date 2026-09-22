@@ -359,6 +359,13 @@
     # not a data-availability statement (for example the Springer line
     # "The online version contains supplementary material available at <doi>").
     "online version.{0,40}contains supplementary materials? available at",
+    # "Supplementary data accompanying this article are available online at
+    # <journal site>": a publisher notice, not the authors' data statement.
+    paste0("supplementary (data|materials?|information) (accompanying|associated ",
+           "with|related to|for) this (article|paper) (is|are|can be) ",
+           "(available|found)"),
+    # Reporting where imputed or missing values are tabulated is not sharing.
+    "\\b(imputed|missing|incomplete) data\\b",
     sep = "|"
   )
   calculated_table_summary <- paste(
