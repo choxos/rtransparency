@@ -47,6 +47,6 @@ rt_read_pdf <- function(filepath){
   txt_as_string <- paste(txt_as_vector, collapse = "\n")
 
   # Convert character vector into ASCII to ease text processing
-  txt <- iconv(txt_as_string, from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "")
+  txt <- .to_ascii(txt_as_string)
   return(txt)
 }

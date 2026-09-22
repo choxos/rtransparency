@@ -1980,7 +1980,7 @@ obliterate_disclosure_1 <- function(article) {
 
   article_processed <-
     article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     trimws() %>%
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead

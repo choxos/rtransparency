@@ -147,6 +147,23 @@
 }
 
 
+#' Transliterate text to ASCII, identically on every platform.
+#'
+#' `iconv(x, to = "ASCII//TRANSLIT")` depends on the system iconv: glibc turns
+#'     "erkl\u00e4ren" into "erklaren" but macOS libiconv into "erkl\"aren", so
+#'     the detectors gave platform-dependent results for accented text. ICU's
+#'     Latin-ASCII transform (via stringi) is the same everywhere; characters it
+#'     cannot map are then dropped, as `sub = ""` did before.
+#'
+#' @param x A character vector.
+#' @return The ASCII character vector.
+#' @noRd
+.to_ascii <- function(x) {
+  x <- stringi::stri_trans_general(x, "Latin-ASCII")
+  iconv(x, from = "UTF-8", to = "ASCII", sub = "")
+}
+
+
 #' Resolve the input of a plain-text detector.
 #'
 #' Every plain-text detector accepts either the path to a text file or the text

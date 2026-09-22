@@ -1250,7 +1250,7 @@
   # Text pre-processing
   article_processed <-
     article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     trimws() %>%
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead
@@ -1640,7 +1640,7 @@ rt_register_pmc <- function(filename, remove_ns = TRUE) {
   # .xml_preprocess(article_xml)  # 5x faster to obliterate within each section
   article_processed <-
     article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead
     .obliterate_comma_1() %>%   # adds minimal overhead

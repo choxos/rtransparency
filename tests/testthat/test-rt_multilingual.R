@@ -40,3 +40,10 @@ test_that("negate_absence_1 treats non-English no-funding as absence", {
   expect_true(rtransparency:::negate_absence_1("es bestand keine finanzielle unterstutzung"))  # DE
   expect_true(rtransparency:::negate_absence_1("non ha ricevuto alcun finanziamento"))  # IT
 })
+
+test_that("transliteration is platform independent", {
+  x <- "Die Autoren erklären, dass kein Interessenkonflikt besteht. Financiación"
+  expect_identical(rtransparency:::.to_ascii(x),
+                   "Die Autoren erklaren, dass kein Interessenkonflikt besteht. Financiacion")
+  expect_identical(rtransparency:::.to_ascii(c("été", NA)), c("ete", NA))
+})
