@@ -124,7 +124,9 @@
     # Non-use of a guideline, anchored to the guideline mention within the same
     # clause, so an unrelated "not possible" elsewhere in the sentence ("adheres
     # to CONSORT; however, blinding was not possible") does not veto adherence.
-    paste0("(guidelines?|statement|check-?list|criteria|reporting standards?)",
+    paste0("(guidelines?|statement|check-?list|criteria|reporting standards?|",
+           "prisma|consort|strobe|stard|tripod|coreq|srqr|arrive|spirit|",
+           "cheers|moose|squire|care)",
            "[^.;]{0,60}\\b(could|was|were|is|are|been|cannot|can|did|has|have)",
            "\\s?n[o']t (be )?(use|used|appl|follow|adher|possible|feasible)"),
     paste0("\\b(n[o']t|never) (be |been )?(use|used|appl\\w*|follow\\w*|adher\\w*)",

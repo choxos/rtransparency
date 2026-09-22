@@ -102,6 +102,8 @@ test_that("recommendations are not adherence, and non-use vetoes are clause-loca
   expect_false(detect("We recommend that researchers follow the ARRIVE guidelines."))
   expect_false(detect("The STROBE guideline was not used because this is a qualitative study."))
   expect_false(detect("It was not possible to follow the CONSORT checklist."))
+  expect_false(detect(paste("A search using all the core terms yielded zero papers;",
+                            "therefore, a standard PRISMA compliant search method could not be used.")))
 
   expect_true(detect("This study adheres to CONSORT guidelines; however, blinding was not possible."))
   expect_true(detect("The study was conducted and reported as recommended by the PRISMA statement."))
