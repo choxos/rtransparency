@@ -36,7 +36,7 @@
 #' )
 #'
 #' # Identify and extract indicators of data and code sharing
-#' results_table <- rt_data_code_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_data_code_pmc(filepath)
 #' }
 #' @export
 rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = NULL) {
@@ -106,7 +106,7 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = NULL) {
 #' filepaths <- list(filepath)
 #'
 #' # Identify and extract indicators of data and code sharing
-#' results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
+#' results_table <- rt_data_code_pmc_list(filepaths)
 #' }
 #' @export
 rt_data_code_pmc_list <- function(filenames, remove_ns = TRUE, specificity = NULL) {

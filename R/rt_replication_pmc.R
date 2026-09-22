@@ -87,7 +87,7 @@
 #' )
 #'
 #' # Identify and extract replication components.
-#' results_table <- rt_replication_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_replication_pmc(filepath)
 #' }
 #' @export
 rt_replication_pmc <- function(filename, remove_ns = TRUE) {

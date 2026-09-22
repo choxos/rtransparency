@@ -2202,7 +2202,7 @@ obliterate_disclosure_1 <- function(article) {
 #' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_fund_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_fund_pmc(filepath)
 #' }
 #' @export
 rt_fund_pmc <- function(filename, remove_ns = TRUE) {

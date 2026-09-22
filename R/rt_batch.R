@@ -44,7 +44,7 @@
 #' # Process every PMC XML in a directory (here, the bundled example file).
 #' dir <- system.file("extdata", package = "rtransparency")
 #' out <- tempfile(fileext = ".csv")
-#' res <- rt_all_pmc_dir(dir, remove_ns = TRUE, output = out, parallel = FALSE)
+#' res <- rt_all_pmc_dir(dir, output = out, parallel = FALSE)
 #' }
 #' @export
 rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,

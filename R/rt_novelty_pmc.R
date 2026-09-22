@@ -97,7 +97,7 @@
 #' )
 #'
 #' # Identify and extract novelty claims.
-#' results_table <- rt_novelty_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_novelty_pmc(filepath)
 #' }
 #' @export
 rt_novelty_pmc <- function(filename, remove_ns = TRUE) {

@@ -270,7 +270,7 @@
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 #' )
-#' rt_reporting_pmc(filepath, remove_ns = TRUE)
+#' rt_reporting_pmc(filepath)
 #' }
 #' @export
 rt_reporting_pmc <- function(filename, remove_ns = TRUE) {

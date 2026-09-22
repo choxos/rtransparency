@@ -1390,7 +1390,7 @@
 #' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_register_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_register_pmc(filepath)
 #' }
 #' @export
 rt_register_pmc <- function(filename, remove_ns = TRUE) {

@@ -42,7 +42,7 @@ interest and funding statements are detected not only in English but also in
 ## Installation
 
 ```r
-# From CRAN (when available)
+# From CRAN
 install.packages("rtransparency")
 
 # Development version from GitHub
@@ -52,8 +52,9 @@ remotes::install_github("choxos/rtransparency", build_vignettes = TRUE)
 
 No GitHub-only or AGPL dependencies are required; data and code detection is
 native (it no longer wraps `oddpub`). `rt_read_pdf()` (PDF to text) additionally
-needs the poppler `pdftotext` utility on your system. The optional `furrr` and
-`future` packages enable parallel corpus processing; `ggplot2` enables plotting.
+needs the poppler `pdftotext` utility on your system (or the optional `pdftools`
+package). The optional `furrr` and `future` packages enable parallel corpus
+processing, `ggplot2` plotting, and `jsonlite` the ClinicalTrials.gov lookup.
 
 ## Quick start: all ten indicators in one call
 
@@ -62,7 +63,7 @@ library(rtransparency)
 
 xml <- system.file("extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency")
 
-res <- rt_all_pmc(xml, remove_ns = TRUE)
+res <- rt_all_pmc(xml)
 
 # The predictions, one column per indicator:
 res[, c("is_coi_pred", "is_fund_pred", "is_register_pred", "is_novelty_pred",
@@ -78,25 +79,63 @@ res$reporting_guideline   # e.g. "PRISMA"
 
 `rt_all_pmc()` returns one row with the ten predictions, the extracted statement
 for each, article identifiers and metadata, the year, and `is_success`.
-`is_ai_pred` is `NA` for articles published before 2023.
+`is_ai_pred` is `NA` for articles published before 2023; `ai_used`, `ai_tools`
+and `ai_purpose` say whether a disclosure reports use, of which tools, and for
+what. `has_das` records whether the article has a data-availability section.
+
+## Getting articles
+
+`rt_fetch_pmc()` downloads PMC full-text XML for PMCIDs, PubMed IDs or DOIs
+(from NCBI by default, or from Europe PMC), reusing files already downloaded:
+
+```r
+got <- rt_fetch_pmc(c("PMC7071725", "32171256", "10.1186/s12874-020-0914-6"),
+                    dir = "xml")
+res <- rt_all_pmc_dir("xml")
+```
+
+`rt_convert_ids()` maps PubMed IDs, PMCIDs and DOIs to one another. Set the
+`ENTREZ_KEY` environment variable to an NCBI API key to raise the rate limit.
 
 ## Per-indicator functions
 
 Each indicator can be run on its own, for a PMC XML file or a plain-text file:
 
 ```r
-rt_coi_pmc(xml, remove_ns = TRUE)        # conflicts of interest
-rt_fund_pmc(xml, remove_ns = TRUE)       # funding
-rt_register_pmc(xml, remove_ns = TRUE)   # protocol registration
-rt_novelty_pmc(xml, remove_ns = TRUE)    # novelty claims
-rt_replication_pmc(xml, remove_ns = TRUE)# replication / external validation
-rt_data_code_pmc(xml, remove_ns = TRUE)  # data AND code sharing (+ extracted links)
-rt_ai_pmc(xml, remove_ns = TRUE)         # generative-AI-use disclosure (2023+)
-rt_oa_pmc(xml, remove_ns = TRUE)         # open-access status + license
-rt_reporting_pmc(xml, remove_ns = TRUE)  # reporting-guideline use + which one
-rt_meta_pmc(xml, remove_ns = TRUE)       # article metadata
+rt_coi_pmc(xml)          # conflicts of interest
+rt_fund_pmc(xml)         # funding
+rt_register_pmc(xml)     # protocol registration
+rt_novelty_pmc(xml)      # novelty claims
+rt_replication_pmc(xml)  # replication / external validation
+rt_data_code_pmc(xml)    # data AND code sharing (+ extracted links, data-availability section)
+rt_ai_pmc(xml)           # generative-AI-use disclosure (2023+), with use, tools and purpose
+rt_oa_pmc(xml)           # open-access status + license
+rt_reporting_pmc(xml)    # reporting-guideline use + which one
+rt_meta_pmc(xml)         # article metadata
 ```
 
+Default XML namespaces are always removed, so the former `remove_ns` argument
+is no longer needed (it is accepted and ignored).
+
+## Structured metadata and follow-up checks
+
+Some transparency signals are tagged in the JATS XML rather than written in
+prose, and some can be checked against outside sources:
+
+```r
+rt_authors_pmc(xml)      # ORCID coverage of authors, CRediT contribution roles
+rt_funders_pmc(xml)      # funders with Crossref Funder IDs, ROR IDs and award numbers
+
+ids <- rt_trial_ids(res$register_text)            # NCT, ISRCTN, PROSPERO, ... numbers
+rt_registration_timing(ids$trial_id)              # prospective or retrospective (ClinicalTrials.gov)
+
+rt_fill_coi_pubmed(res)                           # COI statements recorded only in PubMed
+rt_check_links(res$open_data_links)               # do the shared-data links resolve?
+```
+
+`rt_ethics_pmc()` and `rt_ethics()` detect ethics approval and informed consent
+statements. They are **experimental**: not yet validated against hand labels,
+so they are not part of `rt_all_pmc()`.
 ## Corpus-scale processing
 
 `rt_all_pmc_dir()` runs all ten indicators over an entire directory (or a
@@ -105,7 +144,6 @@ vector of paths). It is built for large corpora:
 ```r
 res <- rt_all_pmc_dir(
   "path/to/xml",          # a directory, or a character vector of file paths
-  remove_ns = TRUE,
   output    = "results.csv",  # resumable: re-running skips files already recorded
   parallel  = TRUE,           # via furrr + an active future::plan()
   progress  = TRUE
@@ -114,23 +152,22 @@ res <- rt_all_pmc_dir(
 
 - **Resumable**: with `output`, results are written to a CSV in chunks; a re-run
   skips files already recorded and appends only the new ones.
-- **Failure-isolated**: a malformed file yields an `is_success = FALSE` row
-  instead of aborting the run.
+- **Failure-isolated**: a malformed file yields an `is_success = FALSE` row, with
+  the reason in `error`, instead of aborting the run.
 - **Parallel**: set `future::plan("multisession")` and `parallel = TRUE`.
 
 ## Plain-text input
 
-The same detectors run on plain-text (PDF-derived) articles. `rt_read_pdf()`
-returns the extracted text as a character string; write it to a `.txt` file,
-then point the text detectors (which share the PMC detection logic) at that file:
+The same detectors run on plain-text (PDF-derived) articles, given either a file
+path or the text itself, and return the same column names as the XML detectors:
 
 ```r
-article_txt <- rt_read_pdf("article.pdf")   # needs poppler's pdftotext; returns text
-writeLines(article_txt, "article.txt")      # the detectors take a file path
+rt_all_pdf("article.pdf")                   # all ten indicators from a PDF (needs pdftotext)
+rt_all("article.txt")                       # all ten indicators from a text file
+rt_all(text = rt_read_pdf("article.pdf"))   # or from text already in memory
+rt_coi(text = my_text)                      # one indicator at a time
 
-rt_all("article.txt")                       # COI, funding, registration, novelty, replication
-rt_coi("article.txt")                       # or one indicator at a time
-rt_ai("article.txt")                        # generative-AI-use disclosure
+rt_all_txt_dir("path/to/txt_and_pdf")       # a whole directory, resumable and parallel
 ```
 
 `rt_ai()` is the plain-text counterpart of `rt_ai_pmc()`. Because a text file
@@ -148,7 +185,8 @@ data(rt_demo)            # a small simulated example shipped with the package
 
 rt_summary(rt_demo)      # per-indicator prevalence with a Wilson confidence
                          # interval and a sensitivity/specificity-corrected
-                         # (Rogan-Gladen) prevalence
+                         # (Rogan-Gladen) prevalence whose interval carries the
+                         # uncertainty of the detector's validation
 
 rt_summary(rt_demo, by = "year")   # subgroup summaries
 
@@ -202,7 +240,7 @@ benchmarks in `inst/benchmark/`:
 |---|---|---|---|
 | Novelty | 83.8% | 95.2% | hand-labeled novelty/replication gold set |
 | Replication | 92.8% | 98.5% | replication-enriched sample (111 positives); correction is approximate |
-| AI-use disclosure | not accuracy-corrected | — | experimental; only 9 positives in the 2023 sample |
+| AI-use disclosure | not accuracy-corrected | not accuracy-corrected | experimental; only 9 positives in the 2023 sample |
 | Open-access license | 100% | not estimable | structured `<license>` extraction; **license-type exact match 99.8%**; specificity rests on 1 negative in the OA subset, so it is reported uncorrected |
 | Reporting guideline | 93.8% | 99.0% | 1000-article 2023 sample hand-labeled (65 positives) |
 
@@ -219,10 +257,10 @@ for what each indicator does and does not capture.
 
 ## Documentation
 
-- `vignette("rtransparency")` — introduction and methodology
-- `vignette("transparency-summary")` — corpus prevalence, scoring and plotting
-- `vignette("ai-disclosure")` — the AI-use disclosure indicator in depth
-- `vignette("scope-and-limitations")` — indicator semantics, limitations, output schema
+- `vignette("rtransparency")`: introduction and methodology
+- `vignette("transparency-summary")`: corpus prevalence, scoring and plotting
+- `vignette("ai-disclosure")`: the AI-use disclosure indicator in depth
+- `vignette("scope-and-limitations")`: indicator semantics, limitations, output schema
 - Package website: <https://choxos.github.io/rtransparency/>
 
 ## Lineage and citation
