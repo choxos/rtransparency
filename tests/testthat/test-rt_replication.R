@@ -193,3 +193,27 @@ test_that(".negate_replication_1 suppresses limitations, editorial and negative-
   )
   expect_false(any(rtransparency:::.negate_replication_1(keep)))
 })
+
+test_that("the replication relevance gate admits every pattern match", {
+  gate <- rtransparency:::.replication_gate()
+  probes <- c(
+    "We externally validated the model in an independent cohort.",
+    "The association was validated in an independent cohort of 500 patients.",
+    "These results were confirmed in a separate validation sample.",
+    "Our findings replicate previous reports in an independent sample.",
+    "The results were reproduced by an external group.",
+    "Findings were corroborated using an external dataset."
+  )
+  pattern_funs <- c(".which_replication_replicat_1", ".which_replication_confirm_1",
+                    ".which_replication_independent_1",
+                    ".which_replication_reproduced_1",
+                    ".which_replication_validation_1")
+  for (p in probes) {
+    hit <- any(vapply(pattern_funs, function(f)
+      length(getFromNamespace(f, "rtransparency")(p)) > 0, logical(1)))
+    if (hit) expect_true(grepl(gate, p, ignore.case = TRUE), info = p)
+  }
+  expect_true(rtransparency::rt_replication(text = paste(
+    "We externally validated the model in an independent cohort."
+  ))$is_replication_pred)
+})

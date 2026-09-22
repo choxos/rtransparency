@@ -31,16 +31,8 @@
     return(c(out, index_any))
   }
 
-  # Quick relevance check
-  rel_regex <- paste(
-    "replicat",
-    "independent(ly)? (confirm|validat|reproduc)",
-    "external validation", "internal validation",
-    "validation cohort", "validation sample", "validation dataset",
-    "training cohort", "confirmatory cohort",
-    "reproduced (the|our|their|these) (findings|results)",
-    sep = "|"
-  )
+  # Cheap relevance gate: a superset of every cue the pattern functions match.
+  rel_regex <- .replication_gate()
   is_relevant <- any(grepl(rel_regex, article, ignore.case = TRUE))
 
   if (!is_relevant) {

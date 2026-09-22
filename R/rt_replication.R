@@ -48,16 +48,8 @@ rt_replication <- function(filename = NULL, text = NULL) {
     replication_validation_1  = NA
   )
 
-  # Quick relevance check
-  rel_regex <- paste(
-    "replicat",
-    "independent(ly)? (confirm|validat|reproduc)",
-    "external validation", "internal validation",
-    "validation cohort", "validation sample", "validation dataset",
-    "training cohort", "confirmatory cohort",
-    "reproduced (the|our|their|these) (findings|results)",
-    sep = "|"
-  )
+  # Cheap relevance gate: a superset of every cue the pattern functions match.
+  rel_regex <- .replication_gate()
   is_relevant <- grepl(rel_regex, paper_text, ignore.case = TRUE)
 
   if (!is_relevant) {
@@ -103,6 +95,17 @@ rt_replication <- function(filename = NULL, text = NULL) {
          replication_text = replication_text),
     index_any
   )
+}
+
+
+# The relevance gate for replication. It must admit every sentence that any
+# .which_replication_*() pattern can match, or those patterns never run: an
+# earlier gate lacked "externally validated" and "validated ... in an
+# independent cohort", so such articles were rejected before the patterns that
+# match them were tried. Precision comes from the patterns and
+# .negate_replication_1(), not from this gate.
+.replication_gate <- function() {
+  "replicat|validat|reproduc|confirm|corroborat|independent|external"
 }
 
 
