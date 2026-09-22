@@ -145,3 +145,37 @@ test_that("bundled datasets have the documented shape", {
   )
   expect_true(all(rt_accuracy$sensitivity > 0 & rt_accuracy$sensitivity <= 1))
 })
+
+test_that("the simulation interval widens with small validation samples", {
+  df <- data.frame(is_register_pred = rep(c(TRUE, FALSE), c(60, 940)))
+  acc <- function(scale) data.frame(
+    variable = "is_register_pred", sensitivity = 0.9, specificity = 0.98,
+    tp = 45 * scale, fn = 5 * scale, tn = 490 * scale, fp = 10 * scale
+  )
+  small <- rt_summary(df, accuracy = acc(1))
+  large <- rt_summary(df, accuracy = acc(20))
+  fixed <- rt_summary(df, accuracy = acc(1), adj_interval = "fixed")
+  width <- function(s) s$adj_high - s$adj_low
+  expect_gt(width(small), width(large))
+  expect_gt(width(small), width(fixed))
+  expect_true(small$adj_low <= small$adj_percent && small$adj_percent <= small$adj_high)
+  # Reproducible, and the caller's random stream is untouched.
+  expect_identical(rt_summary(df, accuracy = acc(1)), small)
+  set.seed(7); a <- stats::runif(1)
+  set.seed(7); invisible(rt_summary(df, accuracy = acc(1))); b <- stats::runif(1)
+  expect_identical(a, b)
+})
+
+test_that("registration is summarized over research articles only by default", {
+  df <- data.frame(is_register_pred = c(TRUE, FALSE, FALSE, FALSE),
+                   is_research = c(TRUE, TRUE, FALSE, FALSE))
+  expect_equal(rt_summary(df, adjust = FALSE)$n_articles, 2)
+  expect_equal(rt_summary(df, adjust = FALSE, register_research_only = FALSE)$n_articles, 4)
+})
+
+test_that("rows with a missing group form their own group", {
+  df <- data.frame(is_coi_pred = c(TRUE, FALSE, TRUE), g = c("a", NA, "a"))
+  s <- rt_summary(df, by = "g", adjust = FALSE)
+  expect_equal(nrow(s), 2L)
+  expect_equal(s$n_articles[is.na(s$g)], 1)
+})

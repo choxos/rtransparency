@@ -60,6 +60,35 @@
 }
 
 
+# Corrected-prevalence interval that carries the uncertainty of the detector's
+# sensitivity and specificity, not only of the apparent prevalence. Draws the
+# apparent prevalence, sensitivity and specificity from their Jeffreys
+# (Beta(x + 0.5, n - x + 0.5)) posteriors, applies the Rogan-Gladen correction
+# to each draw, and returns the percentile interval. With validation counts of
+# a few dozen positives this interval is much wider, and more honest, than
+# pushing the apparent-prevalence interval through the correction.
+.rogan_gladen_mc <- function(k, n, tp, fn, tn, fp, conf_level, n_sim) {
+  if (n == 0 || anyNA(c(tp, fn, tn, fp))) return(c(NA_real_, NA_real_))
+  ap <- stats::rbeta(n_sim, k + 0.5, n - k + 0.5)
+  se <- stats::rbeta(n_sim, tp + 0.5, fn + 0.5)
+  sp <- stats::rbeta(n_sim, tn + 0.5, fp + 0.5)
+  est <- .rogan_gladen(ap, se, sp)
+  a <- (1 - conf_level) / 2
+  unname(stats::quantile(est, c(a, 1 - a), na.rm = TRUE, names = FALSE))
+}
+
+
+# Run `code` with a fixed RNG seed without disturbing the caller's RNG state.
+.with_seed <- function(seed, code) {
+  had <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+  if (had) old <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
+  on.exit(if (had) assign(".Random.seed", old, envir = globalenv())
+          else rm(".Random.seed", envir = globalenv()), add = TRUE)
+  set.seed(seed)
+  code
+}
+
+
 .resolve_indicators <- function(data, indicators) {
   reg <- .rt_indicator_registry()
   if (is.null(indicators)) {
@@ -124,8 +153,40 @@
 #'   sensitivity and specificity using `accuracy`. Indicators absent from
 #'   `accuracy` receive `NA` corrected values.
 #' @param accuracy A data frame of detector accuracy with columns `variable`,
-#'   `sensitivity` and `specificity`. Defaults to [rt_accuracy].
+#'   `sensitivity` and `specificity`, and optionally the validation counts
+#'   `tp`, `fn`, `tn` and `fp`. Defaults to [rt_accuracy].
 #' @param conf_level Confidence level for the intervals (default `0.95`).
+#' @param adj_interval How the interval of the corrected prevalence is
+#'   computed. `"simulation"` (the default) propagates the uncertainty of the
+#'   detector's sensitivity and specificity, estimated from the validation
+#'   counts in `accuracy`, together with that of the apparent prevalence (see
+#'   Details). `"fixed"` treats sensitivity and specificity as known and
+#'   corrects the bounds of the apparent-prevalence interval, which is too
+#'   narrow when the validation sample is small. Indicators without validation
+#'   counts always use `"fixed"`.
+#' @param n_sim Number of simulation draws for `adj_interval = "simulation"`.
+#' @param seed Random seed for the simulation, so results are reproducible.
+#'   The caller's random number stream is left untouched.
+#' @param register_research_only If `TRUE` (default) and `data` has an
+#'   `is_research` column (as [rt_all_pmc()] output does), protocol
+#'   registration is summarized over research articles only, as in Serghiou et
+#'   al. (2021). The registration detector does not assess most other article
+#'   types (editorials, letters, ...), so counting them in the denominator
+#'   understates registration.
+#'
+#' @details
+#' **Corrected prevalence.** The Rogan-Gladen estimator corrects an apparent
+#' prevalence `p` for detector error: `(p + specificity - 1) / (sensitivity +
+#' specificity - 1)`, truncated to `[0, 1]`. With `adj_interval =
+#' "simulation"`, the apparent prevalence, sensitivity and specificity are
+#' drawn from their Jeffreys posteriors (`Beta(x + 0.5, n - x + 0.5)`) using the
+#' corpus counts and the validation counts, each draw is corrected, and the
+#' percentile interval of the draws is reported. Because the correction
+#' divides by `sensitivity + specificity - 1` and subtracts `1 - specificity`,
+#' uncertainty in specificity dominates for rare indicators (registration, code
+#' sharing, replication), which the fixed interval ignores.
+#'
+#' Rows whose grouping value is `NA` form their own group, labelled `NA`.
 #'
 #' @return A tibble with one row per indicator (per group, if `by` is given):
 #'   the grouping column (when `by` is used), `indicator`, `label`,
@@ -145,7 +206,10 @@
 #' rt_summary(rt_demo, by = "type")
 #' @export
 rt_summary <- function(data, indicators = NULL, by = NULL,
-                       adjust = TRUE, accuracy = NULL, conf_level = 0.95) {
+                       adjust = TRUE, accuracy = NULL, conf_level = 0.95,
+                       adj_interval = c("simulation", "fixed"), n_sim = 10000,
+                       seed = 2021, register_research_only = TRUE) {
+  adj_interval <- match.arg(adj_interval)
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
   }
@@ -163,20 +227,29 @@ rt_summary <- function(data, indicators = NULL, by = NULL,
       stop("`by` must name a single column in `data`.", call. = FALSE)
     }
     gv <- data[[by]]
-    levels_by <- if (is.factor(gv)) levels(gv) else unique(as.character(gv))
+    levels_by <- if (is.factor(gv)) levels(gv) else unique(as.character(gv[!is.na(gv)]))
     splits <- lapply(levels_by, function(g) {
       data[!is.na(gv) & as.character(gv) == g, , drop = FALSE]
     })
     names(splits) <- levels_by
+    if (anyNA(gv)) {
+      splits <- c(splits, list(data[is.na(gv), , drop = FALSE]))
+      names(splits)[length(splits)] <- NA_character_
+    }
   } else {
     splits <- list(`All articles` = data)
   }
 
   rows <- list()
-  for (g in names(splits)) {
-    d <- splits[[g]]
+  for (gi in seq_along(splits)) {
+    g <- names(splits)[gi]
+    d <- splits[[gi]]
     for (v in indicators) {
       x <- .coerce_indicator(d[[v]], v)
+      if (v == "is_register_pred" && register_research_only &&
+          "is_research" %in% names(d)) {
+        x[!(.coerce_indicator(d$is_research, "is_research") %in% TRUE)] <- NA
+      }
       n <- sum(!is.na(x))
       k <- sum(x, na.rm = TRUE)
       p <- if (n > 0) k / n else NA_real_
@@ -210,6 +283,31 @@ rt_summary <- function(data, indicators = NULL, by = NULL,
     res$adj_percent <- 100 * .rogan_gladen(res$percent / 100, se, sp)
     res$adj_low <- 100 * .rogan_gladen(res$conf_low / 100, se, sp)
     res$adj_high <- 100 * .rogan_gladen(res$conf_high / 100, se, sp)
+
+    has_counts <- all(c("tp", "fn", "tn", "fp") %in% names(accuracy))
+    if (adj_interval == "simulation" && has_counts) {
+      cnt <- accuracy[idx, c("tp", "fn", "tn", "fp")]
+      implied_se <- cnt$tp / (cnt$tp + cnt$fn)
+      implied_sp <- cnt$tn / (cnt$tn + cnt$fp)
+      off <- abs(implied_se - se) > 0.005 | abs(implied_sp - sp) > 0.005
+      if (any(off, na.rm = TRUE)) {
+        warning("The validation counts in `accuracy` do not match its ",
+                "sensitivity/specificity for: ",
+                paste(unique(res$indicator[off %in% TRUE]), collapse = ", "),
+                ". The interval uses the counts, the point estimate the ",
+                "sensitivity/specificity columns.", call. = FALSE)
+      }
+      .with_seed(seed, {
+        for (i in seq_len(nrow(res))) {
+          if (is.na(idx[i]) || anyNA(unlist(cnt[i, ])) || is.na(res$adj_percent[i])) next
+          ci <- .rogan_gladen_mc(res$n_detected[i], res$n_articles[i],
+                                 cnt$tp[i], cnt$fn[i], cnt$tn[i], cnt$fp[i],
+                                 conf_level, n_sim)
+          res$adj_low[i] <- 100 * ci[1]
+          res$adj_high[i] <- 100 * ci[2]
+        }
+      })
+    }
   }
 
   tibble::as_tibble(res)

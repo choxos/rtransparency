@@ -10,7 +10,11 @@ rt_summary(
   by = NULL,
   adjust = TRUE,
   accuracy = NULL,
-  conf_level = 0.95
+  conf_level = 0.95,
+  adj_interval = c("simulation", "fixed"),
+  n_sim = 10000,
+  seed = 2021,
+  register_research_only = TRUE
 )
 }
 \arguments{
@@ -33,9 +37,31 @@ sensitivity and specificity using `accuracy`. Indicators absent from
 `accuracy` receive `NA` corrected values.}
 
 \item{accuracy}{A data frame of detector accuracy with columns `variable`,
-`sensitivity` and `specificity`. Defaults to [rt_accuracy].}
+`sensitivity` and `specificity`, and optionally the validation counts
+`tp`, `fn`, `tn` and `fp`. Defaults to [rt_accuracy].}
 
 \item{conf_level}{Confidence level for the intervals (default `0.95`).}
+
+\item{adj_interval}{How the interval of the corrected prevalence is
+computed. `"simulation"` (the default) propagates the uncertainty of the
+detector's sensitivity and specificity, estimated from the validation
+counts in `accuracy`, together with that of the apparent prevalence (see
+Details). `"fixed"` treats sensitivity and specificity as known and
+corrects the bounds of the apparent-prevalence interval, which is too
+narrow when the validation sample is small. Indicators without validation
+counts always use `"fixed"`.}
+
+\item{n_sim}{Number of simulation draws for `adj_interval = "simulation"`.}
+
+\item{seed}{Random seed for the simulation, so results are reproducible.
+The caller's random number stream is left untouched.}
+
+\item{register_research_only}{If `TRUE` (default) and `data` has an
+`is_research` column (as [rt_all_pmc()] output does), protocol
+registration is summarized over research articles only, as in Serghiou et
+al. (2021). The registration detector does not assess most other article
+types (editorials, letters, ...), so counting them in the denominator
+understates registration.}
 }
 \value{
 A tibble with one row per indicator (per group, if `by` is given):
@@ -52,6 +78,20 @@ it reports the number of articles assessed, the number in which the indicator
 was detected, the apparent prevalence and its Wilson confidence interval and,
 optionally, a prevalence corrected for the detector's sensitivity and
 specificity (the Rogan-Gladen estimator).
+}
+\details{
+**Corrected prevalence.** The Rogan-Gladen estimator corrects an apparent
+prevalence `p` for detector error: `(p + specificity - 1) / (sensitivity +
+specificity - 1)`, truncated to `[0, 1]`. With `adj_interval =
+"simulation"`, the apparent prevalence, sensitivity and specificity are
+drawn from their Jeffreys posteriors (`Beta(x + 0.5, n - x + 0.5)`) using the
+corpus counts and the validation counts, each draw is corrected, and the
+percentile interval of the draws is reported. Because the correction
+divides by `sensitivity + specificity - 1` and subtracts `1 - specificity`,
+uncertainty in specificity dominates for rare indicators (registration, code
+sharing, replication), which the fixed interval ignores.
+
+Rows whose grouping value is `NA` form their own group, labelled `NA`.
 }
 \examples{
 data(rt_demo)
