@@ -9,14 +9,14 @@
 # validation are FALSE). It gives a large positive sample for sensitivity.
 #
 # Run from the repo root: Rscript data-raw/benchmark/run_replication_enriched.R
-# Reads /tmp/pr4/rep/<pmcid>.xml (set RT_REP_XML to override). Writes
+# Reads data-raw/benchmark/.cache/<pmcid>.xml (set RT_REP_XML to override). Writes
 # inst/benchmark/results_replication_enriched.{csv,md}.
 
 suppressMessages(devtools::load_all("."))
 lab <- read.csv("data-raw/benchmark/labels_replication_enriched.csv",
                 stringsAsFactors = FALSE)
 lab$is_replication <- toupper(trimws(lab$is_replication)) == "TRUE"
-xml_dir <- Sys.getenv("RT_REP_XML", "/tmp/pr4/rep")
+xml_dir <- Sys.getenv("RT_REP_XML", "data-raw/benchmark/.cache")
 
 pred <- rep(NA, nrow(lab))
 for (i in seq_len(nrow(lab))) {
@@ -37,6 +37,11 @@ res <- data.frame(indicator = "replication", n = sum(k), pos = sum(g),
 print(res)
 write.csv(res, "inst/benchmark/results_replication_enriched.csv", row.names = FALSE)
 
+# The representative specificity, from the 2023 sample report (regenerate that
+# first with build_2023_sample.R).
+s23 <- read.csv("inst/benchmark/results_2023_sample.csv")
+rep_spec_2023 <- s23$spec[s23$indicator == "rep"]
+
 writeLines(c(
   "# Replication detector validation (replication-enriched sample)",
   "",
@@ -54,7 +59,8 @@ writeLines(c(
   "sample is deliberately rich in validation language, which is the detector's",
   "hardest discrimination, so it concentrates false positives (internal splits",
   "and reviews that discuss validation). The 2023 1000-article sample gives the",
-  "representative specificity (98.5). Sensitivity, estimated on the large positive",
+  sprintf("representative specificity (%.1f). Sensitivity, estimated on the large positive",
+          rep_spec_2023),
   "set, is the stable quantity this benchmark contributes."
 ), "inst/benchmark/results_replication_enriched.md")
 cat("wrote inst/benchmark/results_replication_enriched.{csv,md}\n")

@@ -2,14 +2,16 @@
 
 # rtransparency 1.1.0
 
+Not released to CRAN; these changes ship in 1.2.0.
+
 Two new transparency indicators, bringing the total to ten.
 
 * **Open-access licensing** (`rt_oa_pmc()`, `rt_oa()`, and within `rt_all_pmc()`):
   detects whether an article is openly licensed and the canonical license
   (`is_open_access`, `oa_license`; for example `CC-BY-4.0`, `CC-BY-NC-ND-4.0`,
   `CC0-1.0`), the reuse ("R") dimension of FAIR. Read from the JATS `<license>`
-  element. Validated at 100% sensitivity / 100% specificity, with 99.8%
-  license-type accuracy, on the 1000-article 2023 sample.
+  element. On the 1000-article 2023 sample: 100% sensitivity and 99.8%
+  license-type accuracy; specificity is not estimable there (one negative).
 
 * **Reporting-guideline use** (`rt_reporting_pmc()`, `rt_reporting()`, and within
   `rt_all_pmc()`): detects whether authors state they followed a reporting
