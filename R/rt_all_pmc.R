@@ -259,64 +259,18 @@ rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
   id_ls <- .get_ids(article_xml)
   id_ls$filename <- filename
 
-  # Meta-data
-  # metadata-all: 78ms
-  # metadata-unique: 75ms (only the ones not captured already)
-  # metadata-lean: 60ms (only the absolute basics for cool analyses)
-  # no metadata: 56ms
-  if (all_meta) {
-
-    meta_ls <- .xml_metadata_all(article_xml, as_list = TRUE)
-
-  } else{
-
-    meta_ls <- .xml_metadata_lean(article_xml, as_list = TRUE)
-
-  }
-
-
+  # Order matters: .get_article_txt() removes citation markers and tables from
+  # the body, and the full metadata extraction removes <sup> and <label>
+  # elements, both in place. The detectors that read the XML directly
+  # therefore run first, on the untouched document, exactly as their
+  # standalone functions (rt_ai_pmc(), rt_data_code_pmc(), rt_oa_pmc(),
+  # rt_reporting_pmc()) do; the metadata is extracted last.
   pmc_coi_ls <- .get_coi_pmc(article_xml, dict)
   pmc_fund_ls <- .get_fund_pmc(article_xml, dict)
   pmc_reg_ls <- .get_register_pmc(article_xml)
+  ai_ls <- .get_ai_pmc(article_xml)
 
-
-  article_ls <- .get_article_txt(article_xml)
-  # TODO Uncomment when I implement the .is_relevant functions
-  # article_processed_ls <- purrr::map(article_ls, .preprocess_txt)
-
-
-  coi_out  <- .rt_coi_pmc(
-    article_ls,
-    pmc_coi_ls,
-    dict
-  )
-
-  coi_ls <- purrr::list_modify(pmc_coi_ls, !!!coi_out)
-
-
-  fund_out <- .rt_fund_pmc(
-    article_ls,
-    pmc_fund_ls
-  )
-
-  fund_ls <- purrr::list_modify(pmc_fund_ls, !!!fund_out)
-
-
-  reg_out  <- .rt_register_pmc(
-    article_ls,
-    pmc_reg_ls,
-    dict
-  )
-
-  reg_ls <- purrr::list_modify(pmc_reg_ls, !!!reg_out)
-
-
-  novelty_ls     <- .rt_novelty_pmc(article_ls)
-  replication_ls <- .rt_replication_pmc(article_ls)
-  ai_ls          <- .get_ai_pmc(article_xml)
-
-  # Data and code sharing, from the same native detector as rt_data_code_pmc(),
-  # so a single rt_all_pmc() call covers all ten indicators.
+  # Data and code sharing, from the same native detector as rt_data_code_pmc().
   dc_found <- .detect_data_code(.dc_article_text(article_xml))
   dc_data_links <- if (isTRUE(dc_found$is_open_data))
     .extract_data_code_links(dc_found$data_text) else character(0)
@@ -333,12 +287,30 @@ rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
     das_text = das_text
   )
 
-  # Open-access status and reuse license (same detector as rt_oa_pmc()), and
-  # reporting-guideline use (same detector as rt_reporting_pmc()), so the
-  # combined output matches the standalone detectors exactly.
   oa_ls <- .get_oa_pmc(article_xml)
   reporting_ls <- .get_reporting_pmc(article_xml)
 
+  # Text-based detectors on the article sections.
+  article_ls <- .get_article_txt(article_xml)
+
+  coi_out <- .rt_coi_pmc(article_ls, pmc_coi_ls, dict)
+  coi_ls <- purrr::list_modify(pmc_coi_ls, !!!coi_out)
+
+  fund_out <- .rt_fund_pmc(article_ls, pmc_fund_ls)
+  fund_ls <- purrr::list_modify(pmc_fund_ls, !!!fund_out)
+
+  reg_out <- .rt_register_pmc(article_ls, pmc_reg_ls, dict)
+  reg_ls <- purrr::list_modify(pmc_reg_ls, !!!reg_out)
+
+  novelty_ls <- .rt_novelty_pmc(article_ls)
+  replication_ls <- .rt_replication_pmc(article_ls)
+
+  # Metadata last (see above).
+  meta_ls <- if (all_meta) {
+    .xml_metadata_all(article_xml, as_list = TRUE)
+  } else {
+    .xml_metadata_lean(article_xml, as_list = TRUE)
+  }
 
   status_ls <- list(is_success = TRUE)
   tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls,

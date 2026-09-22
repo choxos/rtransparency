@@ -53,3 +53,32 @@ test_that("a default XML namespace does not silently blank the results", {
   expect_identical(ns, plain)
   expect_identical(ns$pmid, "32171256")
 })
+
+test_that("rt_all_pmc agrees with every standalone detector and ignores all_meta", {
+  fx <- c(test_path("fixtures", "benchmark",
+                    list.files(test_path("fixtures", "benchmark"), pattern = "xml$")),
+          system.file("extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"))
+  fx <- fx[file.exists(fx)]
+  skip_if(!length(fx))
+  pick <- function(res, cols) unlist(res[1, cols])
+  for (f in fx) {
+    all <- rt_all_pmc(f)
+    full <- rt_all_pmc(f, all_meta = TRUE)
+    dec <- c("is_coi_pred", "is_fund_pred", "is_register_pred", "is_novelty_pred",
+             "is_replication_pred", "is_open_data", "is_open_code", "is_ai_pred",
+             "is_open_access", "oa_license", "is_reporting_pred", "reporting_guideline")
+    expect_identical(pick(full, dec), pick(all, dec), info = f)
+    expect_identical(pick(rt_coi_pmc(f), "is_coi_pred"), pick(all, "is_coi_pred"), info = f)
+    expect_identical(pick(rt_fund_pmc(f), "is_fund_pred"), pick(all, "is_fund_pred"), info = f)
+    expect_identical(pick(rt_register_pmc(f), "is_register_pred"), pick(all, "is_register_pred"), info = f)
+    expect_identical(pick(rt_novelty_pmc(f), "is_novelty_pred"), pick(all, "is_novelty_pred"), info = f)
+    expect_identical(pick(rt_replication_pmc(f), "is_replication_pred"), pick(all, "is_replication_pred"), info = f)
+    dc <- rt_data_code_pmc(f)
+    expect_identical(pick(dc, c("is_open_data", "is_open_code")),
+                     pick(all, c("is_open_data", "is_open_code")), info = f)
+    expect_identical(pick(rt_ai_pmc(f), "is_ai_pred"), pick(all, "is_ai_pred"), info = f)
+    expect_identical(pick(rt_oa_pmc(f), "oa_license"), pick(all, "oa_license"), info = f)
+    expect_identical(pick(rt_reporting_pmc(f), "reporting_guideline"),
+                     pick(all, "reporting_guideline"), info = f)
+  }
+})
