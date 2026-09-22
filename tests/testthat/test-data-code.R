@@ -256,3 +256,21 @@ test_that("a request clause does not veto a concrete data deposit", {
     "deposited in EGA under accession EGAS00001234567."
   ))$is_open_data)
 })
+
+test_that("extracted links map to resolvable URLs", {
+  expect_identical(
+    rtransparency:::.link_url(c("https://github.com/a/b", "10.5281/zenodo.1",
+                                "geo:GSE123456")),
+    c("https://github.com/a/b", "https://doi.org/10.5281/zenodo.1",
+      "https://identifiers.org/geo:GSE123456")
+  )
+})
+
+test_that("rt_check_links reports status per unique link", {
+  skip_on_cran()
+  skip_if_offline("github.com")
+  res <- rt_check_links(c("https://github.com/choxos/rtransparency ; geo:GSE1",
+                          "https://github.com/choxos/rtransparency"))
+  expect_equal(nrow(res), 2L)
+  expect_true(res$is_ok[1])
+})

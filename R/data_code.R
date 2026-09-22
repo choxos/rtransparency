@@ -638,3 +638,66 @@
 
   unique(out)
 }
+
+
+#' Check whether extracted data and code links resolve
+#'
+#' Takes the links extracted by the data and code detectors (the
+#' `open_data_links` and `open_code_links` columns of [rt_data_code_pmc()],
+#' [rt_all_pmc()] or [rt_data_code()]) and checks whether each one resolves,
+#' following redirects. A shared-data statement whose link is dead is weaker
+#' evidence of sharing than one whose link works, which availability-statement
+#' indicators alone cannot tell apart.
+#'
+#' DOIs are checked through `https://doi.org/`, and database accessions in
+#' identifiers.org `prefix:accession` form through `https://identifiers.org/`.
+#' Only the response headers are requested. Some servers refuse automated
+#' requests (status 403) or header-only requests (405) although the page
+#' exists, so a failing status is a prompt to look, not proof of a dead link.
+#'
+#' @param links A character vector of links; elements holding several links
+#'   separated by `" ; "` (as the detectors return them) are split.
+#' @param timeout Seconds to wait for each server.
+#' @return A tibble with one row per unique link: the `link`, the `url`
+#'   checked, the HTTP `status` (`NA` when the server could not be reached),
+#'   `is_ok` (a status below 400) and the `error` message when unreachable.
+#' @seealso [rt_data_code_pmc()]
+#' @examples
+#' \dontrun{
+#' res <- rt_data_code_pmc(system.file(
+#'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+#' ))
+#' rt_check_links(res$open_data_links)
+#' }
+#' @export
+rt_check_links <- function(links, timeout = 10) {
+  if (!capabilities("libcurl")) {
+    stop("This R build has no libcurl support, which rt_check_links() needs.",
+         call. = FALSE)
+  }
+  links <- trimws(unlist(strsplit(as.character(links), " ; ", fixed = TRUE)))
+  links <- unique(links[!is.na(links) & nzchar(links)])
+  url <- .link_url(links)
+  status <- rep(NA_integer_, length(links))
+  error <- rep(NA_character_, length(links))
+  for (i in seq_along(links)) {
+    h <- tryCatch(curlGetHeaders(url[i], redirect = TRUE, timeout = timeout),
+                  error = function(e) e)
+    if (inherits(h, "error")) {
+      error[i] <- conditionMessage(h)
+    } else {
+      status[i] <- as.integer(attr(h, "status"))
+    }
+  }
+  tibble::tibble(link = links, url = url, status = status,
+                 is_ok = !is.na(status) & status < 400, error = error)
+}
+
+
+# The URL to check for an extracted link: DOIs through doi.org, and
+# identifiers.org prefix:accession forms through identifiers.org.
+.link_url <- function(links) {
+  ifelse(grepl("^https?://", links, ignore.case = TRUE), links,
+         ifelse(grepl("^10\\.[0-9]{4,9}/", links), paste0("https://doi.org/", links),
+                paste0("https://identifiers.org/", links)))
+}
