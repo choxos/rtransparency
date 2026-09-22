@@ -663,11 +663,12 @@
 #'   `is_ok` (a status below 400) and the `error` message when unreachable.
 #' @seealso [rt_data_code_pmc()]
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' # Needs internet access; unreachable links are reported, not errors.
 #' res <- rt_data_code_pmc(system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 #' ))
-#' rt_check_links(res$open_data_links)
+#' if (capabilities("libcurl")) rt_check_links(res$open_data_links)
 #' }
 #' @export
 rt_check_links <- function(links, timeout = 10) {

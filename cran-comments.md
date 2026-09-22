@@ -1,34 +1,34 @@
 ## Submission
 
-This is a new submission of `rtransparency`, a renamed and substantially extended
-fork of the (CRAN-unpublished) `rtransparent` tool of Serghiou et al. (2021).
-Stylianos Serghiou is credited as an author, and the foundational paper is cited
-in the Description field and in `inst/CITATION`.
+This is an update of rtransparency from 1.0.0 (on CRAN since 2026-07-01) to
+1.2.0. It fixes several detection bugs, unifies the plain-text and XML
+interfaces, speeds up the reporting-guideline detector, and adds functions to
+download PMC full text, read structured JATS metadata, and check registrations
+and links. See NEWS.md.
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
-
-* The note is the standard "New submission" note.
+0 errors | 0 warnings | 0 notes
 
 ## Test environments
 
-* local macOS, R 4.6.0 (0 errors, 0 warnings, 1 note)
+* local macOS, R 4.6.0
 * GitHub Actions (r-lib/actions, full `R CMD check`): macOS-release,
-  windows-release, ubuntu-devel, ubuntu-release, ubuntu-oldrel-1; all passing.
-* win-builder (devel) recommended at submission via `devtools::check_win_devel()`.
+  windows-release, ubuntu-devel, ubuntu-release, ubuntu-oldrel-1
+* win-builder (devel)
+
+## Reverse dependencies
+
+There are no reverse dependencies.
 
 ## Notes for CRAN
 
-* Examples that require network access (NCBI fetch) or the external `pdftotext`
-  utility are wrapped in `\dontrun{}`.
-* The package is self-contained: data and code sharing detection is implemented
-  natively and does not depend on (or contain code from) the GitHub-only / AGPL
-  `oddpub` package. `rt_read_pdf()` is an original wrapper around the poppler
-  `pdftotext` command-line utility. The only adapted code is an internal,
-  benchmark-only NCBI OAI fallback derived from `metareadr::mt_read_pmcoa()`
-  (GPL-3); its author, Stylianos Serghiou, is credited in `Authors@R`.
-* The README carries the standard CRAN status badge, whose link
-  (`https://CRAN.R-project.org/package=rtransparency`) is not yet live and
-  returns 404 until this submission is accepted; it resolves on acceptance. R's
-  own URL check exempts this canonical CRAN package URL.
+* Functions that query web services (NCBI E-utilities and ID Converter,
+  Europe PMC, ClinicalTrials.gov, PubMed, and link resolution) fail gracefully
+  when the service is unreachable: per-item failures are reported in the
+  result, and their examples are wrapped in `\donttest{}` with `try()` where a
+  call can error. Tests that use the network are skipped on CRAN.
+* Only the two examples that need the external `pdftotext` utility
+  (`rt_read_pdf()`, `rt_all_pdf()`) use `\dontrun{}`.
+* The package remains self-contained: data and code sharing detection is
+  implemented natively and contains no code from the AGPL `oddpub` package.

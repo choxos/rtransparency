@@ -19,8 +19,9 @@
 #'   `has_coi_statement` and `coi_statement` (`""` when PubMed has none).
 #' @seealso [rt_fill_coi_pubmed()], [rt_coi_pmc()]
 #' @examples
-#' \dontrun{
-#' rt_coi_pubmed(c("32171256", "36696006"))
+#' \donttest{
+#' # Needs internet access.
+#' try(rt_coi_pubmed(c("32171256", "36696006")))
 #' }
 #' @export
 rt_coi_pubmed <- function(pmids, api_key = Sys.getenv("ENTREZ_KEY")) {
@@ -64,10 +65,12 @@ rt_coi_pubmed <- function(pmids, api_key = Sys.getenv("ENTREZ_KEY")) {
 #'   text), `"pubmed"` (filled from PubMed) or `NA` (none found).
 #' @seealso [rt_coi_pubmed()]
 #' @examples
-#' \dontrun{
-#' res <- rt_all_pmc_dir("my_xml_dir")
-#' res <- rt_fill_coi_pubmed(res)
-#' table(res$coi_source, useNA = "ifany")
+#' \donttest{
+#' # Needs internet access.
+#' res <- rt_all_pmc(system.file(
+#'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+#' ))
+#' res <- try(rt_fill_coi_pubmed(res))
 #' }
 #' @export
 rt_fill_coi_pubmed <- function(data, api_key = Sys.getenv("ENTREZ_KEY")) {

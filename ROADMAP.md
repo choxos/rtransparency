@@ -1,95 +1,78 @@
-# rtransparent enhancement roadmap
+# rtransparency roadmap
 
 Living plan for improving the package. Update it as items ship.
 
 ## Principles
-- Improve accuracy iteratively, **one PR per improvement**, merged to `master`.
-- **Measure every detection change** against the benchmark before and after
-  (`Rscript data-raw/benchmark/run_all.R`); merge only if metrics improve and
-  sensitivity does not regress. Accuracy over coverage.
-- Keep the name `rtransparent` for now (revisit a rename at release).
-- Be self-contained: reimplement oddpub's data/code detection natively (GPL-3),
-  do not vendor oddpub (it is AGPL-3).
-- Fetch article XML from **NCBI PubMed Central** (EFetch + OAI, `R/rt_fetch.R`),
-  not Europe PMC (different corpus, incompatible JATS flavor).
+- Improve accuracy iteratively, **one change per commit**, measured before and
+  after on every labeled set (`data-raw/benchmark/snapshot.R` and
+  `evaluate.R`); sensitivity must not regress, and every flipped article is
+  explained. The `benchmark` workflow fails a pull request whose predictions
+  differ from the committed `data-raw/benchmark/predictions_snapshot.csv`
+  unless the snapshot is deliberately regenerated.
+- Behavior-preserving changes (refactors, speedups, dead-code removal) must give
+  an identical prediction snapshot.
+- Never tune a detector on a validation round and then report that round's
+  accuracy; draw a new round (`data-raw/validation/`).
+- Be self-contained: no GitHub-only or AGPL dependencies.
 
-## Done (merged)
-- **#1** v0.3.0 baseline: novelty/replication detectors, registry expansion
-  (ISRCTN/ANZCTR/DRKS/IRCT/UMIN), testthat suite.
-- **#2** oddpub/tokenizers made optional (Suggests + guards); NCBI PMC fetch
-  helper `R/rt_fetch.R`.
-- **#3** accuracy benchmark (`R/benchmark.R`, `data-raw/benchmark/`,
-  `inst/benchmark/`); fixed `.reroot_xml` (returned empty for non-OAI XML) and
-  unqualified `str_detect` in the funding detector.
-- **#4** funding specificity 78% → 96% by tightening `get_fund_acknow_new`.
-
-## Current benchmark baseline (held-out XML test set)
-| Indicator | Accuracy | Sensitivity | Specificity |
-|---|---|---|---|
-| COI | 96.7% | 94.0% | 100% |
-| Funding | 97.3% | 100% | 95.7% |
-| Registration | 98.1% | 99.2% | 96.9% |
+## Shipped in 1.2.0
+- Plain-text API unified with the XML one (text input, same column names, all
+  ten indicators in `rt_all()`, `rt_all_pdf()`, `rt_all_txt_dir()`).
+- Correctness fixes: namespaced XML, empty PMCIDs in current PMC XML, data
+  statements with a request clause, replication external-validation misses,
+  AI product names in acknowledgments, reporting-guideline recommendations,
+  plain-text COI headings, platform-dependent transliteration.
+- 8.6x faster reporting-guideline detector; append-only batch output.
+- Downloading (`rt_fetch_pmc()`, `rt_convert_ids()`, Europe PMC source),
+  structured metadata (`rt_authors_pmc()`, `rt_funders_pmc()`, `has_das`),
+  follow-up checks (`rt_trial_ids()`, `rt_registration_timing()`,
+  `rt_fill_coi_pubmed()`, `rt_check_links()`), AI-use details, the
+  experimental ethics detector.
+- `rt_accuracy` rebuilt from the current detectors with validation counts;
+  simulation-based corrected intervals; `rt_accuracy_2021` for the paper's
+  values.
 
 ## Next (priority order)
 
-### A. Port quest-bih fork fixes  [done / assessed]
-`quest-bih/rtransparent` is ahead 7 commits of `serghiou`.
-- **prospero detection fix** — ported (PROSPERO id now 5 to 11 digits, TXT + PMC).
-  No benchmark delta (the held-out set has no PROSPERO-only cases).
-- **coi update** (TXT `rt_coi`, 75 lines) — deferred: TXT path, not exercised by
-  the PMC benchmark; revisit if a TXT benchmark is added.
-- **register pipe update** (808 + 686 line reformat of register/xml_utils/utils)
-  — skipped: cosmetic, conflicts heavily with this line's divergence.
-- "harmonize with new oddpub" — moot once we reimplement data/code (item B).
+### A. Label the 2025 validation rounds
+`data-raw/validation/round_2025/` (400 articles, uniform over 2025 open-access
+PMC) and `round_2025_ai/` (200 articles enriched for AI-use disclosures) have
+blind label sheets. Label them (two raters on the 20% double-code subset),
+score with `score_labels.R`, and:
+- replace the detector-adjudicated COI, funding, data and AI estimates;
+- validate the experimental ethics and consent detector, and the AI
+  `ai_used`/`ai_tools`/`ai_purpose` fields;
+- once validated, add ethics/consent to `rt_all_pmc()` and `rt_accuracy`.
 
-### B. Reimplement oddpub data/code detection natively (GPL-3)  [done, tuning recall]
-Native detector in `R/data_code.R` (`.detect_data_code`): field-specific
-accession schemes, repository URLs/names, deposit/availability + DAS language,
-supplement and file-format signals, with reuse and non-availability vetoes.
-`rt_data_code` / `rt_data_code_pmc` / `rt_data_code_pmc_list` now use it and no
-longer need `oddpub`/`tokenizers` at runtime. Benchmark
-(`data-raw/benchmark/run_data_code.R`, `inst/benchmark/results_data_code.md`):
-- **code 68% sens / 94% spec** (beats the paper's ~59% sensitivity).
-- **data 64% sens / 95% spec** (precision matches oddpub's ~97%; recall below
-  oddpub's ~84% on a long tail of supplement-only data and rare phrasings).
+### B. Replace article-specific data/code patterns with general rules
+The data and code detectors contain phrases lifted from individual benchmark
+articles (for example `cellchat package`, `\bcomparem\b`). Rework them into
+general rules, measured on the new independent round rather than the set they
+came from.
 
-Remaining: lift data recall past oddpub (extend supplement/file-format and DAS
-phrasings; ~5 of the misses are extraction gaps, ~21 are pattern-tail, ~15 have
-no detectable text signal). Then delete the now-dead oddpub/tokenizers helper
-functions in `rt_data_code_pmc.R` and drop both from `Suggests`.
+### C. Multilingual funding
+`build_multilingual.R` now defines a reproducible corpus. Label a subset for
+funding received / no funding / no statement in Spanish, French and
+Portuguese, where detection rates are lowest, before changing patterns.
 
-### C. Fix the public `rt_fund_pmc`
-The exported `rt_fund_pmc` is broken: it predicts TRUE for essentially all input
-with empty text. `rt_all_pmc` does not use it (it uses internal `.get_fund_pmc`
-+ `.rt_fund_pmc`). Align the public function with the working internal path, and
-add a test so the public API is correct.
+### D. Plain-text reference lists
+The plain-text path does not exclude reference lists, so a cited title such as
+"Conflicts of interest in medicine" can trigger COI. Excluding references is
+risky because some journals print declarations after them; measure with the
+TXT-parity benchmark first.
 
-### D. Benchmark fidelity v2 (optional)
-Add the paper's importance-sampling weights (`est_freq = n / n_s * n_t`) to
-`.eval_boot` for exact Fig 2 comparability, and the `isResearch`/`isExplicit`
-filters the paper applied per indicator.
+### E. Registration linkage beyond ClinicalTrials.gov
+`rt_registration_timing()` covers NCT numbers. ISRCTN and PROSPERO expose
+registration dates too.
 
-## Backlog (low priority / data-limited)
-- **COI sensitivity (94%) is data-limited, not a detector defect.** All 5
-  held-out false negatives have no COI statement anywhere in the XML (the COI is
-  on PubMed/PDF only; the paper's documented limitation). The detector catches
-  100% of COI that is actually in the XML. Recovering these needs a PubMed
-  `CoiStatement` lookup (a feature, not a detector fix).
-- **Funding residual false positives (5/116 negatives).** 3 are a
-  `<funding-statement>` naming only an institution (definitional, risk false
-  negatives if "fixed"); 1 is "Financial source: none" (negation reaches the
-  prediction through a path the current negation steps miss); 1 is an
-  author-contributions leak. Low value; defer.
-- **CRAN-readiness pass** (Rd/examples/vignette deps, `R CMD check`) before any
-  release; decide a possible rename (`rtransparentplus`?) at that point.
-
-## Running the benchmark
+## Running the benchmarks
 ```sh
-Rscript data-raw/benchmark/run_all.R        # full labeled test set (~550 articles)
-Rscript data-raw/benchmark/run_all.R 30     # quick smoke run
-Rscript data-raw/benchmark/make_fixtures.R  # rebuild the regression-test fixtures
+Rscript data-raw/benchmark/snapshot.R run snap.rds          # predictions for all cached XML
+Rscript data-raw/benchmark/evaluate.R snap.rds              # every labeled set at once
+Rscript data-raw/benchmark/snapshot.R compare a.rds b.rds   # what changed, article by article
+Rscript data-raw/benchmark/run_all.R                        # published held-out report
 ```
-Set `ENTREZ_KEY` to raise the NCBI rate limit. Outputs:
-`inst/benchmark/results.{csv,md}`. Cache (git-ignored):
-`data-raw/benchmark/.cache/`. The labeled gold data lives under `paper/`
-(git-ignored, from the study's OSF repository).
+Set `ENTREZ_KEY` to raise the NCBI rate limit. The XML cache lives in
+`data-raw/benchmark/.cache/` (git-ignored); `rt_fetch_pmc()` refills it. The
+Serghiou et al. (2021) labels live under `paper/` (git-ignored, from the study's
+OSF repository).

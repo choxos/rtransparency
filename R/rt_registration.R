@@ -99,8 +99,11 @@ rt_trial_ids <- function(text) {
 #'   dates.
 #' @seealso [rt_trial_ids()], [rt_register_pmc()]
 #' @examples
-#' \dontrun{
-#' rt_registration_timing(c("NCT04368728", "NCT00000102"))
+#' \donttest{
+#' # Needs internet access and the jsonlite package.
+#' if (requireNamespace("jsonlite", quietly = TRUE)) {
+#'   try(rt_registration_timing(c("NCT04368728", "NCT00000102")))
+#' }
 #' }
 #' @export
 rt_registration_timing <- function(nct_ids, grace_days = 0) {

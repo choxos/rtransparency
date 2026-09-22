@@ -43,10 +43,11 @@
 #'   XML contains the article body) and the `error` message on failure.
 #' @seealso [rt_convert_ids()], [rt_all_pmc_dir()]
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' # Needs internet access; failures are reported per identifier.
 #' dir <- file.path(tempdir(), "pmc")
-#' got <- rt_fetch_pmc(c("PMC7071725", "32171256"), dir)
-#' res <- rt_all_pmc_dir(dir)
+#' got <- rt_fetch_pmc("PMC7071725", dir, progress = FALSE)
+#' got
 #' }
 #' @export
 rt_fetch_pmc <- function(ids, dir = ".", overwrite = FALSE,
@@ -115,8 +116,9 @@ rt_fetch_pmc <- function(ids, dir = ".", overwrite = FALSE,
 #'   `pmid` and `doi` (`NA` where not found).
 #' @seealso [rt_fetch_pmc()]
 #' @examples
-#' \dontrun{
-#' rt_convert_ids(c("32171256", "10.1186/s12874-020-0914-6", "PMC7071725"))
+#' \donttest{
+#' # Needs internet access.
+#' try(rt_convert_ids(c("32171256", "10.1186/s12874-020-0914-6", "PMC7071725")))
 #' }
 #' @export
 rt_convert_ids <- function(ids, email = NULL) {
