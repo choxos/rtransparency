@@ -41,7 +41,7 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
 
   if (inherits(article_xml, "error")) {
 
-    return(tibble::tibble(filename = filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
 
   }
 

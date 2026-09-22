@@ -1265,7 +1265,7 @@ rt_coi_pmc <- function(filename, remove_ns = TRUE) {
 
   if (inherits(article_xml, "error")) {
 
-    return(tibble::tibble(filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
 
   }
 

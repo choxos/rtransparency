@@ -115,7 +115,7 @@ rt_novelty_pmc <- function(filename, remove_ns = TRUE) {
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
 
   if (inherits(article_xml, "error")) {
-    return(tibble::tibble(filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
   }
 
   # Extract IDs

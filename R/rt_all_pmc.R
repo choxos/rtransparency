@@ -250,7 +250,7 @@ rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
 
   if (inherits(article_xml, "error")) {
 
-     return(tibble::tibble(filename, is_success = FALSE))
+     return(.xml_failure(filename, article_xml))
 
   }
 

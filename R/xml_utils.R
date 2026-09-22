@@ -751,6 +751,14 @@
 }
 
 
+# The row returned for a file that could not be read or parsed as XML: the
+# filename, is_success = FALSE and the parser's error message.
+.xml_failure <- function(filename, err) {
+  tibble::tibble(filename = filename, is_success = FALSE,
+                 error = conditionMessage(err))
+}
+
+
 #' Extract PMIDs and DOIs
 #'
 #' Reads a PMC XML as an xml_document and extracts the DOI, PMID and PMCID as

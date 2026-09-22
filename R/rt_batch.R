@@ -10,8 +10,11 @@
 #' When `output` is supplied, results are written to that CSV in chunks as the
 #' run proceeds. Re-running with the same `output` skips files already present
 #' in it and appends only the new results, so a long run can be resumed after an
-#' interruption. Each file is processed inside [tryCatch()]; a file that errors
-#' contributes a row with `is_success = FALSE` rather than stopping the run.
+#' interruption. Resuming compares normalized paths, so it also works from
+#' another working directory or with relative instead of absolute paths. Each
+#' file is processed inside [tryCatch()]; a file that errors contributes a row
+#' with `is_success = FALSE` and the error message in `error` rather than
+#' stopping the run.
 #'
 #' Parallelism uses \pkg{furrr}'s `future_map()` and honors whatever
 #' `future::plan()` is active (for example `future::plan("multisession")`); with
@@ -33,7 +36,8 @@
 #'   (default `200`).
 #' @return A [tibble][tibble::tibble] with one row per file, carrying the same
 #'   columns as [rt_all_pmc()] (plus any rows read back from a pre-existing
-#'   `output`). Files that could not be processed have `is_success = FALSE`.
+#'   `output`). Files that could not be processed have `is_success = FALSE`
+#'   and the reason in `error`.
 #' @seealso [rt_all_pmc()] for a single file.
 #' @examples
 #' \donttest{
@@ -88,7 +92,11 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
       progress = FALSE
     )
     if ("filename" %in% names(done_rows)) {
-      files <- files[!files %in% done_rows$filename]
+      # Compare normalized paths, so a run resumed from another working
+      # directory, or with relative instead of absolute paths, still skips the
+      # files it has already processed.
+      norm <- function(x) normalizePath(x, winslash = "/", mustWork = FALSE)
+      files <- files[!norm(files) %in% norm(done_rows$filename)]
     }
   }
 
@@ -100,10 +108,13 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
   # returns is_success = FALSE on a parse error; this tryCatch is a backstop for
   # any other failure.
   process_one <- function(f) {
-    tryCatch(
+    r <- tryCatch(
       rt_all_pmc(f, remove_ns = remove_ns, all_meta = all_meta),
-      error = function(e) tibble::tibble(filename = f, is_success = FALSE)
+      error = function(e) tibble::tibble(filename = f, is_success = FALSE,
+                                         error = conditionMessage(e))
     )
+    if (!"error" %in% names(r)) r$error <- NA_character_
+    r
   }
 
   mapper <- function(x) {
@@ -115,23 +126,41 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
   }
 
   # Process in chunks so progress is flushed to disk periodically (a crash then
-  # loses at most one chunk). The whole file is rewritten on each flush; all
-  # columns are written as character so a re-read resumes cleanly.
+  # loses at most one chunk). Each chunk is appended to the output, written as
+  # character so a re-read resumes cleanly; the file is rewritten only in the
+  # rare case that a chunk brings columns the file does not have yet (for
+  # example when every earlier file failed to parse).
   chunk_size <- max(1L, as.integer(chunk_size))
   chunks <- split(files, ceiling(seq_along(files) / chunk_size))
   new_rows <- vector("list", length(files))
   pos <- 0L
+  out_cols <- if (!is.null(done_rows)) names(done_rows) else NULL
+
+  write_chunk <- function(rows) {
+    rows <- to_char(rows)
+    if (is.null(out_cols)) {
+      readr::write_csv(rows, output)
+      out_cols <<- names(rows)
+    } else if (all(names(rows) %in% out_cols)) {
+      missing_cols <- setdiff(out_cols, names(rows))
+      rows[missing_cols] <- NA_character_
+      readr::write_csv(rows[out_cols], output, append = TRUE)
+    } else {
+      old <- readr::read_csv(
+        output, col_types = readr::cols(.default = readr::col_character()),
+        progress = FALSE
+      )
+      combined <- dplyr::bind_rows(old, rows)
+      readr::write_csv(combined, output)
+      out_cols <<- names(combined)
+    }
+  }
 
   for (chunk in chunks) {
     res <- mapper(chunk)
     new_rows[seq_along(res) + pos] <- res
     pos <- pos + length(res)
-
-    if (!is.null(output)) {
-      combined <- dplyr::bind_rows(done_rows,
-                                   to_char(dplyr::bind_rows(new_rows[seq_len(pos)])))
-      readr::write_csv(combined, output)
-    }
+    if (!is.null(output)) write_chunk(dplyr::bind_rows(res))
   }
 
   # Rows freshly computed in this run share rt_all_pmc()'s native column types,
