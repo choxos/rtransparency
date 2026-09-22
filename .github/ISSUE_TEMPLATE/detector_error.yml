@@ -18,6 +18,9 @@ body:
         - AI disclosure
         - Open-access license
         - Reporting guideline
+        - Ethics approval or consent (experimental)
+        - AI use, tools or purpose details
+        - Data-availability section, author or funder metadata
     validations:
       required: true
   - type: dropdown
