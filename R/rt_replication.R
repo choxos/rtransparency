@@ -98,14 +98,24 @@ rt_replication <- function(filename = NULL, text = NULL) {
 }
 
 
-# The relevance gate for replication. It must admit every sentence that any
-# .which_replication_*() pattern can match, or those patterns never run: an
-# earlier gate lacked "externally validated" and "validated ... in an
-# independent cohort", so such articles were rejected before the patterns that
-# match them were tried. Precision comes from the patterns and
-# .negate_replication_1(), not from this gate.
+# The relevance gate for replication. Besides skipping articles cheaply, it acts
+# as a precision filter: the pattern functions alone also match statistics
+# ("independent samples t-test") and generic "validated the findings" prose,
+# which the gate keeps out. An earlier gate lacked "externally validated" and
+# "validated ... in an independent cohort", so those genuine external
+# validations never reached the patterns; they are now admitted. A test checks
+# that every replication probe passes the gate.
 .replication_gate <- function() {
-  "replicat|validat|reproduc|confirm|corroborat|independent|external"
+  paste(
+    "replicat", "independent(ly)? (confirm|validat|reproduc)",
+    "external(ly)? validat", "internal validation",
+    "validation cohort", "validation sample", "validation dataset",
+    "training cohort", "confirmatory cohort",
+    "reproduced (the|our|their|these) (findings|results)",
+    "independent (validation )?(cohorts?|populations?|datasets?|data sets?|series)\\b",
+    "validat(e|ed|ion)\\b[^.]{0,40}\\b(independent|external|separate) (cohorts?|populations?|samples?|datasets?)",
+    sep = "|"
+  )
 }
 
 
@@ -239,6 +249,9 @@ rt_replication <- function(filename = NULL, text = NULL) {
 
   pattern <- paste(
     "not replicated",
+    # Statistics, not replication: "independent samples t-test".
+    "independent[- ]samples?\\b[^.]{0,20}\\b(t|student|tests?|mann|wilcoxon|kruskal)\\b",
+    "two independent (samples|groups)",
     "independently replicated a minimum",
     "experiments? .{0,80}replicat",
     "replicated (a minimum|at least)",
