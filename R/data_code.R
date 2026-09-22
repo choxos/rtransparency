@@ -167,7 +167,9 @@
 }
 
 # Statements that should not count as open sharing (data only on request, or
-# explicitly not available). Applied only to weak signals.
+# explicitly not available). The request/author forms are "soft": they veto only
+# weak signals, never a concrete deposit or public code repository in the same
+# sentence. The hard forms below veto everything.
 .dc_negation <- function() {
   paste(
     "(up)?on (reasonable )?request", "from the (corresponding )?authors?",
@@ -178,6 +180,15 @@
   )
 }
 
+
+# Genuine non-availability: vetoes data and code regardless of other signals.
+.dc_hard_negation <- function() {
+  paste(
+    "not (publicly )?available", "not be (made )?available", "not shown",
+    "restricted access", "controlled access", "cannot be shared",
+    sep = "|"
+  )
+}
 
 # Split text chunks (paragraphs) into sentences without breaking URLs, DOIs or
 # accession identifiers: only split on sentence punctuation followed by space and
@@ -394,8 +405,17 @@
     has(calculated_table_summary, s) |
     has(code_or_ui_table, s) |
     has(protocol_or_code_only, s)
+  # Negation splits in two. Hard negation ("not publicly available",
+  # "controlled access", "cannot be shared") vetoes any data signal. Soft
+  # negation is about how *additional* data are delivered ("upon request",
+  # "from the corresponding author"); it vetoes only weak signals, because a
+  # data-availability statement often pairs a concrete deposit with a
+  # request clause ("available in Zenodo, doi:..., and further information is
+  # available from the corresponding author on reasonable request").
+  data_hard_negation <- has(.dc_hard_negation(), s)
+  data_soft_negation <- has(negation, s) & !concrete_data
   veto <- (has(reuse, s) & !has_deposit & !public_source_hit) |
-    has(negation, s) | data_boilerplate
+    data_hard_negation | data_soft_negation | data_boilerplate
 
   data_hit <- (concrete_data | soft_data) & !veto
 
@@ -525,12 +545,7 @@
   # hosted on a public repository. Genuine non-availability ("not publicly
   # available", "restricted/controlled access", "cannot be shared") still vetoes
   # code regardless of where it lives.
-  hard_negation <- paste(
-    "not (publicly )?available", "not be (made )?available", "not shown",
-    "restricted access", "controlled access", "cannot be shared",
-    sep = "|"
-  )
-  code_negation <- has(hard_negation, s) | (has(negation, s) & !strong_code)
+  code_negation <- has(.dc_hard_negation(), s) | (has(negation, s) & !strong_code)
   code_hit <- (strong_code | registry_code | weak_code | explicit_code) &
     !code_negation & !has(generic_code_discussion, s) &
     !has(code_use_only, s)
