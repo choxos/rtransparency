@@ -5,9 +5,9 @@
 #'     Replication is defined as the study independently confirming findings
 #'     from a prior study in a new sample.
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A tibble of results. It returns the filename, PMID (if it was part
-#'     of the file name), whether a replication component was found, the text
+#' @inheritParams rt_coi
+#' @return A tibble of results. It returns the file name (`article`), the PMID
+#'     (`NA` if absent), whether a replication component was found, the text
 #'     identified, and whether each pattern-matching function identified
 #'     relevant text or not.
 #' @examples
@@ -27,10 +27,15 @@
 #' results_table <- rt_replication(filepath)
 #' }
 #' @export
-rt_replication <- function(filename) {
+rt_replication <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_replication_txt(input$text))
+}
 
-  article <- basename(filename)
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
+
+# Replication detection on plain text; returns the prediction, the matched
+# text and whether each pattern function fired.
+.rt_replication_txt <- function(paper_text) {
 
   is_replication_pred <- FALSE
   replication_text <- ""
@@ -42,8 +47,6 @@ rt_replication <- function(filename) {
     replication_reproduced_1  = NA,
     replication_validation_1  = NA
   )
-
-  paper_text <- .read_txt(filename)
 
   # Quick relevance check
   rel_regex <- paste(
@@ -58,12 +61,11 @@ rt_replication <- function(filename) {
   is_relevant <- grepl(rel_regex, paper_text, ignore.case = TRUE)
 
   if (!is_relevant) {
-    return(tibble::as_tibble(c(
-      list(article = article, pmid = pmid,
-           is_replication_pred = is_replication_pred,
+    return(c(
+      list(is_replication_pred = is_replication_pred,
            replication_text = replication_text),
       index_any
-    )))
+    ))
   }
 
   # Split into paragraphs
@@ -96,12 +98,11 @@ rt_replication <- function(filename) {
 
   index_any %<>% purrr::map(function(x) !!length(x))
 
-  tibble::as_tibble(c(
-    list(article = article, pmid = pmid,
-         is_replication_pred = is_replication_pred,
+  c(
+    list(is_replication_pred = is_replication_pred,
          replication_text = replication_text),
     index_any
-  ))
+  )
 }
 
 

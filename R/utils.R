@@ -147,6 +147,54 @@
 }
 
 
+#' Resolve the input of a plain-text detector.
+#'
+#' Every plain-text detector accepts either the path to a text file or the text
+#'     itself. This returns the text as one string with LF line endings,
+#'     together with the `article` (file name) and `pmid` (the digits after
+#'     "PMID" in the file name) identifiers; both are `NA` for direct text.
+#'
+#' @param filename The path to a text file, or `NULL`.
+#' @param text A character vector of text (joined with line breaks), or `NULL`.
+#' @return A list with `text`, `article` and `pmid`.
+#' @noRd
+.txt_input <- function(filename = NULL, text = NULL) {
+  if (!is.null(text)) {
+    if (!is.null(filename)) {
+      stop("Supply either `filename` or `text`, not both.", call. = FALSE)
+    }
+    if (!is.character(text)) {
+      stop("`text` must be a character vector.", call. = FALSE)
+    }
+    text <- text[!is.na(text)]
+    return(list(text = gsub("\r\n?", "\n", paste(text, collapse = "\n")),
+                article = NA_character_, pmid = NA_character_))
+  }
+  if (!is.character(filename) || length(filename) != 1 || is.na(filename) ||
+      !file.exists(filename)) {
+    stop("`filename` must be the path to an existing text file ",
+         "(or supply the text itself via `text`).", call. = FALSE)
+  }
+  list(text = .read_txt(filename), article = basename(filename),
+       pmid = .pmid_from_filename(filename))
+}
+
+
+#' The PubMed ID encoded in a file name as "PMID<digits>", or NA.
+#' @noRd
+.pmid_from_filename <- function(filename) {
+  m <- regmatches(basename(filename), regexpr("PMID[0-9]+", basename(filename)))
+  if (length(m)) sub("^PMID", "", m) else NA_character_
+}
+
+
+#' One output row of a plain-text detector: the identifiers, then the fields.
+#' @noRd
+.txt_row <- function(input, fields) {
+  tibble::as_tibble(c(list(article = input$article, pmid = input$pmid), fields))
+}
+
+
 #' Encace words within parentheses and OR statements
 #'
 #' Returns a string of words separated by OR statements within parentheses.

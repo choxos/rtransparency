@@ -45,9 +45,9 @@
 #'     statement, including whether a Registration statement exists. If a
 #'     Registration statement exists, it extracts it.
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A dataframe of results. It returns the PMID (if this was part of the
-#'     filename and preceded by PMID), whether a registration statement was
+#' @inheritParams rt_coi
+#' @return A tibble. It returns the file name (`article`), the PMID (`NA` if
+#'     absent), whether a registration statement was
 #'     found, the identified statement, whether the text was deemed relevant
 #'     (e.g. contained the word registration), whether a Methods section was
 #'     identified, whether an NCT number was identified, whether a registration
@@ -72,10 +72,14 @@
 #' results_table <- rt_register(filepath)
 #' }
 #' @export
-rt_register <- function(filename) {
+rt_register <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_register_txt(input$text))
+}
 
-  article <- basename(filename) %>% stringr::word(sep = "\\.")
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
+
+# Registration detection on plain text.
+.rt_register_txt <- function(paper_text) {
 
   dict <- .create_synonyms()
 
@@ -85,7 +89,7 @@ rt_register <- function(filename) {
   broken_2 <- "([a-z]+)(|,|;)\n+([a-z]+)"
   broken_3 <- "([0-9]+)-\n+([0-9]+)"
   paragraphs <-
-    .read_txt(filename) %>%
+    paper_text %>%
     purrr::map(gsub, pattern = broken_1, replacement = "\\1\\2") %>%
     purrr::map(gsub, pattern = broken_2, replacement = "\\1\\3") %>%
     purrr::map(gsub, pattern = broken_3, replacement = "\\1\\2") %>%
@@ -107,9 +111,7 @@ rt_register <- function(filename) {
 
   res <- .rt_register_pmc(article_ls, pmc_reg_ls, dict)
 
-  tibble::tibble(
-    article,
-    pmid,
+  list(
     is_register_pred = res$is_register_pred,
     register_text = res$register_text,
     is_relevant = res$is_relevant_reg,

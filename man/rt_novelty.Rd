@@ -4,14 +4,17 @@
 \alias{rt_novelty}
 \title{Identify whether a study claims novelty in TXT files.}
 \usage{
-rt_novelty(filename)
+rt_novelty(filename = NULL, text = NULL)
 }
 \arguments{
-\item{filename}{The name of the TXT file as a string.}
+\item{filename}{The path to a TXT file as a string.}
+
+\item{text}{Alternatively, the article text itself as a character vector
+(for example the output of [rt_read_pdf()]). Supply `filename` or `text`.}
 }
 \value{
-A tibble of results. It returns the filename, PMID (if it was part
-    of the file name), whether a novelty claim was found, the text
+A tibble of results. It returns the file name (`article`), the PMID
+    (`NA` if absent), whether a novelty claim was found, the text
     identified, and whether each pattern-matching function identified
     relevant text or not.
 }

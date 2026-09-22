@@ -174,8 +174,8 @@ rt_ai_pmc <- function(filename, remove_ns = TRUE) {
 #' declaration sections, so an article that uses AI purely as a research method
 #' is more likely to be flagged than under [rt_ai_pmc()].
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A tibble with the filename, the PMID (if present in the file name),
+#' @inheritParams rt_coi
+#' @return A tibble with the file name (`article`), the PMID (`NA` if absent),
 #'   whether an AI-use disclosure was found (`is_ai_pred`) and the matched
 #'   statement (`ai_text`).
 #' @examples
@@ -193,26 +193,20 @@ rt_ai_pmc <- function(filename, remove_ns = TRUE) {
 #' @seealso [rt_ai_pmc()] for the PMC XML detector, which applies the 2023
 #'   publication-year gate.
 #' @export
-rt_ai <- function(filename) {
+rt_ai <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_ai_txt(input$text))
+}
 
-  article <- basename(filename)
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
 
-  paper_text <- .read_txt(filename)
-
+# AI-use disclosure on plain text (no publication-year gate).
+.rt_ai_txt <- function(paper_text) {
   # Rejoin words hyphenated across a line break ("Chat-\nGPT" -> "ChatGPT") so a
   # tool name split by the PDF-to-text conversion is still matched; .dc_split
   # collapses the remaining whitespace before sentence-splitting.
   paper_text <- gsub("([A-Za-z0-9])-\\s*\n\\s*([A-Za-z0-9])", "\\1\\2", paper_text)
-
   found <- .detect_ai_disclosure(paper_text)
-
-  tibble::as_tibble(list(
-    article = article,
-    pmid = pmid,
-    is_ai_pred = found$is_ai_disclosed,
-    ai_text = found$ai_text
-  ))
+  list(is_ai_pred = found$is_ai_disclosed, ai_text = found$ai_text)
 }
 
 

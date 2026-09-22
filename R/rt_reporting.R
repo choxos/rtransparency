@@ -282,8 +282,8 @@ rt_reporting_pmc <- function(filename, remove_ns = TRUE) {
 #' states that it followed a reporting guideline and which one, using the same
 #' precision-first rules.
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A tibble with the filename, the PMID (if present in the file name),
+#' @inheritParams rt_coi
+#' @return A tibble with the file name (`article`), the PMID (`NA` if absent),
 #'   whether a reporting-guideline statement was found (`is_reporting_pred`), the
 #'   guideline(s) named (`reporting_guideline`) and the matched statement
 #'   (`reporting_text`).
@@ -299,19 +299,18 @@ rt_reporting_pmc <- function(filename, remove_ns = TRUE) {
 #' }
 #' @seealso [rt_reporting_pmc()] for the PMC XML detector.
 #' @export
-rt_reporting <- function(filename) {
+rt_reporting <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_reporting_txt(input$text))
+}
 
-  article <- basename(filename)
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
 
-  paper_text <- .read_txt(filename)
+# Reporting-guideline use from plain text.
+.rt_reporting_txt <- function(paper_text) {
   found <- .detect_reporting(paper_text)
-
-  tibble::as_tibble(list(
-    article = article,
-    pmid = pmid,
+  list(
     is_reporting_pred = found$is_reporting_pred,
     reporting_guideline = found$reporting_guideline,
     reporting_text = found$reporting_text
-  ))
+  )
 }
