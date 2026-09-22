@@ -26,3 +26,6 @@ docs/
 # JOSS paper (prepared locally, not yet published)
 joss/
 .gstack/
+
+# Validation-round XML downloads
+data-raw/validation/*/xml/
