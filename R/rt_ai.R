@@ -26,13 +26,31 @@
     "chatgpt", "\\bgpt-?[0-9]", "gpt-4o", "\\bllms?\\b",
     "large language models?",
     "ai-(assisted|generated|based) (tool|technolog|writ|languag|imag|content)",
-    "ai-assisted technolog", "\\bcopilot\\b", "\\bclaude\\b", "\\bgemini\\b",
-    "\\bbard\\b", "dall-?e", "midjourney", "stable diffusion", "\\bgrok\\b",
-    "deepseek", "\\bllama\\b", "mistral", "mixtral", "\\bperplexity\\b",
-    "\\bqwen\\b", "\\bgemma\\b", "\\bllm-?[0-9]", "\\bpalm 2\\b",
+    "ai-assisted technolog", "dall-?e", "midjourney", "stable diffusion",
+    "deepseek", "mixtral", "\\bqwen", "\\bllm-?[0-9]", "\\bpalm 2\\b",
     "pathways language model", "ernie bot", "\\bdeepl\\b", "paperpal",
-    "quillbot", "writefull", "wordtune", "jasper ai", "writesonic",
-    "\\bsora\\b",
+    "quillbot", "writefull", "wordtune", "jasper ai", "writesonic", "openai",
+    "anthropic",
+    # Product names that are also ordinary names or words (Claude Martin, the
+    # Gemini Observatory, a llama facility, Bard College, perplexity) count only
+    # with a version, vendor or AI qualifier beside them.
+    "\\bclaude[ -]?([0-9]|ai\\b|\\(anthropic|by anthropic|sonnet|opus|haiku|instant)",
+    "\\b(google )?gemini[ -]?([0-9]|pro\\b|ultra|flash|advanced|ai\\b|model|\\(google)",
+    "google gemini", "google bard", "\\bbard \\(google",
+    "\\bllama[ -]?[0-9]", "\\bllama (model|ai\\b)", "meta llama", "\\bmeta ai\\b",
+    "\\bmistral (ai|large|medium|small|[0-9])", "\\bperplexity(\\.ai| ai\\b)",
+    "\\bgemma[ -]?[0-9]", "\\bgrok[ -]?[0-9]", "\\bgrok \\(x", "\\bxai\\b",
+    "(github|microsoft|bing) copilot", "\\bcopilot \\(microsoft",
+    "\\bsora \\(openai",
+    # ... or when the name itself is what was used: "used Mistral to", "Grok
+    # was used", "the Gemini large language model". A following capitalized
+    # word ("Claude Martin", "Gemini Observatory") marks a person or place.
+    paste0("\\b(used|using|utili[sz](ed|ing)|employ(ed|ing)|with the (help|aid|",
+           "assistance|use) of|assisted by|use of) (the )?(claude|gemini|bard|llama|mistral|perplexity|gemma|grok|sora|copilot)\\b",
+           "(?!\\s*(?-i:[A-Z][a-z]))"),
+    "\\b(claude|gemini|bard|llama|mistral|perplexity|gemma|grok|sora|copilot)\\b (was|were|is|has been) (used|employed|utili[sz]ed)",
+    paste0("\\b(claude|gemini|bard|llama|mistral|perplexity|gemma|grok|sora|copilot)\\b,? (\\()?(a |an |the )?(large language model|llm|",
+           "generative|ai (tool|model|assistant|chatbot)|chatbot|language model)"),
     # Bare "AI tool" / "artificial intelligence" only matters here because the
     # extracted text is restricted to declaration / acknowledgment sections,
     # where these refer to manuscript-preparation AI use, not a research method.
@@ -53,7 +71,10 @@
     # explicit declaration / negation forms.
     "declaration of (generative )?ai", "declared that",
     "authors? (used|declare|confirm|did not)",
-    "did not use", "\\buse of\\b",
+    "did not use",
+    # "use of" only when it introduces the AI tool itself ("the use of
+    # ChatGPT"), not any use ("we thank ... for the use of their facility").
+    paste0("\\buse of\\b[^.]{0,40}(", ai_term, ")"),
     "(no|not|never) [^.]{0,25}(ai|generative|llm)[^.]{0,25}(used|tool|technolog|declared)",
     "(was|were) (not )?used in[^.]{0,40}(manuscript|writing|preparation|creation|work)",
     "(generative ai|ai-assisted technolog|ai-generated (image|content))[^.]{0,40}(was|were) (not )?used",
@@ -70,6 +91,9 @@
     "llm,? large language model",
     ", large language model;",
     "artificial intelligence \\(ai\\),",
+    # An AI unit or facility named in an acknowledgment is not a disclosure.
+    paste0("artificial intelligence (core|facility|cent(er|re)|institute|lab|",
+           "laboratory|department|program|group|unit|initiative|hub|research)"),
     sep = "|"
   )
 

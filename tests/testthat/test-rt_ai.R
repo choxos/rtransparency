@@ -128,3 +128,18 @@ test_that("rt_ai returns the documented schema, the PMID and never NA (no year g
   expect_false(is.na(r$is_ai_pred))            # TXT applies no 2023 year gate
   expect_gt(nchar(r$ai_text), 0)
 })
+
+test_that("ordinary names that match AI products are not disclosures", {
+  detect <- function(x) rtransparency:::.detect_ai_disclosure(x)$is_ai_disclosed
+  expect_false(detect("We thank Claude Martin, who edited the manuscript."))
+  expect_false(detect("We thank the Llama facility for the use of their equipment."))
+  expect_false(detect("We thank Gemini Observatory staff for the use of the telescope."))
+  expect_false(detect("We acknowledge the use of the Artificial Intelligence core facility."))
+  expect_false(detect("Funding was provided by Bard College."))
+
+  expect_true(detect(paste("During the preparation of this work the authors used",
+                           "Claude 3.5 Sonnet to edit the text.")))
+  expect_true(detect("We used Google Gemini to check the grammar of the manuscript."))
+  expect_true(detect("Llama 3 was used to improve readability of the text."))
+  expect_true(detect("DeepL was used to translate the manuscript."))
+})
