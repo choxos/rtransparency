@@ -36,6 +36,7 @@ Suggests:
     furrr,
     future,
     ggplot2,
+    jsonlite,
     knitr,
     readxl,
     rmarkdown,

@@ -27,12 +27,14 @@ export(rt_plot)
 export(rt_read_pdf)
 export(rt_register)
 export(rt_register_pmc)
+export(rt_registration_timing)
 export(rt_replication)
 export(rt_replication_pmc)
 export(rt_reporting)
 export(rt_reporting_pmc)
 export(rt_score)
 export(rt_summary)
+export(rt_trial_ids)
 importFrom(magrittr,
   "%<>%",
   "%>%"
