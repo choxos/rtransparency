@@ -67,7 +67,8 @@
            "[^.]{0,75}",
            "(manuscript|text|language(?!s? ?model)|writing|written|readabilit|",
            "grammar|grammatic|wording|clarity|concise|editing|proofread|english|",
-           "paraphras|figure|image|illustration|graphic|abstract|translation)"),
+           "paraphras|figure|image|illustration|graphic|abstract|translation|",
+           "draft|introduction|discussion)"),
     # explicit declaration / negation forms.
     "declaration of (generative )?ai", "declared that",
     "authors? (used|declare|confirm|did not)",
@@ -105,6 +106,81 @@
     out$is_ai_disclosed <- TRUE
     out$ai_text <- paste(s[hit], collapse = " | ")
   }
+  out
+}
+
+
+# What a disclosure says: whether AI was used, which tools, and for what.
+#
+# ai_used is TRUE when a disclosure sentence states that AI was used, FALSE when
+# every disclosure sentence states that it was not ("No generative AI was used
+# ..."), and NA when there is no disclosure sentence to read (for example only
+# a section title was found). ai_tools and ai_purpose are read from the
+# sentences that state use, as "; "-separated canonical names.
+.ai_details <- function(sentences) {
+  out <- list(ai_used = NA, ai_tools = "", ai_purpose = "")
+  sentences <- sentences[nzchar(trimws(sentences))]
+  if (!length(sentences)) return(out)
+
+  negated <- grepl(paste0(
+    "\\b(no|not|never|none|without)\\b[^.]{0,60}\\b(ai|generative|llms?|chatgpt|",
+    "artificial intelligence|language models?|tools?|technolog\\w*)\\b[^.]{0,40}",
+    "\\b(was|were|been|is|are)?\\s?(used|employed|utili[sz]ed|involved|applied)|",
+    "\\b(did|do|does|have|has|had|was|were)\\s?n[o']t\\s(use|used|employ|utili[sz]e|",
+    "rely|involve)|\\bnot applicable\\b|\\bno (generative )?(ai|artificial intelligence)",
+    "\\b[^.]{0,30}\\b(was|were) (used|employed)"
+  ), sentences, ignore.case = TRUE, perl = TRUE)
+  # "No AI was used except for grammar checks" still reports use.
+  exception <- grepl("\\b(except|other than|apart from|besides|only (to|for))\\b",
+                     sentences, ignore.case = TRUE, perl = TRUE)
+  used <- !negated | exception
+  out$ai_used <- any(used)
+  if (!out$ai_used) return(out)
+
+  use_text <- paste(sentences[used], collapse = " ")
+  has <- function(p) grepl(p, use_text, ignore.case = TRUE, perl = TRUE)
+
+  tools <- c(
+    ChatGPT = "chatgpt|\\bgpt-?[0-9]|gpt-4o|\\bopenai\\b",
+    Claude = "\\bclaude\\b|\\banthropic\\b",
+    Gemini = "\\bgemini\\b",
+    Bard = "\\bbard\\b",
+    Copilot = "\\bcopilot\\b",
+    Llama = "\\bllama\\b",
+    Mistral = "\\bmistral\\b|\\bmixtral\\b",
+    DeepSeek = "deepseek",
+    Grok = "\\bgrok\\b",
+    Qwen = "\\bqwen",
+    Perplexity = "\\bperplexity\\b",
+    DeepL = "\\bdeepl\\b",
+    QuillBot = "quillbot",
+    Paperpal = "paperpal",
+    Writefull = "writefull",
+    Wordtune = "wordtune",
+    Grammarly = "grammarly",
+    Jasper = "jasper ai",
+    Writesonic = "writesonic",
+    `DALL-E` = "dall-?e",
+    Midjourney = "midjourney",
+    `Stable Diffusion` = "stable diffusion",
+    `ERNIE Bot` = "ernie bot"
+  )
+  out$ai_tools <- paste(names(tools)[vapply(tools, has, logical(1))], collapse = "; ")
+
+  purposes <- c(
+    `language editing` = paste0("grammar|grammatic|proofread|spelling|readabilit|",
+                                "wording|clarity|phras|polish|\\bedit|english|",
+                                "\\blanguage\\b(?!\\s+models?)|concise|fluency|\\bstyle"),
+    translation = "translat",
+    drafting = paste0("draft|\\bwrit(e|ing|ten)\\b[^.]{0,20}\\b(text|section|part|",
+                      "manuscript|paper|abstract)|generat\\w* (the )?(text|content)|",
+                      "summari[sz]"),
+    `figures and images` = "figure|image|illustrat|graphic|diagram|visual",
+    `code and analysis` = "\\bcode\\b|\\bcoding\\b|\\bscripts?\\b|programm|statistic|data analys",
+    `literature search` = "literature|references?\\b|citations?\\b|search"
+  )
+  out$ai_purpose <- paste(names(purposes)[vapply(purposes, has, logical(1))],
+                          collapse = "; ")
   out
 }
 
@@ -159,7 +235,18 @@
 #'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A tibble with the article IDs, the publication `year`, whether an AI
 #'   disclosure was found (`is_ai_pred`, `NA` before 2023), the matched
-#'   statement (`ai_text`) and `is_success`.
+#'   statement (`ai_text`), what the disclosure says (`ai_used`, `ai_tools`,
+#'   `ai_purpose`; see Details) and `is_success`.
+#' @details A disclosure can state use or non-use, and `is_ai_pred` counts
+#'   both. `ai_used` separates them: `TRUE` when a disclosure states that AI
+#'   was used, `FALSE` when it states that no AI was used, and `NA` when there
+#'   is no disclosure or the use cannot be read from it (for example when only
+#'   a section title was found). `ai_tools` names the tools mentioned in
+#'   statements of use (for example `"ChatGPT; DeepL"`) and `ai_purpose` the
+#'   stated purposes, from `"language editing"`, `"translation"`,
+#'   `"drafting"`, `"figures and images"`, `"code and analysis"` and
+#'   `"literature search"`. These are read with the same rules as the
+#'   disclosure itself and have not been separately validated.
 #' @examples
 #' \donttest{
 #' filepath <- system.file(
@@ -200,8 +287,9 @@ rt_ai_pmc <- function(filename, remove_ns = TRUE) {
 #'
 #' @inheritParams rt_coi
 #' @return A tibble with the file name (`article`), the PMID (`NA` if absent),
-#'   whether an AI-use disclosure was found (`is_ai_pred`) and the matched
-#'   statement (`ai_text`).
+#'   whether an AI-use disclosure was found (`is_ai_pred`), the matched
+#'   statement (`ai_text`) and what it says (`ai_used`, `ai_tools`,
+#'   `ai_purpose`), as described in [rt_ai_pmc()].
 #' @examples
 #' \donttest{
 #' # Write a short example article to a temporary text file.
@@ -230,7 +318,8 @@ rt_ai <- function(filename = NULL, text = NULL) {
   # collapses the remaining whitespace before sentence-splitting.
   paper_text <- gsub("([A-Za-z0-9])-\\s*\n\\s*([A-Za-z0-9])", "\\1\\2", paper_text)
   found <- .detect_ai_disclosure(paper_text)
-  list(is_ai_pred = found$is_ai_disclosed, ai_text = found$ai_text)
+  c(list(is_ai_pred = found$is_ai_disclosed, ai_text = found$ai_text),
+    .ai_details(strsplit(found$ai_text, " | ", fixed = TRUE)[[1]]))
 }
 
 
@@ -273,5 +362,7 @@ rt_ai <- function(filename = NULL, text = NULL) {
   is_disclosed <- found$is_ai_disclosed || nchar(sec_title) > 0
   ai_text <- if (nchar(found$ai_text) > 0) found$ai_text else sec_title
   is_ai_pred <- if (is.na(year) || year < 2023) NA else is_disclosed
-  list(year = year, is_ai_pred = is_ai_pred, ai_text = ai_text)
+  details <- if (isTRUE(is_ai_pred)) .ai_details(strsplit(found$ai_text, " | ", fixed = TRUE)[[1]])
+             else list(ai_used = NA, ai_tools = "", ai_purpose = "")
+  c(list(year = year, is_ai_pred = is_ai_pred, ai_text = ai_text), details)
 }

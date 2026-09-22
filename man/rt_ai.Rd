@@ -14,8 +14,9 @@ rt_ai(filename = NULL, text = NULL)
 }
 \value{
 A tibble with the file name (`article`), the PMID (`NA` if absent),
-  whether an AI-use disclosure was found (`is_ai_pred`) and the matched
-  statement (`ai_text`).
+  whether an AI-use disclosure was found (`is_ai_pred`), the matched
+  statement (`ai_text`) and what it says (`ai_used`, `ai_tools`,
+  `ai_purpose`), as described in [rt_ai_pmc()].
 }
 \description{
 Detects whether an article discloses the use (or non-use) of generative AI or
