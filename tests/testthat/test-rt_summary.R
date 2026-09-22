@@ -141,8 +141,10 @@ test_that("bundled datasets have the documented shape", {
   expect_true(all(c("is_coi_pred", "is_open_code", "year", "type") %in% names(rt_demo)))
   expect_setequal(
     names(rt_accuracy),
-    c("variable", "label", "sensitivity", "specificity", "source")
+    c("variable", "label", "sensitivity", "specificity", "tp", "fn", "tn",
+      "fp", "source")
   )
+  expect_true(all(c("is_open_access", "is_reporting_pred") %in% names(rt_demo)))
   expect_true(all(rt_accuracy$sensitivity > 0 & rt_accuracy$sensitivity <= 1))
 })
 
@@ -178,4 +180,13 @@ test_that("rows with a missing group form their own group", {
   s <- rt_summary(df, by = "g", adjust = FALSE)
   expect_equal(nrow(s), 2L)
   expect_equal(s$n_articles[is.na(s$g)], 1)
+})
+
+test_that("rt_accuracy stores counts that reproduce its estimates", {
+  acc <- rtransparency::rt_accuracy
+  expect_true(all(c("tp", "fn", "tn", "fp") %in% names(acc)))
+  expect_equal(acc$sensitivity, round(acc$tp / (acc$tp + acc$fn), 3))
+  expect_equal(acc$specificity, round(acc$tn / (acc$tn + acc$fp), 3))
+  expect_setequal(rtransparency::rt_accuracy_2021$variable,
+                  c("is_coi_pred", "is_fund_pred", "is_register_pred"))
 })

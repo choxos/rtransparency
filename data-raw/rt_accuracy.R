@@ -1,54 +1,77 @@
-# Builds data/rt_accuracy.rda: sensitivity and specificity estimates used by
-# rt_summary() to correct apparent prevalence.
+# Builds data/rt_accuracy.rda and data/rt_accuracy_2021.rda: detector accuracy
+# used by rt_summary() to correct apparent prevalence.
 #
-# For conflicts of interest, funding and protocol registration the published,
-# importance-weighted validation values of Serghiou et al. (2021) are used; the
-# detectors for these indicators are essentially those validated in the paper.
+# rt_accuracy holds the current detectors' accuracy with the validation counts
+# behind each estimate (tp, fn, tn, fp), read from
+# inst/benchmark/results_all_sets.csv, which data-raw/benchmark/evaluate.R
+# writes from a prediction snapshot of the release code. Sources:
 #
-# For data and code sharing the detector is now native (it no longer wraps
-# oddpub), so the package's reproducible benchmark and regression estimates are used
-# instead (see inst/benchmark/results_data_code.md). These are not untouched
-# external validation estimates for the native detector. Users who prefer the
-# paper's oddpub values, or their own, can pass any data frame with `variable`,
-# `sensitivity` and `specificity` columns to rt_summary(accuracy = ).
+# * Conflicts of interest, funding, registration: the held-out, independently
+#   labeled test set of Serghiou et al. (2021), scored with the current
+#   detectors (not the paper's published values, which describe the 2021
+#   detectors).
+# * Data and code sharing: the same held-out set's data/code labels. The
+#   native detector was developed against this set, so these are regression
+#   estimates, not untouched validation.
+# * Novelty: the maintainer's hand-labeled novelty/replication gold set.
+# * Replication: sensitivity from the replication-enriched sample (111
+#   positives), specificity from the representative 2023 sample.
+# * Reporting guideline: the 1000-article 2023 sample, hand-labeled.
 #
-# For novelty the estimate comes from the maintainer's hand-labeled gold set
-# (see inst/benchmark/results_novelty_replication.md). For replication the
-# sensitivity comes from a 111-positive replication-enriched validation
-# (inst/benchmark/results_replication_enriched.md) and the specificity from the
-# representative 2023 1000-article sample; earlier releases omitted replication
-# for lack of a stable positive sample.
+# Open-access licensing (structured metadata; specificity not estimable) and
+# AI-use disclosure (9 positives) are deliberately absent, so rt_summary()
+# reports them uncorrected.
+#
+# rt_accuracy_2021 keeps the published, importance-weighted estimates of
+# Serghiou et al. (2021) for conflicts of interest, funding and registration,
+# for comparability with that paper.
+#
+# Run from the repo root after regenerating results_all_sets.csv:
+#   Rscript data-raw/rt_accuracy.R
 
-# For reporting-guideline use the estimate comes from a hand-labeled validation of
-# the full 1000-article 2023 sample (every article read and labeled by the
-# maintainer; see inst/benchmark/results_oa_reporting.md).
-#
-# Open-access licensing is deliberately NOT in this table: it is structured
-# metadata extraction from the JATS <license> element (license-type exact-match
-# 99.8%), not a behavioral detector, and its specificity is not estimable from
-# the open-access subset (a single negative). rt_summary() therefore reports its
-# prevalence uncorrected, like AI-use disclosure.
-
-rt_accuracy <- tibble::tibble(
-  variable = c(
-    "is_coi_pred", "is_fund_pred", "is_register_pred",
-    "is_open_data", "is_open_code", "is_novelty_pred", "is_replication_pred",
-    "is_reporting_pred"
-  ),
-  label = c(
-    "Conflicts of interest", "Funding disclosure",
-    "Protocol registration", "Data sharing", "Code sharing", "Novelty",
-    "Replication", "Reporting guideline"
-  ),
-  sensitivity = c(0.992, 0.997, 0.955, 0.765, 0.881, 0.838, 0.928, 0.938),
-  specificity = c(0.995, 0.981, 0.997, 0.990, 0.995, 0.952, 0.985, 0.990),
-  source = c(
-    rep("Serghiou et al. 2021, PLOS Biology (doi:10.1371/journal.pbio.3001107)", 3),
-    rep("rtransparency native detector, reproducible benchmark and regression estimate (inst/benchmark)", 2),
-    "rtransparency novelty/replication hand-labeled benchmark (inst/benchmark/results_novelty_replication.md)",
-    "rtransparency replication-enriched validation, sensitivity n=111 positives; specificity from the 2023 1000-article sample (inst/benchmark/results_replication_enriched.md)",
-    "rtransparency hand-labeled validation, 1000-article 2023 sample, 65 positives (inst/benchmark/results_oa_reporting.md)"
+res <- utils::read.csv("inst/benchmark/results_all_sets.csv", stringsAsFactors = FALSE)
+cnt <- function(set, indicator) {
+  r <- res[res$set == set & res$indicator == indicator, ]
+  if (nrow(r) != 1) stop("missing ", set, "/", indicator, " in results_all_sets.csv")
+  r
+}
+row <- function(variable, label, sens_from, spec_from, source) {
+  s <- cnt(sens_from[1], sens_from[2])
+  p <- cnt(spec_from[1], spec_from[2])
+  tibble::tibble(
+    variable = variable, label = label,
+    sensitivity = round(s$TP / (s$TP + s$FN), 3),
+    specificity = round(p$TN / (p$TN + p$FP), 3),
+    tp = s$TP, fn = s$FN, tn = p$TN, fp = p$FP,
+    source = source
   )
+}
+heldout <- "Serghiou et al. (2021) held-out test labels, current detector (inst/benchmark/results.md)"
+
+rt_accuracy <- rbind(
+  row("is_coi_pred", "Conflicts of interest", c("heldout", "coi"), c("heldout", "coi"), heldout),
+  row("is_fund_pred", "Funding disclosure", c("heldout", "fund"), c("heldout", "fund"), heldout),
+  row("is_register_pred", "Protocol registration", c("heldout", "register"), c("heldout", "register"), heldout),
+  row("is_open_data", "Data sharing", c("heldout", "data"), c("heldout", "data"),
+      "Serghiou et al. (2021) held-out data labels; regression estimate for the native detector (inst/benchmark/results_data_code.md)"),
+  row("is_open_code", "Code sharing", c("heldout", "code"), c("heldout", "code"),
+      "Serghiou et al. (2021) held-out code labels; regression estimate for the native detector (inst/benchmark/results_data_code.md)"),
+  row("is_novelty_pred", "Novelty", c("novrep", "nov"), c("novrep", "nov"),
+      "rtransparency novelty/replication hand-labeled gold set (inst/benchmark/results_novelty_replication.md)"),
+  row("is_replication_pred", "Replication", c("repenr", "rep"), c("s2023", "rep"),
+      "sensitivity: replication-enriched sample (inst/benchmark/results_replication_enriched.md); specificity: 2023 1000-article sample"),
+  row("is_reporting_pred", "Reporting guideline", c("oarep", "reporting"), c("oarep", "reporting"),
+      "rtransparency hand-labeled 2023 1000-article sample (inst/benchmark/results_oa_reporting.md)")
 )
 
+rt_accuracy_2021 <- tibble::tibble(
+  variable = c("is_coi_pred", "is_fund_pred", "is_register_pred"),
+  label = c("Conflicts of interest", "Funding disclosure", "Protocol registration"),
+  sensitivity = c(0.992, 0.997, 0.955),
+  specificity = c(0.995, 0.981, 0.997),
+  source = "Serghiou et al. 2021, PLOS Biology (doi:10.1371/journal.pbio.3001107), importance-weighted"
+)
+
+print(rt_accuracy[, 1:8])
 save(rt_accuracy, file = "data/rt_accuracy.rda", version = 2)
+save(rt_accuracy_2021, file = "data/rt_accuracy_2021.rda", version = 2)

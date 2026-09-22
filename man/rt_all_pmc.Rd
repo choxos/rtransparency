@@ -50,6 +50,6 @@ filepath <- system.file(
 )
 
 # Identify and extract meta-data and indicators of transparency.
-results_table <- rt_all_pmc(filepath, remove_ns = TRUE, all_meta = TRUE)
+results_table <- rt_all_pmc(filepath, all_meta = TRUE)
 }
 }

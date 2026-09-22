@@ -32,6 +32,6 @@ does not.
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_oa_pmc(filepath, remove_ns = TRUE)
+rt_oa_pmc(filepath)
 }
 }

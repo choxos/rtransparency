@@ -33,6 +33,6 @@ filepath <- system.file(
 filepaths <- list(filepath)
 
 # Identify and extract indicators of data and code sharing
-results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
+results_table <- rt_data_code_pmc_list(filepaths)
 }
 }

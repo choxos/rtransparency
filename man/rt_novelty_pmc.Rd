@@ -32,6 +32,6 @@ filepath <- system.file(
 )
 
 # Identify and extract novelty claims.
-results_table <- rt_novelty_pmc(filepath, remove_ns = TRUE)
+results_table <- rt_novelty_pmc(filepath)
 }
 }

@@ -57,10 +57,11 @@ second with an API key (set the `ENTREZ_KEY` environment variable or pass
 `api_key`).
 }
 \examples{
-\dontrun{
+\donttest{
+# Needs internet access; failures are reported per identifier.
 dir <- file.path(tempdir(), "pmc")
-got <- rt_fetch_pmc(c("PMC7071725", "32171256"), dir)
-res <- rt_all_pmc_dir(dir)
+got <- rt_fetch_pmc("PMC7071725", dir, progress = FALSE)
+got
 }
 }
 \seealso{

@@ -46,6 +46,6 @@ The year gate uses the earliest publication year the XML records
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_ai_pmc(filepath, remove_ns = TRUE)
+rt_ai_pmc(filepath)
 }
 }

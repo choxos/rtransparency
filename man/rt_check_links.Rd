@@ -33,11 +33,12 @@ requests (status 403) or header-only requests (405) although the page
 exists, so a failing status is a prompt to look, not proof of a dead link.
 }
 \examples{
-\dontrun{
+\donttest{
+# Needs internet access; unreachable links are reported, not errors.
 res <- rt_data_code_pmc(system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 ))
-rt_check_links(res$open_data_links)
+if (capabilities("libcurl")) rt_check_links(res$open_data_links)
 }
 }
 \seealso{

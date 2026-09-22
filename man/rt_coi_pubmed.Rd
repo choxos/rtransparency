@@ -22,8 +22,9 @@ holds the conflict-of-interest disclosure also when it is absent from the
 full-text XML (the main source of missed disclosures in the XML detector).
 }
 \examples{
-\dontrun{
-rt_coi_pubmed(c("32171256", "36696006"))
+\donttest{
+# Needs internet access.
+try(rt_coi_pubmed(c("32171256", "36696006")))
 }
 }
 \seealso{

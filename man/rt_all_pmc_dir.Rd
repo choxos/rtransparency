@@ -71,7 +71,7 @@ no plan it runs sequentially. Install \pkg{furrr} and \pkg{future} to use it.
 # Process every PMC XML in a directory (here, the bundled example file).
 dir <- system.file("extdata", package = "rtransparency")
 out <- tempfile(fileext = ".csv")
-res <- rt_all_pmc_dir(dir, remove_ns = TRUE, output = out, parallel = FALSE)
+res <- rt_all_pmc_dir(dir, output = out, parallel = FALSE)
 }
 }
 \seealso{

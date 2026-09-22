@@ -30,10 +30,12 @@ Note that the accuracy estimates in [rt_accuracy] describe the full-text
 detector alone; with this fallback the sensitivity is higher.
 }
 \examples{
-\dontrun{
-res <- rt_all_pmc_dir("my_xml_dir")
-res <- rt_fill_coi_pubmed(res)
-table(res$coi_source, useNA = "ifany")
+\donttest{
+# Needs internet access.
+res <- rt_all_pmc(system.file(
+  "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+))
+res <- try(rt_fill_coi_pubmed(res))
 }
 }
 \seealso{

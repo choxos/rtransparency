@@ -1,42 +1,68 @@
 #' Detector accuracy estimates
 #'
-#' Sensitivity and specificity estimates for each transparency detector, used by
-#' [rt_summary()] to correct an apparent prevalence for detector error
-#' (the Rogan-Gladen correction).
+#' Sensitivity and specificity of each transparency detector, with the
+#' validation counts behind them, used by [rt_summary()] to correct an apparent
+#' prevalence for detector error (the Rogan-Gladen correction) and to carry the
+#' uncertainty of these estimates into the corrected interval.
 #'
-#' For conflicts of interest, funding and protocol registration these are the
-#' published, importance-weighted validation values of Serghiou et al. (2021);
-#' the detectors for these indicators are essentially those validated in the
-#' paper. For data and code sharing the detector is implemented natively in this
-#' package (it no longer wraps `oddpub`), so the package's reproducible
-#' benchmark and regression estimates are used instead (see `inst/benchmark`).
-#' These data/code estimates are not an untouched external validation of the
-#' native detector; supply your own values to [rt_summary()] via its `accuracy`
-#' argument when you have study-specific or externally validated estimates.
-#' Novelty's estimate comes from a maintainer-built hand-labeled gold set
-#' (see `inst/benchmark/results_novelty_replication.md`). Replication's
-#' sensitivity comes from a 111-positive replication-enriched validation
-#' (see `inst/benchmark/results_replication_enriched.md`), with the specificity
-#' from the 2023 1000-article sample. AI-use disclosure is not included (its
-#' prevalence is too low in unselected literature for a stable estimate), so
-#' [rt_summary()] reports it uncorrected.
+#' Every row describes the detectors shipped in this version, scored on
+#' hand-labeled articles (see `inst/benchmark/results_all_sets.csv` and the
+#' reports beside it):
 #'
-#' @format A tibble with 8 rows and 5 columns:
+#' * Conflicts of interest, funding and registration: the held-out, independently
+#'   labeled test set of Serghiou et al. (2021). These are not the paper's
+#'   published values, which describe the 2021 detectors; those are kept in
+#'   [rt_accuracy_2021].
+#' * Data and code sharing: the same held-out set's data and code labels. The
+#'   native detector was developed against this set, so these are regression
+#'   estimates rather than an untouched validation.
+#' * Novelty: the maintainer's hand-labeled novelty/replication gold set.
+#' * Replication: sensitivity from a replication-enriched sample (111
+#'   positives) and specificity from the representative 2023 sample, so the
+#'   correction mixes designs.
+#' * Reporting guideline: the 1000-article 2023 sample, hand-labeled.
+#'
+#' Open-access licensing (structured metadata whose specificity cannot be
+#' estimated in the open-access subset) and AI-use disclosure (too few
+#' positives) are not included, so [rt_summary()] reports them uncorrected.
+#' Supply your own table to [rt_summary()] via its `accuracy` argument when you
+#' have study-specific or external estimates; the `data-raw/validation/`
+#' scripts produce one in this format.
+#'
+#' @format A tibble with 8 rows and 9 columns:
 #' \describe{
 #'   \item{variable}{Indicator column name, as returned by [rt_all_pmc()].}
 #'   \item{label}{Human-readable indicator name.}
 #'   \item{sensitivity}{Detector sensitivity (true-positive rate), 0-1.}
 #'   \item{specificity}{Detector specificity (true-negative rate), 0-1.}
+#'   \item{tp, fn}{True positives and false negatives behind `sensitivity`.}
+#'   \item{tn, fp}{True negatives and false positives behind `specificity`.}
 #'   \item{source}{Where the estimate comes from.}
 #' }
-#' @source Serghiou S, Contopoulos-Ioannidis DG, Boyack KW, Riedel N, Wallach JD,
-#'   Ioannidis JPA (2021). Assessment of transparency indicators across the
-#'   biomedical literature: How open is open? \emph{PLOS Biology} 19(3):
-#'   e3001107. \doi{10.1371/journal.pbio.3001107}. Data and code values: this
-#'   package's reproducible benchmark and regression estimates
-#'   (`inst/benchmark/results_data_code.md`).
-#' @seealso [rt_summary()]
+#' @source This package's benchmarks (`inst/benchmark/`), including the held-out
+#'   labels of Serghiou S, Contopoulos-Ioannidis DG, Boyack KW, Riedel N,
+#'   Wallach JD, Ioannidis JPA (2021). Assessment of transparency indicators
+#'   across the biomedical literature: How open is open? \emph{PLOS Biology}
+#'   19(3): e3001107. \doi{10.1371/journal.pbio.3001107}.
+#' @seealso [rt_summary()], [rt_accuracy_2021]
 "rt_accuracy"
+
+
+#' Published 2021 detector accuracy estimates
+#'
+#' The importance-weighted sensitivity and specificity that Serghiou et al.
+#' (2021) published for their conflict-of-interest, funding and registration
+#' detectors. They describe the 2021 detectors, not the current ones (see
+#' [rt_accuracy]), and are kept for comparability with that paper:
+#' `rt_summary(data, accuracy = rt_accuracy_2021)`. Without validation counts,
+#' [rt_summary()] uses the fixed interval for them.
+#'
+#' @format A tibble with 3 rows and 5 columns: `variable`, `label`,
+#'   `sensitivity`, `specificity` and `source`.
+#' @source Serghiou et al. (2021), PLOS Biology 19(3): e3001107.
+#'   \doi{10.1371/journal.pbio.3001107}.
+#' @seealso [rt_accuracy]
+"rt_accuracy_2021"
 
 
 #' Simulated transparency indicators for a corpus of articles

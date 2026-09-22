@@ -22,8 +22,9 @@ Maps PubMed IDs, PMCIDs and DOIs to one another with the NCBI PMC ID
 Converter API. Only articles in PubMed Central have a PMCID.
 }
 \examples{
-\dontrun{
-rt_convert_ids(c("32171256", "10.1186/s12874-020-0914-6", "PMC7071725"))
+\donttest{
+# Needs internet access.
+try(rt_convert_ids(c("32171256", "10.1186/s12874-020-0914-6", "PMC7071725")))
 }
 }
 \seealso{
