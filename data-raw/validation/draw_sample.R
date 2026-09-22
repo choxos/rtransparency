@@ -15,11 +15,16 @@ key <- Sys.getenv("ENTREZ_KEY")
 pause <- if (nzchar(key)) 0.11 else 0.34
 base <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc"
 q <- function(term, retstart, retmax) {
-  Sys.sleep(pause)
   uri <- paste0(base, "&term=", utils::URLencode(term, reserved = TRUE),
                 "&retstart=", retstart, "&retmax=", retmax,
                 if (nzchar(key)) paste0("&api_key=", key))
-  xml2::read_xml(uri)
+  # Retry with backoff: NCBI answers 429 when requests arrive too fast.
+  for (attempt in 1:6) {
+    Sys.sleep(pause * 2^(attempt - 1))
+    doc <- tryCatch(suppressWarnings(xml2::read_xml(uri)), error = function(e) NULL)
+    if (!is.null(doc)) return(doc)
+  }
+  stop("ESearch failed repeatedly: ", uri)
 }
 # ESearch cannot page past the first 9,999 results, so the PMC UID space is
 # bisected until every window holds at most 9,999 matches; articles are then
