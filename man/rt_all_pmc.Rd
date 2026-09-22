@@ -4,12 +4,14 @@
 \alias{rt_all_pmc}
 \title{Identify and extract all transparency indicators from a PMC XML.}
 \usage{
-rt_all_pmc(filename, remove_ns = FALSE, all_meta = FALSE)
+rt_all_pmc(filename, remove_ns = TRUE, all_meta = FALSE)
 }
 \arguments{
 \item{filename}{The name of the PMC XML as a string.}
 
-\item{remove_ns}{TRUE if an XML namespace exists, else FALSE (default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 
 \item{all_meta}{TRUE extracts all meta-data, FALSE extracts some (default).}
 }

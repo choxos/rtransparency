@@ -130,7 +130,9 @@
 #' later; for earlier articles `is_ai_pred` is `NA`.
 #'
 #' @param filename The filename of the PMC XML file to analyze.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A tibble with the article IDs, the publication `year`, whether an AI
 #'   disclosure was found (`is_ai_pred`, `NA` before 2023), the matched
 #'   statement (`ai_text`) and `is_success`.
@@ -142,7 +144,7 @@
 #' rt_ai_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_ai_pmc <- function(filename, remove_ns = FALSE) {
+rt_ai_pmc <- function(filename, remove_ns = TRUE) {
 
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
   if (inherits(article_xml, "error")) {

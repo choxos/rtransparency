@@ -8,7 +8,7 @@ rt_all_pmc_dir(
   dir,
   pattern = "\\\\.xml$",
   recursive = FALSE,
-  remove_ns = FALSE,
+  remove_ns = TRUE,
   all_meta = FALSE,
   output = NULL,
   parallel = FALSE,

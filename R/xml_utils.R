@@ -736,31 +736,18 @@
 
 #' Read an XML file into an xml_document
 #'
-#' Returns the file as an xml_document.
+#' Reads the file, removes default namespaces and re-roots it at <article>.
+#' Namespaces are always stripped: the detectors address JATS elements by bare
+#' name, so a default namespace (as in OAI-PMH records) would otherwise make
+#' every XPath miss and every indicator silently FALSE.
 #'
 #' @param filename The filepath to the PMC XML file of interest.
-#' @param remove_ns Whether to remove the XML namespace or not (default = FALSE).
+#' @param remove_ns Ignored; kept so existing callers need not change.
 #' @return The PMC XML as an xml_document.
 #' @noRd
-.get_xml <- function(filename, remove_ns = FALSE) {
-
-  if (remove_ns) {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml() %>%
-      xml2::xml_ns_strip()
-
-  } else {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml()
-
-  }
-
-  article_xml_with_correct_root <- .reroot_xml(article_xml)
-  return(article_xml_with_correct_root)
+.get_xml <- function(filename, remove_ns = TRUE) {
+  article_xml <- xml2::xml_ns_strip(xml2::read_xml(filename))
+  .reroot_xml(article_xml)
 }
 
 

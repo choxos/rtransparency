@@ -7,7 +7,9 @@
 #'     depends on \code{oddpub} or \code{tokenizers}.
 #'
 #' @param filename The filename of the XML file to be analyzed as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @param specificity Retained for backward compatibility; it no longer changes
 #'     the result. The native detector extracts a fixed, broad set of article
 #'     text (body paragraphs and titles, back matter, footnotes and supplements)
@@ -77,7 +79,9 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
 #'     or Code exist, it will extract the relevant text for each.
 #'
 #' @param filenames A list of the PMC XML filenames as strings.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @param specificity Retained for backward compatibility; see
 #'     \code{\link{rt_data_code_pmc}}.
 #' @return A dataframe of results, one row per file.

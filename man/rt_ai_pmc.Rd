@@ -4,12 +4,14 @@
 \alias{rt_ai_pmc}
 \title{Identify disclosure of generative-AI use from a PMC XML file.}
 \usage{
-rt_ai_pmc(filename, remove_ns = FALSE)
+rt_ai_pmc(filename, remove_ns = TRUE)
 }
 \arguments{
 \item{filename}{The filename of the PMC XML file to analyze.}
 
-\item{remove_ns}{TRUE if an XML namespace exists, else FALSE (default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 }
 \value{
 A tibble with the article IDs, the publication `year`, whether an AI

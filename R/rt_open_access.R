@@ -101,8 +101,8 @@
   license_text <- .get_text(article_xml, "front/article-meta//license", FALSE)
 
   # The license URL lives on the <license> href, a <license-ref>, or an
-  # <ext-link> inside the license (namespaces are stripped when remove_ns = TRUE,
-  # so xlink:href becomes href; @*[...] also catches the namespaced form).
+  # <ext-link> inside the license. The attribute may be xlink:href or a bare
+  # href depending on the source, so match it by local name.
   url_nodes <- tryCatch(
     xml2::xml_find_all(
       article_xml,
@@ -137,7 +137,9 @@
 #' does not.
 #'
 #' @param filename The filename of the PMC XML file to analyze.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A tibble with the article IDs, whether the article is openly licensed
 #'   (`is_open_access`), the canonical license (`oa_license`, `""` when none is
 #'   found), the license statement (`oa_text`) and `is_success`.
@@ -149,7 +151,7 @@
 #' rt_oa_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_oa_pmc <- function(filename, remove_ns = FALSE) {
+rt_oa_pmc <- function(filename, remove_ns = TRUE) {
 
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
   if (inherits(article_xml, "error")) {

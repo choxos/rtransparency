@@ -1367,7 +1367,9 @@
 #'     exists. If a Funding statement exists, it extracts it.
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A dataframe of results. It returns the unique article identifiers,
 #'     whether this article was deemed a research, review or systematic review,
 #'     whether the text was deemed relevant to registration (e.g. contained the
@@ -1391,7 +1393,7 @@
 #' results_table <- rt_register_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_register_pmc <- function(filename, remove_ns = FALSE) {
+rt_register_pmc <- function(filename, remove_ns = TRUE) {
 
   # TODO Update to match format of rt_coi_pmc.
 

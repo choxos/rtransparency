@@ -9,7 +9,9 @@ rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
 \arguments{
 \item{filename}{The filename of the XML file to be analyzed as a string.}
 
-\item{remove_ns}{TRUE if an XML namespace exists, else FALSE (default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 
 \item{specificity}{Retained for backward compatibility; it no longer changes
 the result. The native detector extracts a fixed, broad set of article

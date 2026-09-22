@@ -214,7 +214,9 @@
 #'     reporting-guideline detection as [rt_reporting_pmc()].
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @param all_meta TRUE extracts all meta-data, FALSE extracts some (default).
 #' @return A dataframe of results. It returns the unique identifiers of the
 #'     article, whether each indicator of transparency was identified
@@ -241,7 +243,7 @@
 #' results_table <- rt_all_pmc(filepath, remove_ns = TRUE, all_meta = TRUE)
 #' }
 #' @export
-rt_all_pmc <- function(filename, remove_ns = FALSE, all_meta = FALSE) {
+rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)

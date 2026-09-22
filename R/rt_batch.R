@@ -44,7 +44,7 @@
 #' }
 #' @export
 rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
-                           remove_ns = FALSE, all_meta = FALSE,
+                           remove_ns = TRUE, all_meta = FALSE,
                            output = NULL, parallel = FALSE, progress = TRUE,
                            chunk_size = 200L) {
 

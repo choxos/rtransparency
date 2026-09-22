@@ -81,7 +81,9 @@
 #'     independently confirming findings from a prior study in a new sample.
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A tibble of results. It returns the unique identifiers of the
 #'     article, whether a replication component was found, the relevant text
 #'     and whether each pattern-matching function identified relevant text.
@@ -96,7 +98,7 @@
 #' results_table <- rt_replication_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_replication_pmc <- function(filename, remove_ns = FALSE) {
+rt_replication_pmc <- function(filename, remove_ns = TRUE) {
 
   # Identifier columns only; the prediction, extracted text and per-pattern flags
   # are supplied by .rt_replication_pmc() below and must not be duplicated here.

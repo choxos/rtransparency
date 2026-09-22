@@ -6,8 +6,9 @@
 #'     counts.
 #'
 #' @param filename The path to the PMC XML file as a string.
-#' @param remove_ns TRUE if an XML namespace should be removed, else FALSE
-#'     (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A one-row tibble of metadata. The column `is_success` indicates
 #'     whether the file was parsed successfully.
 #' @examples
@@ -18,7 +19,7 @@
 #' rt_meta_pmc(filepath, remove_ns = TRUE)
 #' }
 #' @export
-rt_meta_pmc <- function(filename, remove_ns = FALSE) {
+rt_meta_pmc <- function(filename, remove_ns = TRUE) {
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
