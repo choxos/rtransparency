@@ -41,3 +41,14 @@ test_that("rt_convert_ids and rt_fetch_pmc work against NCBI", {
   expect_true(got$has_body[1])
   expect_true(rt_all_pmc(got$file[1])$is_success)
 })
+
+test_that("rt_fetch_pmc can download from Europe PMC", {
+  skip_on_cran()
+  skip_if_offline("www.ebi.ac.uk")
+  got <- rt_fetch_pmc("PMC7071725", tempfile("epmc_"), source = "europepmc",
+                      progress = FALSE)
+  expect_true(got$is_success)
+  res <- rt_all_pmc(got$file)
+  expect_identical(res$pmcid_pmc, "PMC7071725")
+  expect_true(res$is_coi_pred)
+})

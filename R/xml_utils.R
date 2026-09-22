@@ -19,7 +19,7 @@
     "front/journal-meta/publisher",
     "front/article-meta//aff//institution",
     "front/article-meta//aff//country",
-    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]/year",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic') or not(@pub-type or @date-type)]/year",
     "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]/year"
   )
 
@@ -251,7 +251,7 @@
     "front/article-meta//aff//institution",
     "front/article-meta//aff//country",
     "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]",
-    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]/year",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic') or not(@pub-type or @date-type)]/year",
     "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]",
     "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]/year",
     "front/article-meta//license"

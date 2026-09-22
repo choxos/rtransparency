@@ -29,6 +29,12 @@
 #'   ("32171256") or DOIs ("10.1186/s12874-020-0914-6").
 #' @param dir The directory to save the XML files in (created if needed).
 #' @param overwrite Whether to download again files that already exist.
+#' @param source Where to download from: `"ncbi"` (NCBI PMC, the default,
+#'   with the OAI-PMH service as fallback) or `"europepmc"` (the Europe PMC
+#'   REST API). The detectors give the same results on both in a comparison of
+#'   13 benchmark articles (`inst/benchmark/results_europepmc_parity.md`);
+#'   Europe PMC omits some license URLs, so `oa_license` is then read from the
+#'   license text.
 #' @param api_key An NCBI API key; defaults to the `ENTREZ_KEY` environment
 #'   variable.
 #' @param progress Whether to show a progress bar.
@@ -44,7 +50,9 @@
 #' }
 #' @export
 rt_fetch_pmc <- function(ids, dir = ".", overwrite = FALSE,
+                         source = c("ncbi", "europepmc"),
                          api_key = Sys.getenv("ENTREZ_KEY"), progress = TRUE) {
+  source <- match.arg(source)
   if (!is.character(ids) && !is.numeric(ids)) {
     stop("`ids` must be a character vector of identifiers.", call. = FALSE)
   }
@@ -59,7 +67,7 @@ rt_fetch_pmc <- function(ids, dir = ".", overwrite = FALSE,
     pmcid[!is_pmc] <- conv$pmcid
   }
 
-  pause <- if (nzchar(api_key)) 0.11 else 0.34
+  pause <- if (source == "europepmc" || nzchar(api_key)) 0.11 else 0.34
   out <- tibble::tibble(id = ids, pmcid = pmcid, file = NA_character_,
                         is_success = FALSE, has_body = NA,
                         error = ifelse(is.na(pmcid), "No PMCID found", NA_character_))
@@ -74,7 +82,8 @@ rt_fetch_pmc <- function(ids, dir = ".", overwrite = FALSE,
     cached <- !overwrite && file.exists(dest) && file.info(dest)$size > 0
     res <- tryCatch({
       if (!cached) {
-        doc <- .fetch_pmc_doc(pmcid[i], api_key = api_key)
+        doc <- if (source == "ncbi") .fetch_pmc_doc(pmcid[i], api_key = api_key)
+               else .fetch_europepmc_doc(pmcid[i])
         xml2::write_xml(doc, dest)
         Sys.sleep(pause)
       }
@@ -222,6 +231,13 @@ rt_convert_ids <- function(ids, email = NULL) {
          call. = FALSE)
   }
   record
+}
+
+
+# Retrieve full-text XML from the Europe PMC REST API.
+.fetch_europepmc_doc <- function(pmcid) {
+  .read_xml_retry(paste0("https://www.ebi.ac.uk/europepmc/webservices/rest/",
+                         pmcid, "/fullTextXML"))
 }
 
 

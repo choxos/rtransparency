@@ -8,6 +8,7 @@ rt_fetch_pmc(
   ids,
   dir = ".",
   overwrite = FALSE,
+  source = c("ncbi", "europepmc"),
   api_key = Sys.getenv("ENTREZ_KEY"),
   progress = TRUE
 )
@@ -19,6 +20,13 @@ rt_fetch_pmc(
 \item{dir}{The directory to save the XML files in (created if needed).}
 
 \item{overwrite}{Whether to download again files that already exist.}
+
+\item{source}{Where to download from: `"ncbi"` (NCBI PMC, the default,
+with the OAI-PMH service as fallback) or `"europepmc"` (the Europe PMC
+REST API). The detectors give the same results on both in a comparison of
+13 benchmark articles (`inst/benchmark/results_europepmc_parity.md`);
+Europe PMC omits some license URLs, so `oa_license` is then read from the
+license text.}
 
 \item{api_key}{An NCBI API key; defaults to the `ENTREZ_KEY` environment
 variable.}
