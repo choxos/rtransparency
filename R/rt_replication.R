@@ -69,7 +69,7 @@ rt_replication <- function(filename = NULL, text = NULL) {
     purrr::map(gsub, pattern = broken_2, replacement = "\\1\\3") %>%
     purrr::map(strsplit, "\n| \\*") %>%
     unlist() %>%
-    utf8::utf8_encode()
+    .clean_txt()
 
   index_any$replication_replicat_1    <- .which_replication_replicat_1(splitted)
   index_any$replication_confirm_1     <- .which_replication_confirm_1(splitted)

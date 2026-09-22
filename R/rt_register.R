@@ -95,7 +95,7 @@ rt_register <- function(filename = NULL, text = NULL) {
     purrr::map(gsub, pattern = broken_3, replacement = "\\1\\2") %>%
     purrr::map(strsplit, "\n| \\*") %>%
     unlist() %>%
-    utf8::utf8_encode()
+    .clean_txt()
   paragraphs <- paragraphs[nzchar(trimws(paragraphs))]
 
   # A TXT file carries no XML structure. Route all text through the Methods slot

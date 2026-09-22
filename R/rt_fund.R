@@ -45,15 +45,15 @@ rt_fund <- function(filename = NULL, text = NULL) {
 
   # Fix common PDF-to-text artifacts (hyphenation and mid-word line breaks),
   # then split into paragraphs.
-  broken_1 <- "([a-z]+)-\n*([a-z]+)"
-  broken_2 <- "([a-z]+)(|,|;)\n*([a-z]+)"
+  broken_1 <- "([a-z]+)-\n+([a-z]+)"
+  broken_2 <- "([a-z]+)(|,|;)\n+([a-z]+)"
   paragraphs <-
     paper_text %>%
     purrr::map(gsub, pattern = broken_1, replacement = "\\1\\2") %>%
     purrr::map(gsub, pattern = broken_2, replacement = "\\1\\3") %>%
     purrr::map(strsplit, "\n| \\*") %>%
     unlist() %>%
-    utf8::utf8_encode()
+    .clean_txt()
   paragraphs <- paragraphs[nzchar(trimws(paragraphs))]
 
   article_ls <- list(ack = character(0), body = paragraphs,

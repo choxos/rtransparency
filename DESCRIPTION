@@ -31,7 +31,6 @@ Imports:
     stringr,
     tibble,
     tidyselect,
-    utf8,
     xml2
 Suggests:
     furrr,

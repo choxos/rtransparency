@@ -46,7 +46,33 @@ rt_coi <- function(filename = NULL, text = NULL) {
   paragraphs <- paragraphs[nzchar(trimws(paragraphs))]
   article_ls <- list(ack = character(0), body = paragraphs,
                      footnotes = character(0))
-  pmc_coi_ls <- list(is_coi_pred = FALSE, coi_text = "")
+  # A COI heading line is the plain-text analogue of the XML section-title
+  # route, which the PMC path tries first.
+  title_text <- .coi_title_txt(paragraphs, dict)
+  pmc_coi_ls <- list(is_coi_pred = nzchar(title_text), coi_text = title_text)
   res <- .rt_coi_pmc(article_ls, pmc_coi_ls, dict)
   list(is_coi_pred = res$is_coi_pred, coi_text = res$coi_text)
+}
+
+
+# Find a conflict-of-interest heading in plain text ("Competing interests",
+# "Declaration of interests", "Disclosures", ...) and return it with its
+# statement: the rest of the line after "Heading:", or the next non-empty line
+# when the heading stands alone ("Declaration of interests" / "None."). Uses
+# the same title vocabulary as the PMC section-title route, minus the bare
+# "Declaration(s)", which in plain text usually heads an unrelated block.
+.coi_title_txt <- function(paragraphs, dict) {
+  titles <- c(dict$conflict_title,
+              "D(?i)eclaration of competing interest(|s)(?-i)",
+              setdiff(dict$disclosure_coi_title, "D(?i)eclaration(|s)(?-i)"))
+  heading <- paste0("^\\s*(?:[0-9]+\\.?\\s*)?", .encase(titles))
+  alone <- grepl(paste0(heading, "\\s*[:.]?\\s*$"), paragraphs, perl = TRUE)
+  inline <- grepl(paste0(heading, "\\s*[:.]\\s*\\S"), paragraphs, perl = TRUE)
+  for (i in which(alone | inline)) {
+    if (inline[i]) return(trimws(paragraphs[i]))
+    if (i < length(paragraphs)) {
+      return(paste(trimws(paragraphs[i]), trimws(paragraphs[i + 1]), sep = ": "))
+    }
+  }
+  ""
 }

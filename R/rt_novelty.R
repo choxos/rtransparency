@@ -76,7 +76,7 @@ rt_novelty <- function(filename = NULL, text = NULL) {
     purrr::map(gsub, pattern = broken_2, replacement = "\\1\\3") %>%
     purrr::map(strsplit, "\n| \\*") %>%
     unlist() %>%
-    utf8::utf8_encode()
+    .clean_txt()
 
   # Novelty claims frequently occur in abstracts, introductions and discussion,
   # but the external XML validation also found many explicit first-time claims

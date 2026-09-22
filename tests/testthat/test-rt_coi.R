@@ -103,3 +103,12 @@ test_that("rt_read_pdf -> writeLines -> text detector workflow works end to end"
   expect_equal(ai$article, basename(txt))
   expect_false(is.na(ai$is_ai_pred))
 })
+
+test_that("plain-text COI headings are recognized like XML section titles", {
+  coi <- function(x) rtransparency::rt_coi(text = x)$is_coi_pred
+  expect_true(coi(c("Declaration of interests", "None.")))
+  expect_true(coi(c("Competing interests", "None.")))
+  expect_true(coi(c("Declaration of competing interest", "None.")))
+  expect_true(coi("Declaration of interests: JS reports grants from Pfizer."))
+  expect_false(coi(c("Declarations", "Ethics approval: approved by the IRB.")))
+})

@@ -164,6 +164,17 @@
 }
 
 
+#' Clean paragraphs of plain text: drop invalid UTF-8 bytes and turn control
+#'     characters (form feeds and the like from PDF conversion) into spaces.
+#'     Replaces utf8::utf8_encode(), whose output depends on the session
+#'     locale (it escapes non-ASCII text outside UTF-8 locales).
+#' @noRd
+.clean_txt <- function(x) {
+  x <- iconv(x, from = "UTF-8", to = "UTF-8", sub = "")
+  gsub("[\\x01-\\x08\\x0b-\\x1f\\x7f]", " ", x, perl = TRUE)
+}
+
+
 #' Resolve the input of a plain-text detector.
 #'
 #' Every plain-text detector accepts either the path to a text file or the text
