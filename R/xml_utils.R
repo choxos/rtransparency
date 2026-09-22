@@ -19,8 +19,8 @@
     "front/journal-meta/publisher",
     "front/article-meta//aff//institution",
     "front/article-meta//aff//country",
-    "front/article-meta//pub-date[@pub-type = 'epub']/year",
-    "front/article-meta//pub-date[@pub-type = 'ppub']/year"
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]/year",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]/year"
   )
 
   var_names <- c(
@@ -76,11 +76,11 @@
 
   xpath <- c(
     "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
+    "front/article-meta/article-id[@pub-id-type = 'pmcid' or @pub-id-type = 'pmc']",
     "front/article-meta/article-id[@pub-id-type = 'doi']",
     "front/article-meta/article-id[@pub-id-type = 'pii']",
-    "front/article-meta//pub-date[@pub-type = 'epub']",
-    "front/article-meta//pub-date[@pub-type = 'ppub']",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]",
     "front/journal-meta/journal-id[@journal-id-type = 'nlm-ta']",
     "front/journal-meta/journal-id[@journal-id-type = 'iso-abbrev']",
     "front/journal-meta/journal-id[@journal-id-type = 'publisher-id']",
@@ -250,10 +250,10 @@
     "front/article-meta//aff",
     "front/article-meta//aff//institution",
     "front/article-meta//aff//country",
-    "front/article-meta//pub-date[@pub-type = 'epub']",
-    "front/article-meta//pub-date[@pub-type = 'epub']/year",
-    "front/article-meta//pub-date[@pub-type = 'ppub']",
-    "front/article-meta//pub-date[@pub-type = 'ppub']/year",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]/year",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]/year",
     "front/article-meta//license"
   )
 
@@ -769,14 +769,24 @@
 #' @noRd
 .get_ids <- function(article_xml) {
 
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
+  # NCBI tagged PMC identifiers as pub-id-type "pmc" (the number) and
+  # "pmc-uid"; current PMC XML (and Europe PMC) uses "pmcid" ("PMC7071725")
+  # and "pmcaid". Both vintages are read; pmcid_pmc is always "PMC<number>".
+  id <- function(types) {
+    for (t in types) {
+      v <- .get_text(article_xml,
+                     sprintf("front/article-meta/article-id[@pub-id-type = '%s']", t),
+                     TRUE)
+      if (length(v) && !is.na(v[1]) && nzchar(v[1])) return(v[1])
+    }
+    ""
+  }
+  pmc <- id(c("pmcid", "pmc"))
+  if (nzchar(pmc) && !grepl("^PMC", pmc, ignore.case = TRUE)) pmc <- paste0("PMC", pmc)
+  list(
+    pmid = id("pmid"),
+    pmcid_pmc = toupper(pmc),
+    pmcid_uid = id(c("pmc-uid", "pmcaid")),
+    doi = id("doi")
   )
-
-  xpath %>%
-    purrr::map(~ .get_text(article_xml, .x, TRUE)) %>%
-    rlang::set_names(c("pmid", "pmcid_pmc", "pmcid_uid", "doi"))
 }

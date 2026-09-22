@@ -108,15 +108,8 @@ rt_replication_pmc <- function(filename, remove_ns = TRUE) {
     return(.xml_failure(filename, article_xml))
   }
 
-  # Extract IDs
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
 
-  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, TRUE)))
+  out %<>% purrr::list_modify(!!!.get_ids(article_xml))
 
   # Extract text
   article_ls <- .get_article_txt(article_xml)

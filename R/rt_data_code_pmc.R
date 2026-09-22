@@ -22,7 +22,11 @@
 #'     (\code{open_data_links}, \code{open_code_links}). The links are the DOIs
 #'     (as \code{doi.org} URLs), repository URLs and database accessions (as
 #'     identifiers.org \code{prefix:accession}) extracted from the statements,
-#'     separated by \code{" ; "}.
+#'     separated by \code{" ; "}. \code{has_das} records whether the article
+#'     has a data-availability section (tagged, or titled as such) and
+#'     \code{das_text} holds its text: having the statement is itself a
+#'     reporting indicator, separate from whether data were actually shared
+#'     (a statement can say data are available only on request).
 #' @examples
 #' \donttest{
 #' # Path to PMC XML
@@ -66,6 +70,8 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
       is_open_code = found$is_open_code,
       open_code_statements = found$code_text,
       open_code_links = paste(code_links, collapse = " ; "),
+      has_das = nzchar(das_text <- .get_das_pmc(article_xml)),
+      das_text = das_text,
       is_success = TRUE
     )
   ))

@@ -328,7 +328,9 @@ rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
     open_data_links = paste(dc_data_links, collapse = " ; "),
     is_open_code = dc_found$is_open_code,
     open_code_statements = dc_found$code_text,
-    open_code_links = paste(dc_code_links, collapse = " ; ")
+    open_code_links = paste(dc_code_links, collapse = " ; "),
+    has_das = nzchar(das_text <- .get_das_pmc(article_xml)),
+    das_text = das_text
   )
 
   # Open-access status and reuse license (same detector as rt_oa_pmc()), and

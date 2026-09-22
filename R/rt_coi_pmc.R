@@ -1209,12 +1209,6 @@ rt_coi_pmc <- function(filename, remove_ns = TRUE) {
   index <- integer()
   dict <- .create_synonyms()
 
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
 
   # Way faster than index_any[["reg_title_pmc"]] <- NA
   index_any <- list(
@@ -1271,7 +1265,7 @@ rt_coi_pmc <- function(filename, remove_ns = TRUE) {
 
 
   # Extract IDs
-  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, TRUE)))
+  out %<>% purrr::list_modify(!!!.get_ids(article_xml))
 
 
   # Capture coi fn elements

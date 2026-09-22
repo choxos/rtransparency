@@ -1397,19 +1397,6 @@ rt_register_pmc <- function(filename, remove_ns = TRUE) {
 
   # TODO Update to match format of rt_coi_pmc.
 
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
-
-  var_names <- c(
-    "pmid",
-    "pmcid_pmc",
-    "pmcid_uid",
-    "doi"
-  )
 
   # Creating and outputting these lists adds negligible time
   # Way faster than index_any[["reg_title_pmc"]] <- NA
@@ -1480,7 +1467,7 @@ rt_register_pmc <- function(filename, remove_ns = TRUE) {
 
 
   # Extract IDs
-  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, TRUE)))
+  out %<>% purrr::list_modify(!!!.get_ids(article_xml))
   # out <-
   #   xpath %>%
   #   lapply(.get_text, article_xml = article_xml, find_first = TRUE) %>%
