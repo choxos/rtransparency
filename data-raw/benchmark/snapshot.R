@@ -11,11 +11,16 @@
 #   Rscript data-raw/benchmark/snapshot.R run out.rds [xml_dir ...]
 #   Rscript data-raw/benchmark/snapshot.R compare before.rds after.rds
 #   Rscript data-raw/benchmark/snapshot.R export snapshot.rds out.csv
+#   Rscript data-raw/benchmark/snapshot.R check predictions_snapshot.csv [xml_dir]
 #
 # `run` defaults to data-raw/benchmark/.cache and the committed test fixtures.
 # Set RT_CORES to control parallelism (forked workers; default: cores - 1).
 # `export` writes the compact per-article prediction table committed as
-# data-raw/benchmark/predictions_snapshot.csv.
+# data-raw/benchmark/predictions_snapshot.csv. `check` re-runs the detectors on
+# the articles in such a table (XML from xml_dir, default the benchmark cache)
+# and exits with an error if any decision changed: the regression gate the
+# benchmark workflow runs. Regenerate the table deliberately (run + export)
+# when a detection change is intended, and explain the flips in the commit.
 
 args <- commandArgs(trailingOnly = TRUE)
 if (!length(args)) stop("usage: snapshot.R run|compare|export ...", call. = FALSE)
@@ -34,7 +39,7 @@ if (args[1] == "run") {
   files <- unlist(lapply(normalizePath(dirs), list.files,
                          pattern = "^PMC[0-9]+\\.xml$", full.names = TRUE))
   pkg <- Sys.getenv("RT_PKG_DIR", ".")
-  suppressMessages(devtools::load_all(pkg, quiet = TRUE))
+  suppressMessages(pkgload::load_all(pkg, quiet = TRUE))
   files <- files[!duplicated(basename(files))]
   files <- files[file.info(files)$size > 0]
   cores <- as.integer(Sys.getenv("RT_CORES", max(1, parallel::detectCores() - 1)))
@@ -92,6 +97,36 @@ if (args[1] == "run") {
   s <- s[, intersect(c("pmcid", key_cols), names(s))]
   utils::write.csv(s, args[3], row.names = FALSE, na = "")
   message("export: wrote ", args[3])
+
+} else if (args[1] == "check") {
+  ref <- utils::read.csv(args[2], colClasses = "character", na.strings = "")
+  dir <- if (length(args) > 2) args[3] else "data-raw/benchmark/.cache"
+  suppressMessages(pkgload::load_all(Sys.getenv("RT_PKG_DIR", "."), quiet = TRUE))
+  files <- file.path(dir, paste0(ref$pmcid, ".xml"))
+  if (!all(file.exists(files))) {
+    stop(sum(!file.exists(files)), " articles have no XML in ", dir, call. = FALSE)
+  }
+  cores <- as.integer(Sys.getenv("RT_CORES", max(1, parallel::detectCores() - 1)))
+  now <- dplyr::bind_rows(parallel::mclapply(files, function(f) {
+    r <- rt_all_pmc(f)
+    r <- dplyr::mutate(r, dplyr::across(dplyr::everything(), as.character))
+    r[intersect(key_cols, names(r))]
+  }, mc.cores = cores))
+  bad <- 0L
+  for (col in intersect(key_cols, names(ref))) {
+    x <- ref[[col]]
+    y <- now[[col]]
+    x[is.na(x)] <- ""
+    y[is.na(y)] <- ""
+    d <- which(x != y)
+    if (length(d)) {
+      bad <- bad + length(d)
+      cat(sprintf("%s: %d changed, e.g. %s\n", col, length(d),
+                  paste(utils::head(ref$pmcid[d], 5), collapse = " ")))
+    }
+  }
+  if (bad) stop(bad, " prediction(s) differ from ", args[2], call. = FALSE)
+  cat("No prediction changed on", nrow(ref), "articles.\n")
 
 } else {
   stop("unknown mode: ", args[1], call. = FALSE)

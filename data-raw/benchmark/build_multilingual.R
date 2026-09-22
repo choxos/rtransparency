@@ -1,42 +1,61 @@
 # Multilingual detection benchmark.
 #
-# Measures conflict-of-interest and funding detection on per-language open-access
-# corpora (Spanish, French, German, Italian, Portuguese) fetched from PubMed
-# Central with the language filter (see /tmp/fetch_mllang.R). Because these
-# clinical articles almost all carry a COI disclosure, the COI detection rate
-# approximates recall; the funding rate is a detection rate (funded vs
-# no-funding is not separately labeled here). Many articles are bilingual (the
-# statement is repeated in English, which the English detector already catches),
-# so the lift concentrates in monolingual articles, notably German.
+# Measures conflict-of-interest and funding detection on per-language
+# open-access corpora (Spanish, French, German, Italian, Portuguese) from
+# PubMed Central. Because these clinical articles almost all carry a COI
+# disclosure, the COI detection rate approximates recall; the funding rate is a
+# detection rate (funded vs no-funding is not labeled here, and many of these
+# articles report no funding).
+#
+# The corpus is defined by data-raw/benchmark/multilingual_ids.csv (70 articles
+# per language, drawn with a fixed seed from PMC's language filter, 2018-2024).
+# The first run creates that file if it is absent; later runs reuse it so the
+# numbers are comparable across releases. XML is cached under
+# data-raw/benchmark/.cache/multilingual/.
 #
 # Run from the repo root: Rscript data-raw/benchmark/build_multilingual.R
-# Reads /tmp/mllang/<code>/*.xml. Writes inst/benchmark/results_multilingual.{csv,md}.
+# Writes inst/benchmark/results_multilingual.{csv,md}.
 
-suppressMessages(devtools::load_all("."))
-dict <- rtransparency:::.create_synonyms()
+suppressMessages(devtools::load_all(".", quiet = TRUE))
+
+langs <- c(es = "Spanish", fr = "French", de = "German", it = "Italian",
+           pt = "Portuguese")
+ids_file <- "data-raw/benchmark/multilingual_ids.csv"
+cache <- "data-raw/benchmark/.cache/multilingual"
+
+if (!file.exists(ids_file)) {
+  draw <- function(code) {
+    term <- paste0(tolower(langs[[code]]), '[la] AND "open access"[filter] AND 2018:2024[pdat]')
+    uri <- paste0("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc",
+                  "&retmax=5000&term=", utils::URLencode(term, reserved = TRUE))
+    ids <- xml2::xml_text(xml2::xml_find_all(xml2::read_xml(uri), "//Id"))
+    Sys.sleep(0.4)
+    set.seed(2018)
+    data.frame(language = code, pmcid = paste0("PMC", sample(ids, min(70, length(ids)))))
+  }
+  write.csv(do.call(rbind, lapply(names(langs), draw)), ids_file, row.names = FALSE)
+}
+ids <- read.csv(ids_file, stringsAsFactors = FALSE)
+
+dict <- .create_synonyms()
 detect <- function(f) {
-  x <- tryCatch(rtransparency:::.get_xml(f, TRUE), error = function(e) NULL)
+  x <- tryCatch(.get_xml(f), error = function(e) NULL)
   if (is.null(x)) return(c(coi = NA, fund = NA))
-  als  <- rtransparency:::.get_article_txt(x)
-  coi  <- rtransparency:::.rt_coi_pmc(als, rtransparency:::.get_coi_pmc(x, dict), dict)$is_coi_pred
-  fund <- rtransparency:::.rt_fund_pmc(als, rtransparency:::.get_fund_pmc(x, dict))$is_fund_pred
+  als  <- .get_article_txt(x)
+  coi  <- .rt_coi_pmc(als, .get_coi_pmc(x, dict), dict)$is_coi_pred
+  fund <- .rt_fund_pmc(als, .get_fund_pmc(x, dict))$is_fund_pred
   c(coi = isTRUE(coi), fund = isTRUE(fund))
 }
 
-# Detection rates of the previous (English-centric) detectors, for reference.
-baseline <- list(es = c(79, 10), fr = c(70, 6), de = c(33, 66),
-                 it = c(60, 67), pt = c(64, 19))
-lang_name <- c(es = "Spanish", fr = "French", de = "German",
-               it = "Italian", pt = "Portuguese")
-
 rows <- list()
-for (code in names(lang_name)) {
-  fs <- list.files(file.path("/tmp/mllang", code), full.names = TRUE, pattern = "\\.xml$")
-  r <- t(vapply(fs, detect, logical(2)))
-  rows[[code]] <- data.frame(
-    language = lang_name[[code]], n = nrow(r),
-    coi_before = baseline[[code]][1], coi_after = round(100 * mean(r[, 1])),
-    fund_before = baseline[[code]][2], fund_after = round(100 * mean(r[, 2])))
+for (code in names(langs)) {
+  sub <- ids[ids$language == code, ]
+  got <- rt_fetch_pmc(sub$pmcid, file.path(cache, code), progress = FALSE)
+  files <- got$file[got$is_success & got$has_body %in% TRUE]
+  r <- t(vapply(files, detect, logical(2)))
+  rows[[code]] <- data.frame(language = langs[[code]], n = nrow(r),
+                             coi = round(100 * mean(r[, 1], na.rm = TRUE)),
+                             fund = round(100 * mean(r[, 2], na.rm = TRUE)))
 }
 res <- do.call(rbind, rows)
 rownames(res) <- NULL
@@ -46,18 +65,20 @@ readr::write_csv(res, "inst/benchmark/results_multilingual.csv")
 md <- c(
   "# Multilingual detection benchmark",
   "",
-  paste(nrow(res), "languages,", res$n[1], "open-access articles each, fetched",
-        "from PubMed Central with the language filter (2018-2024). The COI",
-        "detection rate approximates recall (these clinical articles almost all",
-        "carry a disclosure); the funding rate is a detection rate. Many articles",
-        "are bilingual, so the English detector already catches some; the lift",
-        "concentrates in monolingual articles."),
+  paste0("Package version ", utils::packageVersion("rtransparency"), ". ",
+         "Open-access PubMed Central articles per language (up to 70 each, drawn ",
+         "with a fixed seed from the PMC language filter, 2018-2024; the list is ",
+         "`data-raw/benchmark/multilingual_ids.csv`). The COI detection rate ",
+         "approximates recall, as these clinical articles almost all carry a ",
+         "disclosure. The funding rate is a detection rate, not recall: many of ",
+         "these articles report no funding, which the indicator scores FALSE by ",
+         "design. Many articles are bilingual, so the English detector already ",
+         "catches some statements."),
   "",
-  "| Language | n | COI before | COI after | Funding before | Funding after |",
-  "|---|---|---|---|---|---|",
-  apply(res, 1, function(r) sprintf("| %s | %s | %s%% | %s%% | %s%% | %s%% |",
-        trimws(r["language"]), trimws(r["n"]), trimws(r["coi_before"]),
-        trimws(r["coi_after"]), trimws(r["fund_before"]), trimws(r["fund_after"]))),
+  "| Language | n | COI detected | Funding detected |",
+  "|---|---:|---:|---:|",
+  sprintf("| %s | %d | %d%% | %d%% |", res$language, res$n, as.integer(res$coi),
+          as.integer(res$fund)),
   "")
 writeLines(md, "inst/benchmark/results_multilingual.md")
 cat("wrote inst/benchmark/results_multilingual.{csv,md}\n")
