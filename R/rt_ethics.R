@@ -17,7 +17,7 @@
     "institutional review board", "\\birbs?\\b", "\\biec\\b", "\\brec\\b",
     "review board", "helsinki committee", "\\biacuc\\b",
     "animal (care|ethics|welfare)[^.]{0,30}committee",
-    # ES/PT comité/comitê de ética, FR comité d'éthique
+    # Spanish/Portuguese "comite de etica" and French "comite d'ethique" with accents
     # (R-level \u escapes keep this file ASCII and switch PCRE to UTF mode.)
     "comit[e\u00e9\u00ea] (de |d.|d\u2019)?[e\u00e9\u00c9]ti(c|qu)",
     "ethikkommission", "comitato etico",

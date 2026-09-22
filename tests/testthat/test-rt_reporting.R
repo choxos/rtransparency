@@ -105,5 +105,5 @@ test_that("recommendations are not adherence, and non-use vetoes are clause-loca
 
   expect_true(detect("This study adheres to CONSORT guidelines; however, blinding was not possible."))
   expect_true(detect("The study was conducted and reported as recommended by the PRISMA statement."))
-  expect_true(detect("El estudio se reporto según la declaración STROBE."))
+  expect_true(detect("El estudio se reporto seg\u00fan la declaraci\u00f3n STROBE."))
 })

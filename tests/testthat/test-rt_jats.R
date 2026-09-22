@@ -15,7 +15,7 @@ test_that("rt_authors_pmc counts ORCIDs and CRediT roles", {
     '<contrib-id contrib-id-type="orcid">https://orcid.org/0000-0001-2345-678X</contrib-id>',
     '<role vocab="credit" vocab-term="Conceptualization">Conceptualization</role></contrib>',
     '<contrib contrib-type="author"><name><surname>B</surname></name>',
-    '<role>Writing – original draft</role><role>Surgeon</role></contrib>',
+    '<role>Writing \u2013 original draft</role><role>Surgeon</role></contrib>',
     '</contrib-group>'))
   r <- rt_authors_pmc(f)
   expect_identical(r$pmcid_pmc, "PMC123")

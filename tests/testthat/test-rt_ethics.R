@@ -7,7 +7,7 @@ test_that("rt_ethics detects approval, waiver and exemption statements", {
                    "2000031234")
   expect_true(e("Ethical approval was not required as this study used public data.")$is_ethics_pred)
   expect_true(e("All procedures were approved by the Institutional Animal Care and Use Committee.")$is_ethics_pred)
-  expect_true(e("El estudio fue aprobado por el Comité de Ética del Hospital.")$is_ethics_pred)
+  expect_true(e("El estudio fue aprobado por el Comit\u00e9 de \u00c9tica del Hospital.")$is_ethics_pred)
 })
 
 test_that("rt_ethics detects consent statements", {
