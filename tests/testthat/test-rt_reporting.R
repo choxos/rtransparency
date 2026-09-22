@@ -94,3 +94,16 @@ test_that("rt_reporting_pmc returns is_success = FALSE on a malformed file", {
   f <- tempfile(fileext = ".xml"); writeLines("<broken", f); on.exit(unlink(f))
   expect_false(rt_reporting_pmc(f, remove_ns = TRUE)$is_success)
 })
+
+test_that("recommendations are not adherence, and non-use vetoes are clause-local", {
+  detect <- function(x) rtransparency:::.detect_reporting(x)$is_reporting_pred
+  expect_false(detect("Future studies should follow the CONSORT statement."))
+  expect_false(detect("Authors should adhere to the PRISMA guidelines when reporting systematic reviews."))
+  expect_false(detect("We recommend that researchers follow the ARRIVE guidelines."))
+  expect_false(detect("The STROBE guideline was not used because this is a qualitative study."))
+  expect_false(detect("It was not possible to follow the CONSORT checklist."))
+
+  expect_true(detect("This study adheres to CONSORT guidelines; however, blinding was not possible."))
+  expect_true(detect("The study was conducted and reported as recommended by the PRISMA statement."))
+  expect_true(detect("El estudio se reporto según la declaración STROBE."))
+})

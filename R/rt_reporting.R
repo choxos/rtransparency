@@ -103,7 +103,7 @@
     "check-?list", "guideline", "statement", "reporting",
     "flow ?(diagram|chart)", "extension", "\\bequator\\b",
     # Spanish / Portuguese reporting cues (the acronyms are language-independent).
-    "consistente con", "de acuerdo con", "seg[uu]n", "siguiendo",
+    "consistente con", "de acuerdo con", "seg(u|\\x{00fa})n", "siguiendo",
     "teniendo en cuenta", "de acordo com", "seguindo", "metodolog",
     "lista de (chequeo|verificaci|checagem)", "segundo a", "conforme",
     sep = "|"
@@ -121,8 +121,20 @@
 .reporting_veto <- function() {
   paste(
     "care and use of",                                            # animal welfare
-    "(could|was|were|is|are|been|cannot|can|did)\\s?n[o']t (be )?(use|used|appl|follow|possible|feasible)",
-    "\\bnot (be )?(used|applied|followed|possible|feasible)\\b",
+    # Non-use of a guideline, anchored to the guideline mention within the same
+    # clause, so an unrelated "not possible" elsewhere in the sentence ("adheres
+    # to CONSORT; however, blinding was not possible") does not veto adherence.
+    paste0("(guidelines?|statement|check-?list|criteria|reporting standards?)",
+           "[^.;]{0,60}\\b(could|was|were|is|are|been|cannot|can|did|has|have)",
+           "\\s?n[o']t (be )?(use|used|appl|follow|adher|possible|feasible)"),
+    paste0("\\b(n[o']t|never) (be |been )?(use|used|appl\\w*|follow\\w*|adher\\w*)",
+           "\\b[^.;]{0,40}(guidelines?|statement|check-?list|criteria|reporting standards?)"),
+    "\\bnot (possible|feasible) to (follow|use|apply|adhere)",
+    # Recommendations for future work, not the authors' own adherence.
+    paste0("(future (studies|research|trials|work|reviews|investigations)|",
+           "\\b(should|must|ought to|needs? to)\\b)[^.;]{0,40}",
+           "\\b(follow|adher|use|adopt|apply|comply|conform)"),
+    "\\b(we|authors?) (recommend|encourage|urge|suggest)\\w*\\b[^.;]{0,60}\\b(follow|adher|use|adopt|apply)",
     "reporting (guidelines?|standards?|checklists?) (are|is|were|remain|will|should|may|can|could|might)? ?(be )?(needed|lacking|scarce|absent|important|essential|required|developed|advocated|recommended for future|warranted|improve|enhance|increase|promote|help|exist|provide)",
     # Discourse / background ABOUT a guideline, not the authors following it.
     "(is|are|remains?|was|were|provides?) (a |an |the )?(widely|commonly|frequently|well)[ -]?(used|established|known|accepted|recognized)",
