@@ -165,52 +165,50 @@
   extra    <- .reporting_extra()
   veto     <- .reporting_veto()
 
-  hit_sentences <- character(0)
-  guidelines <- character(0)
+  # Each pattern is applied once to the whole sentence vector (not sentence by
+  # sentence), which keeps the scan fast on long articles. A sentence's matches
+  # are then read off in the fixed pattern order below, so the output is the
+  # same as checking each sentence in turn.
+  keep <- !grepl(veto, s, ignore.case = TRUE, perl = TRUE)
+  has_ctx <- keep & grepl(ctx, s, ignore.case = TRUE, perl = TRUE)
+  hits <- list()
 
-  for (sent in s) {
-    if (grepl(veto, sent, ignore.case = TRUE, perl = TRUE)) next
-
-    matched <- character(0)
-
-    # Full spelled-out names: unambiguous, no extra context required.
-    for (nm in names(spelled)) {
-      if (grepl(spelled[[nm]], sent, ignore.case = TRUE, perl = TRUE)) {
-        matched <- c(matched, nm)
-      }
-    }
-
-    # Distinctive acronyms: whole-word match plus a reporting context.
-    if (grepl(ctx, sent, ignore.case = TRUE, perl = TRUE)) {
-      for (nm in names(distinct)) {
-        if (grepl(paste0("\\b(", distinct[[nm]], ")\\b"), sent,
-                  ignore.case = TRUE, perl = TRUE)) {
-          matched <- c(matched, nm)
-        }
-      }
-    }
-
-    # Overloaded acronyms: UPPER-CASE acronym (case-sensitive) directly beside a
-    # guideline noun. CARE additionally excludes the animal-welfare phrase.
-    for (o in overload) {
-      if (grepl(paste0("\\b", o, "\\b[ -]?(?:\\w+ ){0,2}", noun), sent, perl = TRUE)) {
-        if (o == "CARE" && grepl("care and use of", sent, ignore.case = TRUE)) next
-        matched <- c(matched, o)
-      }
-    }
-
-    # Wider reportilo catalogue: same upper-case + adjacent guideline-noun rule.
-    for (x in extra) {
-      if (grepl(paste0("\\b", x, "\\b[ -]?(?:\\w+ ){0,2}", noun), sent, perl = TRUE)) {
-        matched <- c(matched, x)
-      }
-    }
-
-    if (length(matched)) {
-      hit_sentences <- c(hit_sentences, trimws(sent))
-      guidelines <- c(guidelines, matched)
-    }
+  # Full spelled-out names: unambiguous, no extra context required.
+  for (nm in names(spelled)) {
+    hits[[length(hits) + 1]] <- keep &
+      grepl(spelled[[nm]], s, ignore.case = TRUE, perl = TRUE)
+    names(hits)[length(hits)] <- nm
   }
+
+  # Distinctive acronyms: whole-word match plus a reporting context.
+  for (nm in names(distinct)) {
+    hits[[length(hits) + 1]] <- has_ctx &
+      grepl(paste0("\\b(", distinct[[nm]], ")\\b"), s, ignore.case = TRUE, perl = TRUE)
+    names(hits)[length(hits)] <- nm
+  }
+
+  # Overloaded acronyms and the wider reportilo catalogue: the UPPER-CASE
+  # acronym (case-sensitive) directly beside a guideline noun. CARE
+  # additionally excludes the animal-welfare phrase. A single prefilter on the
+  # bare acronyms limits the per-acronym patterns to candidate sentences.
+  upper <- c(overload, extra)
+  cand <- keep & grepl(paste0("\\b(", paste(upper, collapse = "|"), ")\\b"), s, perl = TRUE)
+  for (o in upper) {
+    h <- cand
+    if (any(cand)) {
+      h[cand] <- grepl(paste0("\\b", o, "\\b[ -]?(?:\\w+ ){0,2}", noun), s[cand], perl = TRUE)
+    }
+    if (o == "CARE") h <- h & !grepl("care and use of", s, ignore.case = TRUE)
+    hits[[length(hits) + 1]] <- h
+    names(hits)[length(hits)] <- o
+  }
+
+  hit_mat <- do.call(cbind, hits)
+  if (is.null(dim(hit_mat))) hit_mat <- matrix(hit_mat, nrow = length(s))
+  any_hit <- rowSums(hit_mat) > 0
+  hit_sentences <- trimws(s[any_hit])
+  guidelines <- unlist(lapply(which(any_hit), function(i) names(hits)[hit_mat[i, ]]),
+                       use.names = FALSE)
 
   if (length(guidelines)) {
     out$is_reporting_pred <- TRUE

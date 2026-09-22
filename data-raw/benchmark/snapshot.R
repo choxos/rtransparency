@@ -31,10 +31,10 @@ if (args[1] == "run") {
   out <- args[2]
   dirs <- if (length(args) > 2) args[-(1:2)] else
     c("data-raw/benchmark/.cache", "tests/testthat/fixtures/benchmark")
+  files <- unlist(lapply(normalizePath(dirs), list.files,
+                         pattern = "^PMC[0-9]+\\.xml$", full.names = TRUE))
   pkg <- Sys.getenv("RT_PKG_DIR", ".")
   suppressMessages(devtools::load_all(pkg, quiet = TRUE))
-  files <- unlist(lapply(dirs, list.files, pattern = "^PMC[0-9]+\\.xml$",
-                         full.names = TRUE))
   files <- files[!duplicated(basename(files))]
   files <- files[file.info(files)$size > 0]
   cores <- as.integer(Sys.getenv("RT_CORES", max(1, parallel::detectCores() - 1)))
