@@ -23,7 +23,7 @@
 
   ai_term <- paste(
     "generative (ai|artificial intelligence)", "\\bgen-?ai\\b",
-    "chatgpt", "\\bgpt-?[0-9]", "gpt-4o", "\\bllms?\\b",
+    "chatgpt", "\\bgpt\\s?[-\u2013]?\\s?[0-9]", "gpt-4o", "\\bllms?\\b",
     "large language models?",
     "ai-(assisted|generated|based) (tool|technolog|writ|languag|imag|content)",
     "ai-assisted technolog", "dall-?e", "midjourney", "stable diffusion",
@@ -104,7 +104,7 @@
 
   if (any(hit)) {
     out$is_ai_disclosed <- TRUE
-    out$ai_text <- paste(s[hit], collapse = " | ")
+    out$ai_text <- paste(unique(trimws(s[hit])), collapse = " | ")
   }
   out
 }

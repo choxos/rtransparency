@@ -171,3 +171,11 @@ test_that("AI disclosures report use, tools and purpose", {
   expect_false(absent$is_ai_pred)
   expect_true(is.na(absent$ai_used))
 })
+
+test_that("AI disclosure text lists each sentence once and reads spaced model names", {
+  r <- rtransparency:::.detect_ai_disclosure(rep(paste(
+    "During the preparation of this work the author(s) used the GPT – 4",
+    "model in order to improve readability and language of the manuscript."), 3))
+  expect_true(r$is_ai_disclosed)
+  expect_false(grepl(" | ", r$ai_text, fixed = TRUE))
+})
