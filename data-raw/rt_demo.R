@@ -4,7 +4,8 @@
 # their time trends are chosen to resemble published findings (high conflicts of
 # interest and funding disclosure, lower protocol registration, low but rising
 # data sharing, rare code sharing, and a recent, fast-rising disclosure of
-# generative-AI use) so the illustrations look realistic.
+# generative-AI use, mostly open licensing, and occasional reporting-guideline
+# use) so the illustrations look realistic.
 
 set.seed(2024)
 
@@ -42,5 +43,9 @@ rt_demo <- tibble::tibble(
   is_replication_pred = draw(-2.4, 0.20),
   is_ai_pred          = is_ai_pred         # NA before 2023, then rising
 )
+
+# Added in 1.2.0, drawn after the columns above so their values are unchanged.
+rt_demo$is_open_access    <- draw( 1.4, 0.60)  # ~80%, rising
+rt_demo$is_reporting_pred <- draw(-2.0, 0.35)  # ~12%, rising
 
 save(rt_demo, file = "data/rt_demo.rda", version = 2)
