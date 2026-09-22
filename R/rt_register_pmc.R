@@ -1,18 +1,3 @@
-#' Identify mentions of registration on ClinicalTrials.gov
-#'
-#' Extract the index of mentions such as: "The study is registered at
-#'     www.clinicaltrials.gov (NCT01624883)."
-#'
-#' @param article A string or a list of strings.
-#' @return Index of element with phrase of interest
-#' @noRd
-.which_ct_1 <- function(article) {
-
-  # Just using the NCT was too sensitive
-  # e.g. picked up references to protocols, mentions of trials underway, etc.
-  grep("\\b(|pre|pre-)regist.{0,20}NCT[0-9]{8}", article, perl = TRUE)
-
-}
 
 
 #' Identify mentions of registration on ClinicalTrials.gov
@@ -454,8 +439,6 @@
 }
 
 
-
-
 #' Identify registration titles - sensitive with negation
 #'
 #' Extract the index of mentions such as: "Study registration: ..."
@@ -810,21 +793,6 @@
 }
 
 
-#' Identify mentions of protocol
-#'
-#' Extract the index of mentions such as: "Alliance for Clinical Trials in
-#'     Oncology (formerly Cancer and Leukemia Group B) Protocol #369901"
-#'
-#' @param article A string or a list of strings.
-#' @return Index of element with phrase of interest
-#' @noRd
-.which_protocol_2 <- function(article) {
-
-  grep("[Pp]rotocol .{0,5}(|[A-Z]+)[0-9]{5}", article, perl = TRUE)
-
-}
-
-
 #' Identify mentions of funding followed by NCT
 #'
 #' Extract the index of mentions such as: "Funded by: the National Heart, Lung,
@@ -887,20 +855,6 @@
 }
 
 
-#' Negate titles that mention that there was no registration
-#'
-#' Negate mentions such as "Clinical Trial Registration: N/A"
-#'
-#' @param article A string or a list of strings.
-#' @return Index of element with phrase of interest
-#' @noRd
-.negate_reg_title_2 <- function(article) {
-
-  article %>% stringr::str_detect("\\bNA\\b|\\bN/A\\b|not registered")
-
-}
-
-
 #' Remove mentions of previously reported registered studies
 #'
 #' Removes mentions such as: "An active o <- servational cohort study was
@@ -925,35 +879,6 @@
 
   # TODO: This to be inserted only for .which_ct_2!
 
-}
-
-
-#' Remove references
-#'
-#' Removes mentions such as: "An active observational cohort study was
-#'     conducted as previously reported (ClinicalTrials.gov identifier
-#'     NCT01280162) [16]."
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The list of paragraphs without mentions of financial COIs.
-#' @noRd
-.obliterate_references_1 <- function(article) {
-
-  # If within References or under references and starts with 1. or contains et al. then remove.
-
-  ref_from <- .where_refs_txt(article)
-
-  if (!!length(ref_from)) {
-
-    ref_to <- length(article)
-
-    article[ref_from] <- ""
-    article[ref_from:ref_to] <-
-      gsub("^([0-9]{1,3}\\.\\s|.*et al\\.).*$", "",
-           article[ref_from:ref_to], perl = TRUE)
-
-  }
-  return(article)
 }
 
 
@@ -1034,7 +959,6 @@
 
   return(b)
 }
-
 
 
 #' Identify mentions of registration on ISRCTN
@@ -1292,7 +1216,6 @@
   }
 
 
-
   # TODO Consider adding unique
   article <-
     article_ls[c("ack", "methods", "abstract", "footnotes")] %>%
@@ -1435,7 +1358,6 @@
 
   return(c(out, index_any, index_method))
 }
-
 
 
 #' Identify and extract Conflicts of Interest statements in PMC XML files.

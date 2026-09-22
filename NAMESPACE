@@ -27,8 +27,12 @@ export(rt_reporting)
 export(rt_reporting_pmc)
 export(rt_score)
 export(rt_summary)
-importFrom(magrittr,"%<>%")
-importFrom(magrittr,"%>%")
-importFrom(rlang,":=")
-importFrom(rlang,.data)
+importFrom(magrittr,
+  "%<>%",
+  "%>%"
+)
+importFrom(rlang,
+  ":=",
+  .data
+)
 importFrom(utils,tail)

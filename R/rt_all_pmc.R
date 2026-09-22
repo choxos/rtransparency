@@ -1,24 +1,4 @@
 
-#' @noRd
-.get_xml <- function(filename, remove_ns = FALSE) {
-
-  if (remove_ns) {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml() %>%
-      xml2::xml_ns_strip()
-
-  } else {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml()
-
-  }
-}
-
-
 
 .get_coi_pmc <- function(article_xml, synonyms) {
 
@@ -47,7 +27,6 @@
     "is_coi_pmc_title" = is_coi_pmc_title
   ))
 }
-
 
 
 .get_fund_pmc <- function(article_xml, synonyms) {
@@ -120,7 +99,6 @@
 }
 
 
-
 .get_register_pmc <- function(article_xml) {
 
   type <- ""
@@ -179,7 +157,6 @@
 }
 
 
-
 #' @returns Article sections as a list
 .get_article_txt <- function(article_xml) {
 
@@ -206,25 +183,6 @@
     purrr::map(section_funs, rlang::exec, .) %>%
     rlang::set_names(section_names)
 }
-
-
-
-#' @returns A list of PubMed IDs
-#' @noRd
-.get_ids <- function(article_xml, remove_ns = FALSE) {
-
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
-
-  xpath %>%
-    purrr::map(~ .get_text(article_xml, .x, TRUE)) %>%
-    rlang::set_names(c("pmid", "pmcid_pmc", "pmcid_uid", "doi"))
-}
-
 
 
 #' @returns A vector of pre-processed strings
@@ -334,14 +292,12 @@ rt_all_pmc <- function(filename, remove_ns = FALSE, all_meta = FALSE) {
   coi_ls <- purrr::list_modify(pmc_coi_ls, !!!coi_out)
 
 
-
   fund_out <- .rt_fund_pmc(
     article_ls,
     pmc_fund_ls
   )
 
   fund_ls <- purrr::list_modify(pmc_fund_ls, !!!fund_out)
-
 
 
   reg_out  <- .rt_register_pmc(

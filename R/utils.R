@@ -1,4 +1,4 @@
-' Remove fullstops that are unlikely to represent end of sentence
+#' Remove fullstops that are unlikely to represent end of sentence
 #'
 #' Returns the list of paragraphs without potentially misleading fullstops.
 #'
@@ -73,20 +73,6 @@
 }
 
 
-#' Remove hash
-#'
-#' Removes hashes to make ease creation of regular expressions.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The list of paragraphs without mentions of financial COIs.
-#' @noRd
-.obliterate_hash_1 <- function(article) {
-
-  article %>% stringr::str_replace_all("#", "")
-
-}
-
-
 #' Remove uninformative punctuation
 #'
 #' Removes irrelevant puncutation to ease creation of regular expressions.
@@ -116,24 +102,6 @@
   article %>% stringr::str_replace_all("\n", " ")
 
 }
-
-
-#' Remove references
-#'
-#' Returns the list of paragraphs without references.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The list of paragraphs without misleading fullstops.
-#' @noRd
-.obliterate_refs_1 <- function(article) {
-
-  # Built like this to avoid destabilizing the algorithm
-  article <- gsub("^.*\\([0-9]{4}\\).*$", "References", article)
-  article <- gsub("^.* et al\\..*$", "References", article)
-
-  return(article)
-}
-
 
 
 #' Remove author contribution statements
@@ -176,163 +144,6 @@
 #' @noRd
 .read_txt <- function(filename) {
   gsub("\r\n?", "\n", readr::read_file(filename))
-}
-
-
-#' Find the index of the references
-#'
-#' Returns the index with the elements of interest. More generic than _1.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the start and finish of this section.
-#' @noRd
-.where_refs_txt <- function(article) {
-
-  synonyms <- .create_synonyms()
-  words <- c("References")
-  next_sentence <- "((|:|\\.)|(|:|\\.) [A-Z0-9]+.*)$"
-
-  ref_index <-
-    synonyms %>%
-    magrittr::extract(words) %>%
-    lapply(paste0, next_sentence) %>%
-    # lapply(.title) %>%
-    lapply(.encase) %>%
-    # lapply(.max_words) %>%
-    paste() %>%
-    grep(article, perl = TRUE)
-
-  # ref_synonyms <- c(
-  #   "R(?i)eferences(?-i)(| [A-Z0-9]+.*)",
-  #   "L(?i)terature(?-i)(| [A-Z0-9]+.*)",
-  #   "L(?i)iterature Cited(?-i)(| [A-Z0-9]+.*)",
-  #   "N(?i)otes and References(?-i)(| [A-Z0-9]+.*)",
-  #   "W(?i)orks Cited(?-i)(| [A-Z0-9]+.*)",
-  #   "^C(?i)itations(?-i)(| [A-Z0-9]+.*)",
-  #   "B(?i)ibliographic references(?-i)(| [A-Z0-9]+.*)",
-  #   "R(?i)eferences and recommended reading(?-i)(| [A-Z0-9]+.*)"
-  # )
-
-  # no "^" b/c of UTF-8 characters, e.g. "\\fReferences"
-  # regex <- paste0("(", paste(ref_synonyms, collapse = "|"), ")$")
-  # ref_index <- grep(regex, article, perl = TRUE)
-
-  if (!!length(ref_index)) {
-
-    ref_index <- ref_index[length(ref_index)]
-
-  } else {
-
-    ref_index <- grep("^1(|\\.)\\s+[A-Z]", article)
-    if (!!length(ref_index)) ref_index <- ref_index[length(ref_index)]
-
-  }
-  return(ref_index)
-}
-
-
-#' Restrict to text after the body of the article and references
-#'
-#' Returns the index with the elements of interest. More generic than _1.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the start and finish of this section.
-#' @noRd
-.where_acknows_txt <- function(article) {
-
-  acknow_index <- get_acknow_2(article)
-  fund_index <- get_fund_2(article)
-  finance_index <- get_financial_1(article)
-  grant_index <- get_grant_1(article)
-
-  if (length(acknow_index) > 0) acknow_index <- acknow_index[length(acknow_index)]
-  if (length(fund_index) > 0) fund_index <- fund_index[1]
-  if (length(finance_index) > 0) finance_index <- finance_index[1]
-  if (length(grant_index) > 0) grant_index <- grant_index[1]
-
-  all <- c(acknow_index, fund_index, finance_index, grant_index)
-
-  from <- integer()
-  if (!!length(all)) {
-
-    all_max <- max(all)
-    all_min <- min(all)
-
-    if (all_max - all_min <= 10) {
-
-      from <- all_min
-
-    } else {
-
-      from <- all_max
-
-    }
-  }
-  return(from)
-}
-
-
-
-#' Find the Methods section
-#'
-#' Find the index of the start of the Methods section.
-#'
-#' @param article The text as a vector of strings.
-#' @return Index of element with phrase of interest
-#' @noRd
-.where_methods_txt  <- function(article) {
-
-  method_index <- integer()
-
-  synonyms <- .create_synonyms()
-  words <- c("Methods", "Abstract", "Results", "Conclusion")
-
-  method_index <-
-    synonyms %>%
-    magrittr::extract(words[1]) %>%
-    lapply(.title_strict) %>%
-    lapply(stringr::str_sub, end = -2) %>%  # remove the $
-    # lapply(paste, "($|\\s+[A-Z]") %>%  # TODO: if too sensitive, uncomment
-    lapply(.encase) %>%
-    paste() %>%
-    grep(article, perl = TRUE)
-
-  if (!!length(method_index)) {
-
-    method_index <- method_index[length(method_index)]
-    return(method_index)
-
-    # TODO: if too sensitive, uncomment
-    # is_abstract <-
-    #   synonyms %>%
-    #   magrittr::extract(words[2:4]) %>%
-    #   grepl(article[(method_index - 3):(method_index + 3)]) %>%
-    #   any()
-    #
-    # if (!is_abstract) {
-    #
-    #   return(method_index)
-    #
-    # }
-  }
-
-  method_index <-
-    synonyms %>%
-    magrittr::extract(words[1]) %>%
-    lapply(.title_strict, within_text = TRUE) %>%
-    lapply(paste, "[A-Z]", sep = "\\s*") %>%
-    lapply(.encase) %>%
-    paste() %>%
-    grep(article, perl = TRUE)
-
-  if (!!length(method_index)) {
-
-    method_index <- method_index[length(method_index)]
-
-  }
-
-  return(method_index)
-
 }
 
 
@@ -406,7 +217,6 @@
 }
 
 
-
 #' Create a regex for titles
 #'
 #' Returns words designed to identify titles.
@@ -430,7 +240,6 @@
 }
 
 
-
 #' Create a regex for titles
 #'
 #' Returns words designed to identify titles.
@@ -452,41 +261,6 @@
 
   }
 }
-
-
-
-#' Create a regular expression where the first letter is capital
-#'
-#' Returns a regular expression that necessitates that the first letter is
-#'     capital and the rest can be any case.
-#'
-#' @param x A vector of strings.
-#' @param location Whether to "start", "end" or "both" with a capital letter.
-#' @return A string pattern.
-#' @noRd
-.first_capital <- function(x, location = "both") {
-
-  if (location == "both") {
-
-    return(gsub("^([A-Z])(.*)$", "\\1(?i)\\2(?-i)", x))
-
-  }
-
-  if (location == "start") {
-
-    return(gsub("^(.)(.*)$", "\\1(?i)\\2", x))
-
-  }
-
-  if (location == "end") {
-
-    return(gsub("^(.*)$", "\\1(?-i)", x))
-
-  }
-
-
-}
-
 
 
 #' A list of word synonyms
