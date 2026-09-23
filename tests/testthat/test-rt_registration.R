@@ -42,3 +42,10 @@ test_that("rt_registration_timing queries ClinicalTrials.gov", {
   expect_true(t$is_prospective[1])
   expect_true(is.na(t$is_prospective[2]))
 })
+
+
+test_that("a CTIS number is not also read as a truncated EudraCT number", {
+  ids <- rt_trial_ids("EU CT 2022-500024-30-00; EudraCT 2011-001925-26")
+  expect_identical(ids$registry, c("EudraCT", "CTIS"))
+  expect_identical(ids$trial_id, c("2011-001925-26", "2022-500024-30-00"))
+})

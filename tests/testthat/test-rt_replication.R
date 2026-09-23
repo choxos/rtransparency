@@ -212,3 +212,11 @@ test_that("the replication relevance gate admits genuine replication statements"
     "Comparisons between two groups were conducted using the independent sample t test."
   ))$is_replication_pred)
 })
+
+
+test_that("replication in two independent samples is not vetoed as statistics", {
+  expect_false(rtransparency:::.negate_replication_1(
+    "We replicated these findings in two independent samples."))
+  expect_true(rtransparency:::.negate_replication_1(
+    "Two independent samples were compared with a t test and replicated twice."))
+})

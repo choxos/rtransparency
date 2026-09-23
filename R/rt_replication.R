@@ -251,7 +251,10 @@ rt_replication <- function(filename = NULL, text = NULL) {
     "not replicated",
     # Statistics, not replication: "independent samples t-test".
     "independent[- ]samples?\\b[^.]{0,20}\\b(t|student|tests?|mann|wilcoxon|kruskal)\\b",
-    "two independent (samples|groups)",
+    # "two independent samples" only as statistics, near a test or comparison;
+    # "replicated in two independent samples" is a replication.
+    paste0("(t[- ]?tests?|student|mann|wilcoxon|compar\\w*)[^.]{0,40}two independent (samples|groups)|",
+           "two independent (samples|groups)[^.]{0,40}(t[- ]?tests?|student|mann|wilcoxon|compar\\w*)"),
     "independently replicated a minimum",
     "experiments? .{0,80}replicat",
     "replicated (a minimum|at least)",

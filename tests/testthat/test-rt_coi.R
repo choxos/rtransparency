@@ -124,3 +124,9 @@ test_that("a COI heading written as a paragraph in XML footnotes is found", {
   expect_true(rt_coi_pmc(f)$is_coi_pred)
   expect_true(rt_all_pmc(f)$is_coi_pred)
 })
+
+
+test_that("plain-text headings that are title stems in the vocabulary are found", {
+  expect_true(rt_coi(text = c("Liens d'int\u00e9r\u00eats", "Aucun."))$is_coi_pred)
+  expect_true(rt_coi(text = c("Conflicting financial interests", "None."))$is_coi_pred)
+})

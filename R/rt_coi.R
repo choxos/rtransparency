@@ -68,7 +68,9 @@ rt_coi <- function(filename = NULL, text = NULL) {
   titles <- c(dict$conflict_title,
               "D(?i)eclaration of competing interest(|s)(?-i)",
               setdiff(dict$disclosure_coi_title, "D(?i)eclaration(|s)(?-i)"))
-  heading <- paste0("^\\s*(?:[0-9]+\\.?\\s*)?", .encase(titles))
+  # Some titles are word stems ("Liens d.int", "Conflictos de inter"); let the
+  # last word run to its end before the heading is anchored.
+  heading <- paste0("^\\s*(?:[0-9]+\\.?\\s*)?", .encase(titles), "[^\\s:.]*")
   alone <- grepl(paste0(heading, "\\s*[:.]?\\s*$"), paragraphs, perl = TRUE)
   inline <- grepl(paste0(heading, "\\s*[:.]\\s*\\S"), paragraphs, perl = TRUE)
   for (i in which(alone | inline)) {
