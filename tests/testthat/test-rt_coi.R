@@ -112,3 +112,15 @@ test_that("plain-text COI headings are recognized like XML section titles", {
   expect_true(coi("Declaration of interests: JS reports grants from Pfizer."))
   expect_false(coi(c("Declarations", "Ethics approval: approved by the IRB.")))
 })
+
+test_that("a COI heading written as a paragraph in XML footnotes is found", {
+  f <- tempfile(fileext = ".xml")
+  writeLines(paste0(
+    '<article article-type="research-article"><front><article-meta>',
+    '<article-id pub-id-type="pmid">1</article-id></article-meta></front>',
+    '<body><p>Text.</p></body><back><fn-group><fn id="FN1">',
+    '<p>Declaration of competing interest</p><p>None.</p>',
+    '</fn></fn-group></back></article>'), f)
+  expect_true(rt_coi_pmc(f)$is_coi_pred)
+  expect_true(rt_all_pmc(f)$is_coi_pred)
+})

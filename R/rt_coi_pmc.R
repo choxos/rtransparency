@@ -875,6 +875,16 @@
     }
   }
 
+  # A heading written as a paragraph rather than a title, as in author
+  # manuscripts: <fn><p>Declaration of competing interest</p><p>None.</p></fn>.
+  # The same heading rule as the plain-text detector applies.
+  if (!nzchar(b)) {
+    paras <- article_xml %>%
+      xml2::xml_find_all("back//fn//p | back//notes//p | back//sec//p") %>%
+      xml2::xml_text()
+    b <- .coi_title_txt(paras[nzchar(trimws(paras))], dict)
+  }
+
   return(b)
 }
 
