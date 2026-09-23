@@ -10,8 +10,9 @@
 #' When `output` is supplied, results are written to that CSV in chunks as the
 #' run proceeds. Re-running with the same `output` skips files already present
 #' in it and appends only the new results, so a long run can be resumed after an
-#' interruption. Resuming compares normalized paths, so it also works from
-#' another working directory or with relative instead of absolute paths. Each
+#' interruption. File names are recorded as absolute paths and resuming
+#' compares normalized paths, so it also works from another working directory
+#' or with relative instead of absolute paths. Each
 #' file is processed inside [tryCatch()]; a file that errors contributes a row
 #' with `is_success = FALSE` and the error message in `error` rather than
 #' stopping the run.
@@ -34,8 +35,8 @@
 #' @param progress Whether to show a progress bar (default `TRUE`).
 #' @param chunk_size Number of files per write/flush when `output` is set
 #'   (default `200`).
-#' @return A [tibble][tibble::tibble] with one row per file, carrying the same
-#'   columns as [rt_all_pmc()] (plus any rows read back from a pre-existing
+#' @return A [tibble][tibble::tibble] with one row per file (`filename` is the
+#'   file's absolute path), carrying the same columns as [rt_all_pmc()] (plus any rows read back from a pre-existing
 #'   `output`). Files that could not be processed have `is_success = FALSE`
 #'   and the reason in `error`.
 #' @seealso [rt_all_pmc()] for a single file.
@@ -65,9 +66,13 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
 #' vector of paths), with the same per-file error isolation, progress bar,
 #' resumable CSV output and optional parallelism.
 #'
-#' @inheritParams rt_all_pmc_dir
+#' @param dir A directory containing TXT and/or PDF files, or a character
+#'   vector of file paths.
 #' @param pattern A regular expression for file names, used only when `dir` is a
 #'   single existing directory (default: `.txt` and `.pdf` files).
+#' @param recursive,parallel,progress,chunk_size As in [rt_all_pmc_dir()].
+#' @param output Optional path to a CSV file for incremental, resumable output,
+#'   with the same behavior as in [rt_all_pmc_dir()].
 #' @return A [tibble][tibble::tibble] with one row per file: `filename` (the
 #'   path), the columns of [rt_all()], `is_success` and `error`.
 #' @seealso [rt_all()], [rt_all_pdf()], [rt_all_pmc_dir()]
@@ -114,7 +119,9 @@ rt_all_txt_dir <- function(dir, pattern = "\\.(txt|pdf)$", recursive = FALSE,
          paste(utils::head(files[missing], 5L), collapse = ", "),
          if (sum(missing) > 5L) ", ..." else "", call. = FALSE)
   }
-  files
+  # Absolute, canonical paths: the output's filename column then identifies a
+  # file wherever a resumed run is started from.
+  normalizePath(files, winslash = "/", mustWork = TRUE)
 }
 
 

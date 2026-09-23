@@ -40,8 +40,8 @@ directory (default `FALSE`).}
 (default `200`).}
 }
 \value{
-A [tibble][tibble::tibble] with one row per file, carrying the same
-  columns as [rt_all_pmc()] (plus any rows read back from a pre-existing
+A [tibble][tibble::tibble] with one row per file (`filename` is the
+  file's absolute path), carrying the same columns as [rt_all_pmc()] (plus any rows read back from a pre-existing
   `output`). Files that could not be processed have `is_success = FALSE`
   and the reason in `error`.
 }
@@ -56,8 +56,9 @@ installed.
 When `output` is supplied, results are written to that CSV in chunks as the
 run proceeds. Re-running with the same `output` skips files already present
 in it and appends only the new results, so a long run can be resumed after an
-interruption. Resuming compares normalized paths, so it also works from
-another working directory or with relative instead of absolute paths. Each
+interruption. File names are recorded as absolute paths and resuming
+compares normalized paths, so it also works from another working directory
+or with relative instead of absolute paths. Each
 file is processed inside [tryCatch()]; a file that errors contributes a row
 with `is_success = FALSE` and the error message in `error` rather than
 stopping the run.

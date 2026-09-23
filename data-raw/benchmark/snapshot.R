@@ -11,7 +11,7 @@
 #   Rscript data-raw/benchmark/snapshot.R run out.rds [xml_dir ...]
 #   Rscript data-raw/benchmark/snapshot.R compare before.rds after.rds
 #   Rscript data-raw/benchmark/snapshot.R export snapshot.rds out.csv
-#   Rscript data-raw/benchmark/snapshot.R check predictions_snapshot.csv [xml_dir]
+#   Rscript data-raw/benchmark/snapshot.R check predictions_snapshot.csv [xml_dir ...]
 #
 # `run` defaults to data-raw/benchmark/.cache and the committed test fixtures.
 # Set RT_CORES to control parallelism (forked workers; default: cores - 1).
@@ -100,14 +100,21 @@ if (args[1] == "run") {
 
 } else if (args[1] == "check") {
   ref <- utils::read.csv(args[2], colClasses = "character", na.strings = "")
-  dir <- if (length(args) > 2) args[3] else "data-raw/benchmark/.cache"
+  # Resolve each article as `run` does: the cache first, then the committed
+  # test fixtures.
+  dirs <- if (length(args) > 2) args[-(1:2)] else
+    c("data-raw/benchmark/.cache", "tests/testthat/fixtures/benchmark")
   suppressMessages(pkgload::load_all(Sys.getenv("RT_PKG_DIR", "."), quiet = TRUE))
-  files <- file.path(dir, paste0(ref$pmcid, ".xml"))
+  files <- vapply(ref$pmcid, function(id) {
+    f <- file.path(dirs, paste0(id, ".xml"))
+    f <- f[file.exists(f) & file.info(f)$size > 0]
+    if (length(f)) f[1] else file.path(dirs[1], paste0(id, ".xml"))
+  }, character(1), USE.NAMES = FALSE)
   # An article withdrawn from PMC cannot be re-fetched; report it and check the
   # rest rather than failing the whole run.
   have <- file.exists(files)
   if (!all(have)) {
-    cat(sum(!have), "articles have no XML in", dir, "and are skipped:",
+    cat(sum(!have), "articles have no XML in", paste(dirs, collapse = " or "), "and are skipped:",
         paste(utils::head(ref$pmcid[!have], 10), collapse = " "), "\n")
     if (mean(have) < 0.95) stop("more than 5% of the articles are missing", call. = FALSE)
     ref <- ref[have, ]

@@ -101,8 +101,8 @@ changes responsible is on the roadmap.
 * The reporting-guideline detector is 8.6 times faster (identical output),
   roughly halving `rt_all_pmc()` time per article.
 * `rt_all_pmc_dir()` appends each chunk to its output instead of rewriting the
-  whole file, resumes across working directories and path forms, and records
-  why a file failed in a new `error` column.
+  whole file, records each file by its absolute path so a run resumes from any
+  working directory, and records why a file failed in a new `error` column.
 
 ## New features
 

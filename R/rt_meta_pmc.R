@@ -32,6 +32,8 @@ rt_meta_pmc <- function(filename, remove_ns = TRUE) {
 
   id_ls <- list(filename = filename)
   meta_ls <- .xml_metadata_c(article_xml, as_list = TRUE)
+  # One normalization rule for the PMCID everywhere ("PMC<number>").
+  meta_ls$pmcid_pmc <- .get_ids(article_xml)$pmcid_pmc
 
   status_ls <- list(is_success = TRUE)
   tibble::as_tibble(c(id_ls, meta_ls, status_ls))

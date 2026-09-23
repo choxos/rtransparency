@@ -68,3 +68,12 @@ test_that("the data-availability section is reported separately from sharing", {
   expect_true(r$has_das)
   expect_match(r$das_text, "^Availability of data and materials Data will be shared")
 })
+
+
+test_that("rt_meta_pmc returns the PMCID in the same form as the detectors", {
+  old <- tempfile(fileext = ".xml")
+  writeLines(paste0('<article><front><article-meta>',
+                    '<article-id pub-id-type="pmc">7071725</article-id>',
+                    '</article-meta></front></article>'), old)
+  expect_identical(rt_meta_pmc(old)$pmcid_pmc, "PMC7071725")
+})

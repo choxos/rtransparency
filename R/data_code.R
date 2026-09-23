@@ -688,8 +688,12 @@ rt_check_links <- function(links, timeout = 10) {
   url <- .link_url(links)
   status <- rep(NA_integer_, length(links))
   error <- rep(NA_character_, length(links))
+  # curlGetHeaders() gained its own timeout argument only in R 4.1.0; the
+  # timeout option works on every supported R version.
+  old <- options(timeout = timeout)
+  on.exit(options(old), add = TRUE)
   for (i in seq_along(links)) {
-    h <- tryCatch(curlGetHeaders(url[i], redirect = TRUE, timeout = timeout),
+    h <- tryCatch(curlGetHeaders(url[i], redirect = TRUE),
                   error = function(e) e)
     if (inherits(h, "error")) {
       error[i] <- conditionMessage(h)

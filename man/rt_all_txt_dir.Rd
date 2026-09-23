@@ -15,25 +15,16 @@ rt_all_txt_dir(
 )
 }
 \arguments{
-\item{dir}{A directory containing PMC XML files, or a character vector of
-file paths.}
+\item{dir}{A directory containing TXT and/or PDF files, or a character
+vector of file paths.}
 
 \item{pattern}{A regular expression for file names, used only when `dir` is a
 single existing directory (default: `.txt` and `.pdf` files).}
 
-\item{recursive}{Whether to descend into subdirectories when `dir` is a
-directory (default `FALSE`).}
+\item{recursive, parallel, progress, chunk_size}{As in [rt_all_pmc_dir()].}
 
-\item{output}{Optional path to a CSV file for incremental, resumable output
-(see Details). `NULL` (default) keeps results in memory only.}
-
-\item{parallel}{Whether to process files in parallel via \pkg{furrr}
-(default `FALSE`).}
-
-\item{progress}{Whether to show a progress bar (default `TRUE`).}
-
-\item{chunk_size}{Number of files per write/flush when `output` is set
-(default `200`).}
+\item{output}{Optional path to a CSV file for incremental, resumable output,
+with the same behavior as in [rt_all_pmc_dir()].}
 }
 \value{
 A [tibble][tibble::tibble] with one row per file: `filename` (the

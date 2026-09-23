@@ -8,7 +8,8 @@ has multiple released branches, only the latest public release is supported.
 | Version | Supported |
 |---|---|
 | 1.2.x | Yes |
-| < 1.2.0 | No |
+| 1.0.x | Yes, until 1.2.0 is on CRAN |
+| < 1.0.0 | No |
 
 ## Reporting a vulnerability
 

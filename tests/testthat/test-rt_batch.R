@@ -32,7 +32,7 @@ test_that("rt_all_pmc_dir accepts an explicit vector of paths", {
 
   res <- rt_all_pmc_dir(paths, remove_ns = TRUE, progress = FALSE)
   expect_equal(nrow(res), 2L)
-  expect_setequal(res$filename, paths)
+  expect_setequal(res$filename, normalizePath(paths, winslash = "/"))
 })
 
 
@@ -48,6 +48,8 @@ test_that("rt_all_pmc_dir isolates per-file failures", {
   bad  <- file.path(d, "bad.xml")
   file.copy(src, good)
   writeLines("this is not xml <<<", bad)
+  good <- normalizePath(good, winslash = "/")
+  bad <- normalizePath(bad, winslash = "/")
 
   res <- rt_all_pmc_dir(c(good, bad), remove_ns = TRUE, progress = FALSE)
 
@@ -71,6 +73,7 @@ test_that("rt_all_pmc_dir output survives a first chunk of failures", {
   good <- file.path(d, "b_good.xml")
   writeLines("not xml", bad)
   file.copy(src, good)
+  good <- normalizePath(good, winslash = "/")
   out <- tempfile(fileext = ".csv")
   on.exit(unlink(out), add = TRUE)
 

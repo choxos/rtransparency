@@ -20,8 +20,8 @@ A one-row tibble: the file name (`article`) and PMID (`pmid`, the
     `is_register_pred`, `is_novelty_pred`, `is_replication_pred`,
     `is_open_data`, `is_open_code`, `is_ai_pred`, `is_open_access`,
     `is_reporting_pred`), so the result can be passed to [rt_summary()].
-    The pattern-function flags of the registration, novelty and replication
-    detectors are also returned; if one is `NA` it was not run. Unlike
+    The pattern-function flags of the novelty and replication detectors are
+    also returned; if one is `NA` it was not run. Unlike
     [rt_all_pmc()], `is_ai_pred` has no publication-year gate (see [rt_ai()]).
     `is_funded_pred` and `funding_text` are deprecated copies of the funding
     columns, kept for one release.

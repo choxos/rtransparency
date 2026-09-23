@@ -61,17 +61,24 @@ rt_fetch_pmc <- function(ids, dir = ".", overwrite = FALSE,
   dir.create(dir, showWarnings = FALSE, recursive = TRUE)
 
   pmcid <- rep(NA_character_, length(ids))
+  conv_error <- rep("No PMCID found", length(ids))
   is_pmc <- grepl("^PMC[0-9]+$", ids, ignore.case = TRUE)
   pmcid[is_pmc] <- toupper(ids[is_pmc])
   if (any(!is_pmc)) {
-    conv <- rt_convert_ids(ids[!is_pmc])
-    pmcid[!is_pmc] <- conv$pmcid
+    # A converter outage is reported per identifier, not as a failed call, so
+    # PMCIDs in the same request are still downloaded.
+    conv <- tryCatch(rt_convert_ids(ids[!is_pmc]), error = function(e) e)
+    if (inherits(conv, "error")) {
+      conv_error[!is_pmc] <- paste("ID conversion failed:", conditionMessage(conv))
+    } else {
+      pmcid[!is_pmc] <- conv$pmcid
+    }
   }
 
   pause <- if (source == "europepmc" || nzchar(api_key)) 0.11 else 0.34
   out <- tibble::tibble(id = ids, pmcid = pmcid, file = NA_character_,
                         is_success = FALSE, has_body = NA,
-                        error = ifelse(is.na(pmcid), "No PMCID found", NA_character_))
+                        error = ifelse(is.na(pmcid), conv_error, NA_character_))
   todo <- which(!is.na(pmcid))
   if (progress && length(todo)) {
     pb <- utils::txtProgressBar(min = 0, max = length(todo), style = 3)

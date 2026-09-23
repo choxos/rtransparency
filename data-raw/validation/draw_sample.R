@@ -24,7 +24,7 @@ q <- function(term, retstart, retmax) {
     doc <- tryCatch(suppressWarnings(xml2::read_xml(uri)), error = function(e) NULL)
     if (!is.null(doc)) return(doc)
   }
-  stop("ESearch failed repeatedly: ", uri)
+  stop("ESearch failed repeatedly for term: ", term, call. = FALSE)
 }
 # ESearch cannot page past the first 9,999 results, so the PMC UID space is
 # bisected until every window holds at most 9,999 matches; articles are then

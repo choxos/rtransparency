@@ -41,9 +41,13 @@ dict <- .create_synonyms()
 detect <- function(f) {
   x <- tryCatch(.get_xml(f), error = function(e) NULL)
   if (is.null(x)) return(c(coi = NA, fund = NA))
+  # The XML routes first, on the untouched document, as rt_all_pmc() does:
+  # .get_article_txt() removes citation markers and tables in place.
+  pmc_coi  <- .get_coi_pmc(x, dict)
+  pmc_fund <- .get_fund_pmc(x, dict)
   als  <- .get_article_txt(x)
-  coi  <- .rt_coi_pmc(als, .get_coi_pmc(x, dict), dict)$is_coi_pred
-  fund <- .rt_fund_pmc(als, .get_fund_pmc(x, dict))$is_fund_pred
+  coi  <- .rt_coi_pmc(als, pmc_coi, dict)$is_coi_pred
+  fund <- .rt_fund_pmc(als, pmc_fund)$is_fund_pred
   c(coi = isTRUE(coi), fund = isTRUE(fund))
 }
 

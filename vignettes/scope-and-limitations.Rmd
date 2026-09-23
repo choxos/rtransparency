@@ -59,8 +59,8 @@ negative. This mirrors how these are reported and counted in the literature.
   false-positive rate on AI-method papers than `rt_ai_pmc()`.
 - **Reporting guideline is claim detection.** It identifies a stated adherence
   to a reporting guideline, not whether the study fully complied. It is tuned
-  for precision (validated 93.8% sensitivity / 99.0% specificity on a
-  hand-labeled 1000-article sample); the residual misses are mostly non-English
+  for precision (validated on a hand-labeled 1000-article sample; see
+  `rt_accuracy` for the current sensitivity and specificity); the residual misses are mostly non-English
   statements, and residual false positives are guidelines named but not actually
   followed by the article.
 - **Open-access licensing is XML-structural.** It reads the JATS `<license>`
