@@ -132,6 +132,13 @@
            "(?:(?!\\b(?:who|whom|which|that|patients?|participants?|subjects?|records?|studies)\\b)[^.;]){0,60}",
            "\\b(could|was|were|is|are|been|cannot|can|did|has|have)",
            "\\s?n[o']t (be )?(use|used|appl|follow|adher|possible|feasible)"),
+    # ... and a relative clause on the guideline itself: "the PRISMA statement
+    # that was not used".
+    paste0("\\b(?:guidelines?|statement|check-?list|criteria|reporting standards?|",
+           "prisma|consort|strobe|stard|tripod|coreq|srqr|arrive|spirit|",
+           "cheers|moose|squire|care)\\s+(?:that|which)\\s+",
+           "(could|was|were|is|are|been|cannot|can|did|has|have)",
+           "\\s?n[o']t (be )?(use|used|appl|follow|adher|possible|feasible)"),
     paste0("\\b(n[o']t|never) (be |been )?(use|used|appl\\w*|follow\\w*|adher\\w*)",
            "\\b[^.;]{0,40}(guidelines?|statement|check-?list|criteria|reporting standards?)"),
     "\\bnot (possible|feasible) to (follow|use|apply|adhere)",

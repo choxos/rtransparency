@@ -123,5 +123,6 @@ test_that("a citation marker glued to a guideline name does not hide it", {
 test_that("a non-use veto does not cross a relative clause about participants", {
   detect <- function(x) rtransparency:::.detect_reporting(x)$is_reporting_pred
   expect_true(detect("The CONSORT flow diagram shows the patients who were not followed up."))
+  expect_false(detect("The PRISMA statement that was not used in this review is described elsewhere."))
   expect_false(detect("The STROBE guideline was not used because this is a qualitative study."))
 })
