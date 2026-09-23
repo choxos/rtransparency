@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,7 +69,14 @@
           <code><a href="rt_all.html">rt_all()</a></code>
 
         </dt>
-        <dd>Identify and extract transparency statements from a TXT file.</dd>
+        <dd>Identify and extract all transparency indicators from a TXT file.</dd>
+
+        <dt>
+
+          <code><a href="rt_all_pdf.html">rt_all_pdf()</a></code>
+
+        </dt>
+        <dd>Identify and extract all transparency indicators from a PDF file.</dd>
 
         <dt>
 
@@ -84,6 +91,13 @@
 
         </dt>
         <dd>Identify transparency indicators across many PMC XML files.</dd>
+
+        <dt>
+
+          <code><a href="rt_all_txt_dir.html">rt_all_txt_dir()</a></code>
+
+        </dt>
+        <dd>Identify transparency indicators across many TXT or PDF files.</dd>
       </dl></div><div class="section level2">
       <h2 id="individual-indicators-pmc-xml-">Individual indicators (PMC XML)<a class="anchor" aria-label="anchor" href="#individual-indicators-pmc-xml-"></a></h2>
 
@@ -236,9 +250,39 @@
         </dt>
         <dd>Identify use of a reporting guideline from a TXT file.</dd>
       </dl></div><div class="section level2">
-      <h2 id="metadata-and-input">Metadata and input<a class="anchor" aria-label="anchor" href="#metadata-and-input"></a></h2>
+      <h2 id="get-articles">Get articles<a class="anchor" aria-label="anchor" href="#get-articles"></a></h2>
 
-      <div class="section-desc"><p>Article metadata and PDF-to-text conversion.</p></div>
+      <div class="section-desc"><p>Download PMC full text, convert identifiers and read PDFs.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="rt_fetch_pmc.html">rt_fetch_pmc()</a></code>
+
+        </dt>
+        <dd>Download PubMed Central full-text XML</dd>
+
+        <dt>
+
+          <code><a href="rt_convert_ids.html">rt_convert_ids()</a></code>
+
+        </dt>
+        <dd>Convert article identifiers with the PMC ID Converter</dd>
+
+        <dt>
+
+          <code><a href="rt_read_pdf.html">rt_read_pdf()</a></code>
+
+        </dt>
+        <dd>Convert a PDF file to text.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="structured-metadata-pmc-xml-">Structured metadata (PMC XML)<a class="anchor" aria-label="anchor" href="#structured-metadata-pmc-xml-"></a></h2>
+
+      <div class="section-desc"><p>Tagged JATS metadata read directly, not detected from prose.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -254,10 +298,84 @@
 
         <dt>
 
-          <code><a href="rt_read_pdf.html">rt_read_pdf()</a></code>
+          <code><a href="rt_authors_pmc.html">rt_authors_pmc()</a></code>
 
         </dt>
-        <dd>Convert a PDF file to text.</dd>
+        <dd>Author identifiers and contribution roles from a PMC XML file.</dd>
+
+        <dt>
+
+          <code><a href="rt_funders_pmc.html">rt_funders_pmc()</a></code>
+
+        </dt>
+        <dd>Funders, funder identifiers and award numbers from a PMC XML file.</dd>
+      </dl></div><div class="section level2">
+      <h2 id="follow-up-checks">Follow-up checks<a class="anchor" aria-label="anchor" href="#follow-up-checks"></a></h2>
+
+      <div class="section-desc"><p>Go beyond presence of a statement, using registries, PubMed and the web.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="rt_trial_ids.html">rt_trial_ids()</a></code>
+
+        </dt>
+        <dd>Extract trial and review registration identifiers from text</dd>
+
+        <dt>
+
+          <code><a href="rt_registration_timing.html">rt_registration_timing()</a></code>
+
+        </dt>
+        <dd>Check whether ClinicalTrials.gov registrations were prospective</dd>
+
+        <dt>
+
+          <code><a href="rt_coi_pubmed.html">rt_coi_pubmed()</a></code>
+
+        </dt>
+        <dd>Fetch conflict-of-interest statements recorded in PubMed</dd>
+
+        <dt>
+
+          <code><a href="rt_fill_coi_pubmed.html">rt_fill_coi_pubmed()</a></code>
+
+        </dt>
+        <dd>Fill missed conflict-of-interest disclosures from PubMed</dd>
+
+        <dt>
+
+          <code><a href="rt_check_links.html">rt_check_links()</a></code>
+
+        </dt>
+        <dd>Check whether extracted data and code links resolve</dd>
+      </dl></div><div class="section level2">
+      <h2 id="experimental">Experimental<a class="anchor" aria-label="anchor" href="#experimental"></a></h2>
+
+      <div class="section-desc"><p>Detectors not yet validated against hand labels; not part of rt_all_pmc().</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="rt_ethics_pmc.html">rt_ethics_pmc()</a></code>
+
+        </dt>
+        <dd>Identify ethics approval and informed consent statements (experimental)</dd>
+
+        <dt>
+
+          <code><a href="rt_ethics.html">rt_ethics()</a></code>
+
+        </dt>
+        <dd>Identify ethics approval and informed consent statements in text (experimental)</dd>
       </dl></div><div class="section level2">
       <h2 id="summarize-and-visualize">Summarize and visualize<a class="anchor" aria-label="anchor" href="#summarize-and-visualize"></a></h2>
 
@@ -307,6 +425,13 @@
 
         <dt>
 
+          <code><a href="rt_accuracy_2021.html">rt_accuracy_2021</a></code>
+
+        </dt>
+        <dd>Published 2021 detector accuracy estimates</dd>
+
+        <dt>
+
           <code><a href="rt_demo.html">rt_demo</a></code>
 
         </dt>
@@ -321,7 +446,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

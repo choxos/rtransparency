@@ -12,7 +12,7 @@ does not.
 ## Usage
 
 ``` r
-rt_oa_pmc(filename, remove_ns = FALSE)
+rt_oa_pmc(filename, remove_ns = TRUE)
 ```
 
 ## Arguments
@@ -23,7 +23,9 @@ rt_oa_pmc(filename, remove_ns = FALSE)
 
 - remove_ns:
 
-  TRUE if an XML namespace exists, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 ## Value
 
@@ -38,11 +40,11 @@ none is found), the license statement (\`oa_text\`) and \`is_success\`.
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_oa_pmc(filepath, remove_ns = TRUE)
+rt_oa_pmc(filepath)
 #> # A tibble: 1 × 9
-#>   pmid     pmcid_pmc pmcid_uid doi    filename is_open_access oa_license oa_text
-#>   <chr>    <chr>     <chr>     <chr>  <chr>    <lgl>          <chr>      <chr>  
-#> 1 32171256 ""        ""        10.11… /home/r… TRUE           CC-BY-4.0  https:…
+#>   pmid     pmcid_pmc  pmcid_uid doi   filename is_open_access oa_license oa_text
+#>   <chr>    <chr>      <chr>     <chr> <chr>    <lgl>          <chr>      <chr>  
+#> 1 32171256 PMC7071725 7071725   10.1… /home/r… TRUE           CC-BY-4.0  https:…
 #> # ℹ 1 more variable: is_success <lgl>
 # }
 ```

@@ -7,19 +7,29 @@ such statements exist, it extracts them.
 ## Usage
 
 ``` r
-rt_data_code(filename)
+rt_data_code(filename = NULL, text = NULL)
 ```
 
 ## Arguments
 
 - filename:
 
-  The name of the TXT file as a string.
+  The path to a TXT file as a string.
+
+- text:
+
+  Alternatively, the article text itself as a character vector (for
+  example the output of \[rt_read_pdf()\]). Supply \`filename\` or
+  \`text\`.
 
 ## Value
 
-A dataframe of results. It returns whether text suggesting the presence
-of data or code was found, and if so, what this text was.
+A tibble with the file name (\`article\`), the PMID (\`NA\` if absent),
+whether data or code sharing was found (\`is_open_data\`,
+\`is_open_code\`), the statements that triggered each
+(\`open_data_statements\`, \`open_code_statements\`) and the identifiers
+extracted from them (\`open_data_links\`, \`open_code_links\`), with the
+same columns and meaning as \[rt_data_code_pmc()\].
 
 ## Examples
 

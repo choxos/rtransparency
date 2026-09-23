@@ -15,7 +15,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_data_code_pmc</span><span class="op">(</span><span class="va">filename</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span>, specificity <span class="op">=</span> <span class="st">"low"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_data_code_pmc</span><span class="op">(</span><span class="va">filename</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span>, specificity <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -70,12 +70,15 @@
 
 
 <dt id="arg-remove-ns">remove_ns<a class="anchor" aria-label="anchor" href="#arg-remove-ns"></a></dt>
-<dd><p>TRUE if an XML namespace exists, else FALSE (default).</p></dd>
+<dd><p>Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.</p></dd>
 
 
 <dt id="arg-specificity">specificity<a class="anchor" aria-label="anchor" href="#arg-specificity"></a></dt>
-<dd><p>Retained for backward compatibility; it no longer changes
-the result. The native detector extracts a fixed, broad set of article
+<dd><p>Deprecated and ignored (it has not changed the result
+since the native detector replaced oddpub); supplying it gives a
+warning, and it will be removed in a future release. The native detector extracts a fixed, broad set of article
 text (body paragraphs and titles, back matter, footnotes and supplements)
 and applies repository, accession and availability-statement patterns.</p></dd>
 
@@ -90,7 +93,11 @@ and applies repository, accession and availability-statement patterns.</p></dd>
     (<code>open_data_links</code>, <code>open_code_links</code>). The links are the DOIs
     (as <code>doi.org</code> URLs), repository URLs and database accessions (as
     identifiers.org <code>prefix:accession</code>) extracted from the statements,
-    separated by <code>" ; "</code>.</p>
+    separated by <code>" ; "</code>. <code>has_das</code> records whether the article
+    has a data-availability section (tagged, or titled as such) and
+    <code>das_text</code> holds its text: having the statement is itself a
+    reporting indicator, separate from whether data were actually shared
+    (a statement can say data are available only on request).</p>
     </div>
 
     <div class="section level2">
@@ -102,7 +109,7 @@ and applies repository, accession and availability-statement patterns.</p></dd>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Identify and extract indicators of data and code sharing</span></span></span>
-<span class="r-in"><span><span class="va">results_table</span> <span class="op">&lt;-</span> <span class="fu">rt_data_code_pmc</span><span class="op">(</span><span class="va">filepath</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">results_table</span> <span class="op">&lt;-</span> <span class="fu">rt_data_code_pmc</span><span class="op">(</span><span class="va">filepath</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -115,7 +122,7 @@ and applies repository, accession and availability-statement patterns.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

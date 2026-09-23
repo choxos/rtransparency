@@ -13,7 +13,7 @@ later; for earlier articles `is_ai_pred` is `NA`."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,7 @@ later; for earlier articles `is_ai_pred` is `NA`.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_ai_pmc</span><span class="op">(</span><span class="va">filename</span>, remove_ns <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_ai_pmc</span><span class="op">(</span><span class="va">filename</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -67,14 +67,33 @@ later; for earlier articles `is_ai_pred` is `NA`.</p>
 
 
 <dt id="arg-remove-ns">remove_ns<a class="anchor" aria-label="anchor" href="#arg-remove-ns"></a></dt>
-<dd><p>TRUE if an XML namespace exists, else FALSE (default).</p></dd>
+<dd><p>Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A tibble with the article IDs, the publication `year`, whether an AI
   disclosure was found (`is_ai_pred`, `NA` before 2023), the matched
-  statement (`ai_text`) and `is_success`.</p>
+  statement (`ai_text`), what the disclosure says (`ai_used`, `ai_tools`,
+  `ai_purpose`; see Details) and `is_success`.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The year gate uses the earliest publication year the XML records
+  (electronic, print or collection date), so an article first published
+  online in December 2022 is gated out even if its issue is dated 2023.</p>
+<p>A disclosure can state use or non-use, and `is_ai_pred` counts
+  both. `ai_used` separates them: `TRUE` when a disclosure states that AI
+  was used, `FALSE` when it states that no AI was used, and `NA` when there
+  is no disclosure or the use cannot be read from it (for example when only
+  a section title was found). `ai_tools` names the tools mentioned in
+  statements of use (for example `"ChatGPT; DeepL"`) and `ai_purpose` the
+  stated purposes, from `"language editing"`, `"translation"`,
+  `"drafting"`, `"figures and images"`, `"code and analysis"` and
+  `"literature search"`. These are read with the same rules as the
+  disclosure itself and have not been separately validated.</p>
     </div>
 
     <div class="section level2">
@@ -83,11 +102,12 @@ later; for earlier articles `is_ai_pred` is `NA`.</p>
 <span class="r-in"><span><span class="va">filepath</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="st">"extdata"</span>, <span class="st">"PMID32171256-PMC7071725.xml"</span>, package <span class="op">=</span> <span class="st">"rtransparency"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">rt_ai_pmc</span><span class="op">(</span><span class="va">filepath</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 9</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   pmid    pmcid_pmc pmcid_uid doi   filename  year is_ai_pred ai_text is_success</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 321712… <span style="color: #949494;">""</span>        <span style="color: #949494;">""</span>        10.1… /home/r…  <span style="text-decoration: underline;">2</span>020 <span style="color: #BB0000;">NA</span>         <span style="color: #949494;">""</span>      TRUE      </span>
+<span class="r-in"><span><span class="fu">rt_ai_pmc</span><span class="op">(</span><span class="va">filepath</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   pmid     pmcid_pmc  pmcid_uid doi    filename  year is_ai_pred ai_text ai_used</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 32171256 PMC7071725 7071725   10.11… /home/r…  <span style="text-decoration: underline;">2</span>020 <span style="color: #BB0000;">NA</span>         <span style="color: #949494;">""</span>      <span style="color: #BB0000;">NA</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: ai_tools &lt;chr&gt;, ai_purpose &lt;chr&gt;, is_success &lt;lgl&gt;</span></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -100,7 +120,7 @@ later; for earlier articles `is_ai_pred` is `NA`.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

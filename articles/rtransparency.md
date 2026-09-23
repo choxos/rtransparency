@@ -51,12 +51,11 @@ How open is open?* (PLOS Biology, 2021,
 
 PMC XML is parsed with `xml2`. The XML root is standardized to the
 `<article>` node (the package accepts the OAI-PMH, EFetch
-`<pmc-articleset>` and bare `<article>` shapes), the namespace is
-optionally stripped (`remove_ns = TRUE`), and the text is split into the
-sections where each indicator usually appears: acknowledgments,
-footnotes / author notes, the body, the methods, the abstract and
-supplementary material. TXT files are read whole and split into
-paragraphs.
+`<pmc-articleset>`, Europe PMC and bare `<article>` shapes), default
+namespaces are always stripped, and the text is split into the sections
+where each indicator usually appears: acknowledgments, footnotes /
+author notes, the body, the methods, the abstract and supplementary
+material. TXT files are read whole and split into paragraphs.
 
 ### Rule-based detection
 
@@ -152,7 +151,7 @@ matched statement text, the publication `year` and article metadata.
 
 ``` r
 
-all_indicators <- rt_all_pmc(xml_path, remove_ns = TRUE)
+all_indicators <- rt_all_pmc(xml_path)
 
 dplyr::glimpse(
   all_indicators[, c("pmid", "year", "is_coi_pred", "is_fund_pred",
@@ -183,7 +182,7 @@ for a 2023 or later article it would be `TRUE` or `FALSE`.
 
 ``` r
 
-coi <- rt_coi_pmc(xml_path, remove_ns = TRUE)
+coi <- rt_coi_pmc(xml_path)
 c(is_coi = coi$is_coi_pred, text = substr(coi$coi_text, 1, 120))
 #>                                                                                                                     is_coi 
 #>                                                                                                                     "TRUE" 
@@ -193,7 +192,7 @@ c(is_coi = coi$is_coi_pred, text = substr(coi$coi_text, 1, 120))
 
 ``` r
 
-fund <- rt_fund_pmc(xml_path, remove_ns = TRUE)
+fund <- rt_fund_pmc(xml_path)
 c(is_fund = fund$is_fund_pred, text = substr(fund$fund_text, 1, 120))
 #> is_fund    text 
 #> "FALSE"      ""
@@ -201,7 +200,7 @@ c(is_fund = fund$is_fund_pred, text = substr(fund$fund_text, 1, 120))
 
 ``` r
 
-register <- rt_register_pmc(xml_path, remove_ns = TRUE)
+register <- rt_register_pmc(xml_path)
 register$is_register_pred
 #> [1] FALSE
 ```
@@ -214,7 +213,7 @@ statements. Detection is native and needs no external packages.
 
 ``` r
 
-data_code <- rt_data_code_pmc(xml_path, remove_ns = TRUE)
+data_code <- rt_data_code_pmc(xml_path)
 
 dplyr::glimpse(
   data_code[, c("is_open_data", "open_data_statements",
@@ -236,7 +235,7 @@ journal, identifiers, dates) is available separately via `rt_meta_pmc`.
 
 ``` r
 
-meta <- rt_meta_pmc(xml_path, remove_ns = TRUE)
+meta <- rt_meta_pmc(xml_path)
 dplyr::glimpse(meta[, c("pmid", "doi")])
 #> Rows: 1
 #> Columns: 2
@@ -252,7 +251,7 @@ dplyr::glimpse(meta[, c("pmid", "doi")])
 
 ``` r
 
-ai <- rt_ai_pmc(xml_path, remove_ns = TRUE)
+ai <- rt_ai_pmc(xml_path)
 c(year = ai$year, is_ai = ai$is_ai_pred)
 #>  year is_ai 
 #>  2020    NA
@@ -260,25 +259,26 @@ c(year = ai$year, is_ai = ai$is_ai_pred)
 
 ## Usage: TXT files
 
-To analyze a PDF, first convert it to TXT with `rt_read_pdf` (this needs
-the poppler `pdftotext` utility installed), then run the TXT detectors.
-The chunks below are illustrative and are not executed when the vignette
-is built.
+The plain-text detectors take either a file path or the text itself, and
+return the same indicator columns as the XML detectors.
+[`rt_all_pdf()`](https://choxos.github.io/rtransparency/reference/rt_all_pdf.md)
+scores a PDF in one call (it needs the poppler `pdftotext` utility). The
+chunks below are illustrative and are not executed when the vignette is
+built.
 
 ``` r
 
 pdf_path <- system.file(
   "extdata", "PMID32171256-PMC7071725.pdf", package = "rtransparency"
 )
-article <- rt_read_pdf(pdf_path)
-writeLines(article, "article.txt")
+rt_all_pdf(pdf_path)                 # all ten indicators from a PDF
 
-rt_coi("article.txt")
-rt_fund("article.txt")
-rt_register("article.txt")
-rt_data_code("article.txt")
-rt_ai("article.txt")    # generative-AI-use disclosure
-rt_all("article.txt")   # COI, funding, registration, novelty, replication
+article <- rt_read_pdf(pdf_path)     # or extract the text once ...
+rt_coi(text = article)               # ... and run any detector on it
+rt_all(text = article)
+
+rt_all("article.txt")                # a text file works the same way
+rt_all_txt_dir("path/to/articles")   # a directory of TXT and PDF files
 ```
 
 `rt_ai` is the plain-text counterpart of `rt_ai_pmc`. A text file
@@ -298,14 +298,14 @@ paths) in one call, designed for corpus-scale analysis.
 ``` r
 
 # Sequential, in memory
-res <- rt_all_pmc_dir("path/to/xml", remove_ns = TRUE)
+res <- rt_all_pmc_dir("path/to/xml")
 
 # Resumable and parallel: results are written to a CSV in chunks, a re-run skips
 # files already recorded, and a malformed file yields an is_success = FALSE row
 # instead of aborting the run.
 future::plan("multisession")
 res <- rt_all_pmc_dir(
-  "path/to/xml", remove_ns = TRUE, output = "results.csv", parallel = TRUE
+  "path/to/xml", output = "results.csv", parallel = TRUE
 )
 ```
 
@@ -325,41 +325,74 @@ vignette covers this in depth.
 
 data(rt_demo)            # a small simulated example shipped with the package
 rt_summary(rt_demo)[, c("indicator", "percent", "adj_percent")]
-#> # A tibble: 8 × 3
-#>   indicator           percent adj_percent
-#>   <chr>                 <dbl>       <dbl>
-#> 1 is_coi_pred           70.4        70.8 
-#> 2 is_fund_pred          79.6        79.4 
-#> 3 is_register_pred      29.7        30.8 
-#> 4 is_open_data          20.4        25.7 
-#> 5 is_open_code           8.5         9.13
-#> 6 is_novelty_pred       54.4        62.8 
-#> 7 is_replication_pred    9.42        8.67
-#> 8 is_ai_pred            25.2        NA
+#> # A tibble: 10 × 3
+#>    indicator           percent adj_percent
+#>    <chr>                 <dbl>       <dbl>
+#>  1 is_coi_pred           70.4        74.9 
+#>  2 is_fund_pred          79.6        86.1 
+#>  3 is_register_pred      29.7        24.6 
+#>  4 is_open_data          20.4        25.7 
+#>  5 is_open_code           8.5         9.13
+#>  6 is_novelty_pred       54.4        62.8 
+#>  7 is_replication_pred    9.42        8.25
+#>  8 is_ai_pred            25.2        NA   
+#>  9 is_open_access        82.2        NA   
+#> 10 is_reporting_pred     13.9        13.7
 ```
 
 ## Downloading PMC XML
 
-PMC full-text XML can be downloaded by PMCID. The package exposes
-nothing for this, but the `europepmc` (CRAN) or `metareadr` packages
-work well; the following is illustrative.
+[`rt_fetch_pmc()`](https://choxos.github.io/rtransparency/reference/rt_fetch_pmc.md)
+downloads full-text XML for PMCIDs, PubMed IDs or DOIs from NCBI (or
+Europe PMC with `source = "europepmc"`), reusing files already
+downloaded and reporting which articles have a full-text body.
+[`rt_convert_ids()`](https://choxos.github.io/rtransparency/reference/rt_convert_ids.md)
+maps between the identifier types.
 
 ``` r
 
-# europepmc::epmc_ftxt("PMC7071725")            # returns the XML document
-# metareadr::mt_read_pmcoa("7071725", "article.xml")
+got <- rt_fetch_pmc(c("PMC7071725", "32171256"), dir = "xml")
+res <- rt_all_pmc_dir("xml")
 ```
+
+## Beyond presence of a statement
+
+A few functions go further than detecting whether a statement exists:
+
+- [`rt_authors_pmc()`](https://choxos.github.io/rtransparency/reference/rt_authors_pmc.md)
+  and
+  [`rt_funders_pmc()`](https://choxos.github.io/rtransparency/reference/rt_funders_pmc.md)
+  read tagged JATS metadata: ORCID coverage and CRediT contribution
+  roles, and funders with their Crossref Funder Registry and ROR
+  identifiers and award numbers.
+- [`rt_trial_ids()`](https://choxos.github.io/rtransparency/reference/rt_trial_ids.md)
+  extracts registry identifiers from the registration text, and
+  [`rt_registration_timing()`](https://choxos.github.io/rtransparency/reference/rt_registration_timing.md)
+  asks ClinicalTrials.gov whether each trial was registered before it
+  started.
+- [`rt_fill_coi_pubmed()`](https://choxos.github.io/rtransparency/reference/rt_fill_coi_pubmed.md)
+  recovers conflict-of-interest statements that PubMed records but the
+  full-text XML lacks.
+- [`rt_check_links()`](https://choxos.github.io/rtransparency/reference/rt_check_links.md)
+  checks whether the data and code links a statement gives actually
+  resolve.
+- [`rt_ethics_pmc()`](https://choxos.github.io/rtransparency/reference/rt_ethics_pmc.md)
+  and
+  [`rt_ethics()`](https://choxos.github.io/rtransparency/reference/rt_ethics.md)
+  detect ethics approval and informed consent statements. They are
+  experimental: not yet validated against hand labels, so they are kept
+  out of
+  [`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md).
 
 ## Validation
 
-The detectors were benchmarked against the human-labeled XML benchmark
-of Serghiou et al. (2021). The current package reaches roughly: COI 97%
-accuracy, funding 97%, protocol registration 98%. The native data/code
-detector reaches code 88% sensitivity / 99% specificity and data 77%
-sensitivity / 99% specificity (see `inst/benchmark/` and
-`data-raw/benchmark/` in the source repository for the reproducible
-benchmark). The native data/code values are reproducible benchmark and
-regression estimates, not untouched external-validation estimates.
+Every indicator is benchmarked against hand labels; the current numbers,
+their provenance and the scripts that reproduce them are in
+`inst/benchmark/` and `data-raw/benchmark/` of the source repository,
+and the README summarizes them. The accuracy table `rt_accuracy` used by
+[`rt_summary()`](https://choxos.github.io/rtransparency/reference/rt_summary.md)
+records each estimate with its validation counts, so the corrected
+prevalence carries the uncertainty of the validation.
 
 ## Naming convention and dependencies
 

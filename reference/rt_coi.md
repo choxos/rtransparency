@@ -10,19 +10,27 @@ file does not have, are unavailable).
 ## Usage
 
 ``` r
-rt_coi(filename)
+rt_coi(filename = NULL, text = NULL)
 ```
 
 ## Arguments
 
 - filename:
 
-  The name of the TXT file as a string.
+  The path to a TXT file as a string.
+
+- text:
+
+  Alternatively, the article text itself as a character vector (for
+  example the output of \[rt_read_pdf()\]). Supply \`filename\` or
+  \`text\`.
 
 ## Value
 
-A dataframe of results. It returns the filename, PMID (if it was part of
-the file name), whether a COI was found and the text identified.
+A tibble with the file name (\`article\`), the PMID (the digits after
+"PMID" in the file name, \`NA\` if absent or for \`text\`), whether a
+COI statement was found (\`is_coi_pred\`) and the text identified
+(\`coi_text\`).
 
 ## Examples
 

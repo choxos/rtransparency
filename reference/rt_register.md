@@ -7,26 +7,32 @@ exists. If a Registration statement exists, it extracts it.
 ## Usage
 
 ``` r
-rt_register(filename)
+rt_register(filename = NULL, text = NULL)
 ```
 
 ## Arguments
 
 - filename:
 
-  The name of the TXT file as a string.
+  The path to a TXT file as a string.
+
+- text:
+
+  Alternatively, the article text itself as a character vector (for
+  example the output of \[rt_read_pdf()\]). Supply \`filename\` or
+  \`text\`.
 
 ## Value
 
-A dataframe of results. It returns the PMID (if this was part of the
-filename and preceded by PMID), whether a registration statement was
-found, the identified statement, whether the text was deemed relevant
-(e.g. contained the word registration), whether a Methods section was
-identified, whether an NCT number was identified, whether a registration
-was explicitly identified (defunct) and whether each labeling function
-identified a relevant text or not. The labeling functions are returned
-to add flexibility in how this package is used; for example, future
-definitions of Registration may differ from the one we used.
+A tibble. It returns the file name (\`article\`), the PMID (\`NA\` if
+absent), whether a registration statement was found, the identified
+statement, whether the text was deemed relevant (e.g. contained the word
+registration), whether a Methods section was identified, whether an NCT
+number was identified, whether a registration was explicitly identified
+(defunct) and whether each labeling function identified a relevant text
+or not. The labeling functions are returned to add flexibility in how
+this package is used; for example, future definitions of Registration
+may differ from the one we used.
 
 ## Examples
 

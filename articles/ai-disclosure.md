@@ -49,7 +49,7 @@ The bundled example article is from 2020, so it returns `NA`:
 xml_path <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-ai <- rt_ai_pmc(xml_path, remove_ns = TRUE)
+ai <- rt_ai_pmc(xml_path)
 c(year = ai$year, is_ai_pred = ai$is_ai_pred)
 #>       year is_ai_pred 
 #>       2020         NA
@@ -63,6 +63,31 @@ assessed).
 drops the `NA`s, so a corpus prevalence is computed only over the
 articles where the indicator applies.
 
+## What a disclosure says
+
+A disclosure can say that AI was used (“The authors used ChatGPT to
+improve the language of the manuscript”) or that it was not (“No
+generative AI was used in the preparation of this work”); `is_ai_pred`
+counts both. Three further columns read the disclosure itself: `ai_used`
+(`TRUE` for stated use, `FALSE` for stated non-use, `NA` when there is
+no disclosure or it cannot be read), `ai_tools` (the tools named, such
+as `"ChatGPT; DeepL"`) and `ai_purpose` (language editing, translation,
+drafting, figures and images, code and analysis, or literature search).
+These use the same rules as the disclosure detector and have not been
+separately validated.
+
+``` r
+
+rt_ai(text = paste(
+  "During the preparation of this work the authors used Claude 3.5 Sonnet",
+  "and DeepL to translate and edit the text."
+))[, c("is_ai_pred", "ai_used", "ai_tools", "ai_purpose")]
+#> # A tibble: 1 × 4
+#>   is_ai_pred ai_used ai_tools      ai_purpose                   
+#>   <lgl>      <lgl>   <chr>         <chr>                        
+#> 1 TRUE       TRUE    Claude; DeepL language editing; translation
+```
+
 ## In the all-indicators output
 
 [`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
@@ -71,7 +96,7 @@ includes the indicator, so a single pass over a corpus already carries
 
 ``` r
 
-all_indicators <- rt_all_pmc(xml_path, remove_ns = TRUE)
+all_indicators <- rt_all_pmc(xml_path)
 all_indicators[, c("pmid", "year", "is_ai_pred")]
 #> # A tibble: 1 × 3
 #>   pmid      year is_ai_pred
@@ -121,7 +146,7 @@ rt_plot(rt_demo, type = "trend", year = "year", indicators = "is_ai_pred") +
 ```
 
 ![Line chart of generative-AI-use disclosure prevalence by year from
-2023](ai-disclosure_files/figure-html/unnamed-chunk-5-1.png)
+2023](ai-disclosure_files/figure-html/unnamed-chunk-6-1.png)
 
 It also sits naturally next to the other indicators in a single
 prevalence chart; the AI bar simply reflects the 2023-onward subset:
@@ -132,7 +157,7 @@ rt_plot(rt_demo) + ggtitle("Transparency indicators, including AI-use disclosure
 ```
 
 ![Bar chart of all transparency indicators including AI-use
-disclosure](ai-disclosure_files/figure-html/unnamed-chunk-6-1.png)
+disclosure](ai-disclosure_files/figure-html/unnamed-chunk-7-1.png)
 
 ## Notes on precision
 

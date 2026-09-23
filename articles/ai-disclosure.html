@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,7 +120,7 @@ onward.</li>
 <code class="sourceCode R"><span><span class="va">xml_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>  <span class="st">"extdata"</span>, <span class="st">"PMID32171256-PMC7071725.xml"</span>, package <span class="op">=</span> <span class="st">"rtransparency"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">ai</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_ai_pmc.html">rt_ai_pmc</a></span><span class="op">(</span><span class="va">xml_path</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">ai</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_ai_pmc.html">rt_ai_pmc</a></span><span class="op">(</span><span class="va">xml_path</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>year <span class="op">=</span> <span class="va">ai</span><span class="op">$</span><span class="va">year</span>, is_ai_pred <span class="op">=</span> <span class="va">ai</span><span class="op">$</span><span class="va">is_ai_pred</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       year is_ai_pred </span></span>
 <span><span class="co">#&gt;       2020         NA</span></span></code></pre></div>
@@ -132,13 +132,38 @@ drops the <code>NA</code>s, so a corpus prevalence is computed only over
 the articles where the indicator applies.</p>
 </div>
 <div class="section level2">
+<h2 id="what-a-disclosure-says">What a disclosure says<a class="anchor" aria-label="anchor" href="#what-a-disclosure-says"></a>
+</h2>
+<p>A disclosure can say that AI was used (“The authors used ChatGPT to
+improve the language of the manuscript”) or that it was not (“No
+generative AI was used in the preparation of this work”);
+<code>is_ai_pred</code> counts both. Three further columns read the
+disclosure itself: <code>ai_used</code> (<code>TRUE</code> for stated
+use, <code>FALSE</code> for stated non-use, <code>NA</code> when there
+is no disclosure or it cannot be read), <code>ai_tools</code> (the tools
+named, such as <code>"ChatGPT; DeepL"</code>) and
+<code>ai_purpose</code> (language editing, translation, drafting,
+figures and images, code and analysis, or literature search). These use
+the same rules as the disclosure detector and have not been separately
+validated.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rt_ai.html">rt_ai</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span></span>
+<span>  <span class="st">"During the preparation of this work the authors used Claude 3.5 Sonnet"</span>,</span>
+<span>  <span class="st">"and DeepL to translate and edit the text."</span></span>
+<span><span class="op">)</span><span class="op">)</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"is_ai_pred"</span>, <span class="st">"ai_used"</span>, <span class="st">"ai_tools"</span>, <span class="st">"ai_purpose"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
+<span><span class="co">#&gt;   is_ai_pred ai_used ai_tools      ai_purpose                   </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                        </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> TRUE       TRUE    Claude; DeepL language editing; translation</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="in-the-all-indicators-output">In the all-indicators output<a class="anchor" aria-label="anchor" href="#in-the-all-indicators-output"></a>
 </h2>
 <p><code><a href="../reference/rt_all_pmc.html">rt_all_pmc()</a></code> includes the indicator, so a single pass
 over a corpus already carries <code>year</code> and
 <code>is_ai_pred</code> alongside the other nine indicators:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">all_indicators</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="va">xml_path</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">all_indicators</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="va">xml_path</span><span class="op">)</span></span>
 <span><span class="va">all_indicators</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pmid"</span>, <span class="st">"year"</span>, <span class="st">"is_ai_pred"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
 <span><span class="co">#&gt;   pmid      year is_ai_pred</span></span>
@@ -153,7 +178,7 @@ over a corpus already carries <code>year</code> and
 onward. The bundled simulated corpus <code>rt_demo</code> includes an
 <code>is_ai_pred</code> column (<code>NA</code> before 2023) for
 illustration.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rt_demo</span><span class="op">)</span></span>
 <span><span class="va">ai_by_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_summary.html">rt_summary</a></span><span class="op">(</span><span class="va">rt_demo</span>, by <span class="op">=</span> <span class="st">"year"</span>, indicators <span class="op">=</span> <span class="st">"is_ai_pred"</span><span class="op">)</span></span>
 <span><span class="co"># Years before 2023 have no assessable articles (all NA), so no denominator;</span></span>
@@ -202,16 +227,16 @@ illustration.</p>
 assessable articles and are filtered out above. Plotted, the adoption
 curve is the point of the indicator (<code><a href="../reference/rt_plot.html">rt_plot()</a></code> drops the
 empty earlier years automatically):</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/rt_plot.html">rt_plot</a></span><span class="op">(</span><span class="va">rt_demo</span>, type <span class="op">=</span> <span class="st">"trend"</span>, year <span class="op">=</span> <span class="st">"year"</span>, indicators <span class="op">=</span> <span class="st">"is_ai_pred"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Disclosure of generative-AI use (simulated corpus)"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="ai-disclosure_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="Line chart of generative-AI-use disclosure prevalence by year from 2023" width="672"></p>
+<p><img src="ai-disclosure_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="Line chart of generative-AI-use disclosure prevalence by year from 2023" width="672"></p>
 <p>It also sits naturally next to the other indicators in a single
 prevalence chart; the AI bar simply reflects the 2023-onward subset:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rt_plot.html">rt_plot</a></span><span class="op">(</span><span class="va">rt_demo</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Transparency indicators, including AI-use disclosure"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="ai-disclosure_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="Bar chart of all transparency indicators including AI-use disclosure" width="672"></p>
+<p><img src="ai-disclosure_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="Bar chart of all transparency indicators including AI-use disclosure" width="672"></p>
 </div>
 <div class="section level2">
 <h2 id="notes-on-precision">Notes on precision<a class="anchor" aria-label="anchor" href="#notes-on-precision"></a>
@@ -239,7 +264,7 @@ corpus</a> articles.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

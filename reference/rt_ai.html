@@ -25,7 +25,7 @@ is more likely to be flagged than under [rt_ai_pmc()]."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@ is more likely to be flagged than under [rt_ai_pmc()].</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_ai</span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_ai</span><span class="op">(</span>filename <span class="op">=</span> <span class="cn">NULL</span>, text <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -81,14 +81,20 @@ is more likely to be flagged than under [rt_ai_pmc()].</p>
 
 
 <dl><dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
-<dd><p>The name of the TXT file as a string.</p></dd>
+<dd><p>The path to a TXT file as a string.</p></dd>
+
+
+<dt id="arg-text">text<a class="anchor" aria-label="anchor" href="#arg-text"></a></dt>
+<dd><p>Alternatively, the article text itself as a character vector
+(for example the output of [rt_read_pdf()]). Supply `filename` or `text`.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with the filename, the PMID (if present in the file name),
-  whether an AI-use disclosure was found (`is_ai_pred`) and the matched
-  statement (`ai_text`).</p>
+    <p>A tibble with the file name (`article`), the PMID (`NA` if absent),
+  whether an AI-use disclosure was found (`is_ai_pred`), the matched
+  statement (`ai_text`) and what it says (`ai_used`, `ai_tools`,
+  `ai_purpose`), as described in [rt_ai_pmc()].</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -108,10 +114,10 @@ is more likely to be flagged than under [rt_ai_pmc()].</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Identify and extract an AI-use disclosure.</span></span></span>
 <span class="r-in"><span><span class="fu">rt_ai</span><span class="op">(</span><span class="va">filepath</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   article                     pmid     is_ai_pred ai_text                       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> PMID00000000-PMC0000000.txt 00000000 TRUE       <span style="color: #949494;">"</span>The authors used ChatGPT to …</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   article                   pmid  is_ai_pred ai_text ai_used ai_tools ai_purpose</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> PMID00000000-PMC0000000.… 0000… TRUE       The au… TRUE    ChatGPT  drafting  </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -124,7 +130,7 @@ is more likely to be flagged than under [rt_ai_pmc()].</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

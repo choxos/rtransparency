@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -147,13 +147,13 @@
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># From CRAN (when available)</span></span>
+<code class="sourceCode R"><span><span class="co"># From CRAN</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"rtransparency"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Development version from GitHub</span></span>
 <span><span class="co"># install.packages("remotes")</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"choxos/rtransparency"</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p>No GitHub-only or AGPL dependencies are required; data and code detection is native (it no longer wraps <code>oddpub</code>). <code><a href="reference/rt_read_pdf.html">rt_read_pdf()</a></code> (PDF to text) additionally needs the poppler <code>pdftotext</code> utility on your system. The optional <code>furrr</code> and <code>future</code> packages enable parallel corpus processing; <code>ggplot2</code> enables plotting.</p>
+<p>No GitHub-only or AGPL dependencies are required; data and code detection is native (it no longer wraps <code>oddpub</code>). <code><a href="reference/rt_read_pdf.html">rt_read_pdf()</a></code> (PDF to text) additionally needs the poppler <code>pdftotext</code> utility on your system (or the optional <code>pdftools</code> package). The optional <code>furrr</code> and <code>future</code> packages enable parallel corpus processing, <code>ggplot2</code> plotting, and <code>jsonlite</code> the ClinicalTrials.gov lookup.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-start-all-ten-indicators-in-one-call">Quick start: all ten indicators in one call<a class="anchor" aria-label="anchor" href="#quick-start-all-ten-indicators-in-one-call"></a>
@@ -163,7 +163,7 @@
 <span></span>
 <span><span class="va">xml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"PMID32171256-PMC7071725.xml"</span>, package <span class="op">=</span> <span class="st">"rtransparency"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The predictions, one column per indicator:</span></span>
 <span><span class="va">res</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"is_coi_pred"</span>, <span class="st">"is_fund_pred"</span>, <span class="st">"is_register_pred"</span>, <span class="st">"is_novelty_pred"</span>,</span>
@@ -175,32 +175,53 @@
 <span><span class="va">res</span><span class="op">$</span><span class="va">open_data_statements</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">oa_license</span>            <span class="co"># e.g. "CC-BY-4.0"</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">reporting_guideline</span>   <span class="co"># e.g. "PRISMA"</span></span></code></pre></div>
-<p><code><a href="reference/rt_all_pmc.html">rt_all_pmc()</a></code> returns one row with the ten predictions, the extracted statement for each, article identifiers and metadata, the year, and <code>is_success</code>. <code>is_ai_pred</code> is <code>NA</code> for articles published before 2023.</p>
+<p><code><a href="reference/rt_all_pmc.html">rt_all_pmc()</a></code> returns one row with the ten predictions, the extracted statement for each, article identifiers and metadata, the year, and <code>is_success</code>. <code>is_ai_pred</code> is <code>NA</code> for articles published before 2023; <code>ai_used</code>, <code>ai_tools</code> and <code>ai_purpose</code> say whether a disclosure reports use, of which tools, and for what. <code>has_das</code> records whether the article has a data-availability section.</p>
+</div>
+<div class="section level2">
+<h2 id="getting-articles">Getting articles<a class="anchor" aria-label="anchor" href="#getting-articles"></a>
+</h2>
+<p><code><a href="reference/rt_fetch_pmc.html">rt_fetch_pmc()</a></code> downloads PMC full-text XML for PMCIDs, PubMed IDs or DOIs (from NCBI by default, or from Europe PMC), reusing files already downloaded:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">got</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_fetch_pmc.html">rt_fetch_pmc</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PMC7071725"</span>, <span class="st">"32171256"</span>, <span class="st">"10.1186/s12874-020-0914-6"</span><span class="op">)</span>,</span>
+<span>                    dir <span class="op">=</span> <span class="st">"xml"</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_all_pmc_dir.html">rt_all_pmc_dir</a></span><span class="op">(</span><span class="st">"xml"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/rt_convert_ids.html">rt_convert_ids()</a></code> maps PubMed IDs, PMCIDs and DOIs to one another. Set the <code>ENTREZ_KEY</code> environment variable to an NCBI API key to raise the rate limit.</p>
 </div>
 <div class="section level2">
 <h2 id="per-indicator-functions">Per-indicator functions<a class="anchor" aria-label="anchor" href="#per-indicator-functions"></a>
 </h2>
 <p>Each indicator can be run on its own, for a PMC XML file or a plain-text file:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/rt_coi_pmc.html">rt_coi_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>        <span class="co"># conflicts of interest</span></span>
-<span><span class="fu"><a href="reference/rt_fund_pmc.html">rt_fund_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>       <span class="co"># funding</span></span>
-<span><span class="fu"><a href="reference/rt_register_pmc.html">rt_register_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>   <span class="co"># protocol registration</span></span>
-<span><span class="fu"><a href="reference/rt_novelty_pmc.html">rt_novelty_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>    <span class="co"># novelty claims</span></span>
-<span><span class="fu"><a href="reference/rt_replication_pmc.html">rt_replication_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="co"># replication / external validation</span></span>
-<span><span class="fu"><a href="reference/rt_data_code_pmc.html">rt_data_code_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>  <span class="co"># data AND code sharing (+ extracted links)</span></span>
-<span><span class="fu"><a href="reference/rt_ai_pmc.html">rt_ai_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>         <span class="co"># generative-AI-use disclosure (2023+)</span></span>
-<span><span class="fu"><a href="reference/rt_oa_pmc.html">rt_oa_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>         <span class="co"># open-access status + license</span></span>
-<span><span class="fu"><a href="reference/rt_reporting_pmc.html">rt_reporting_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>  <span class="co"># reporting-guideline use + which one</span></span>
-<span><span class="fu"><a href="reference/rt_meta_pmc.html">rt_meta_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>       <span class="co"># article metadata</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/rt_coi_pmc.html">rt_coi_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>          <span class="co"># conflicts of interest</span></span>
+<span><span class="fu"><a href="reference/rt_fund_pmc.html">rt_fund_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>         <span class="co"># funding</span></span>
+<span><span class="fu"><a href="reference/rt_register_pmc.html">rt_register_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>     <span class="co"># protocol registration</span></span>
+<span><span class="fu"><a href="reference/rt_novelty_pmc.html">rt_novelty_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>      <span class="co"># novelty claims</span></span>
+<span><span class="fu"><a href="reference/rt_replication_pmc.html">rt_replication_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>  <span class="co"># replication / external validation</span></span>
+<span><span class="fu"><a href="reference/rt_data_code_pmc.html">rt_data_code_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>    <span class="co"># data AND code sharing (+ extracted links, data-availability section)</span></span>
+<span><span class="fu"><a href="reference/rt_ai_pmc.html">rt_ai_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>           <span class="co"># generative-AI-use disclosure (2023+), with use, tools and purpose</span></span>
+<span><span class="fu"><a href="reference/rt_oa_pmc.html">rt_oa_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>           <span class="co"># open-access status + license</span></span>
+<span><span class="fu"><a href="reference/rt_reporting_pmc.html">rt_reporting_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>    <span class="co"># reporting-guideline use + which one</span></span>
+<span><span class="fu"><a href="reference/rt_meta_pmc.html">rt_meta_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>         <span class="co"># article metadata</span></span></code></pre></div>
+<p>Default XML namespaces are always removed, so the former <code>remove_ns</code> argument is no longer needed (it is accepted and ignored).</p>
 </div>
 <div class="section level2">
-<h2 id="corpus-scale-processing">Corpus-scale processing<a class="anchor" aria-label="anchor" href="#corpus-scale-processing"></a>
+<h2 id="structured-metadata-and-follow-up-checks">Structured metadata and follow-up checks<a class="anchor" aria-label="anchor" href="#structured-metadata-and-follow-up-checks"></a>
 </h2>
+<p>Some transparency signals are tagged in the JATS XML rather than written in prose, and some can be checked against outside sources:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/rt_authors_pmc.html">rt_authors_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>      <span class="co"># ORCID coverage of authors, CRediT contribution roles</span></span>
+<span><span class="fu"><a href="reference/rt_funders_pmc.html">rt_funders_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span>      <span class="co"># funders with Crossref Funder IDs, ROR IDs and award numbers</span></span>
+<span></span>
+<span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_trial_ids.html">rt_trial_ids</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">register_text</span><span class="op">)</span>            <span class="co"># NCT, ISRCTN, PROSPERO, ... numbers</span></span>
+<span><span class="fu"><a href="reference/rt_registration_timing.html">rt_registration_timing</a></span><span class="op">(</span><span class="va">ids</span><span class="op">$</span><span class="va">trial_id</span><span class="op">)</span>              <span class="co"># prospective or retrospective (ClinicalTrials.gov)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/rt_fill_coi_pubmed.html">rt_fill_coi_pubmed</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>                           <span class="co"># COI statements recorded only in PubMed</span></span>
+<span><span class="fu"><a href="reference/rt_check_links.html">rt_check_links</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">open_data_links</span><span class="op">)</span>               <span class="co"># do the shared-data links resolve?</span></span></code></pre></div>
+<p><code><a href="reference/rt_ethics_pmc.html">rt_ethics_pmc()</a></code> and <code><a href="reference/rt_ethics.html">rt_ethics()</a></code> detect ethics approval and informed consent statements. They are <strong>experimental</strong>: not yet validated against hand labels, so they are not part of <code><a href="reference/rt_all_pmc.html">rt_all_pmc()</a></code>. ## Corpus-scale processing</p>
 <p><code><a href="reference/rt_all_pmc_dir.html">rt_all_pmc_dir()</a></code> runs all ten indicators over an entire directory (or a vector of paths). It is built for large corpora:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_all_pmc_dir.html">rt_all_pmc_dir</a></span><span class="op">(</span></span>
 <span>  <span class="st">"path/to/xml"</span>,          <span class="co"># a directory, or a character vector of file paths</span></span>
-<span>  remove_ns <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  output    <span class="op">=</span> <span class="st">"results.csv"</span>,  <span class="co"># resumable: re-running skips files already recorded</span></span>
 <span>  parallel  <span class="op">=</span> <span class="cn">TRUE</span>,           <span class="co"># via furrr + an active future::plan()</span></span>
 <span>  progress  <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -209,7 +230,7 @@
 <li>
 <strong>Resumable</strong>: with <code>output</code>, results are written to a CSV in chunks; a re-run skips files already recorded and appends only the new ones.</li>
 <li>
-<strong>Failure-isolated</strong>: a malformed file yields an <code>is_success = FALSE</code> row instead of aborting the run.</li>
+<strong>Failure-isolated</strong>: a malformed file yields an <code>is_success = FALSE</code> row, with the reason in <code>error</code>, instead of aborting the run.</li>
 <li>
 <strong>Parallel</strong>: set <code>future::plan("multisession")</code> and <code>parallel = TRUE</code>.</li>
 </ul>
@@ -217,26 +238,27 @@
 <div class="section level2">
 <h2 id="plain-text-input">Plain-text input<a class="anchor" aria-label="anchor" href="#plain-text-input"></a>
 </h2>
-<p>The same detectors run on plain-text (PDF-derived) articles. <code><a href="reference/rt_read_pdf.html">rt_read_pdf()</a></code> returns the extracted text as a character string; write it to a <code>.txt</code> file, then point the text detectors (which share the PMC detection logic) at that file:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">article_txt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rt_read_pdf.html">rt_read_pdf</a></span><span class="op">(</span><span class="st">"article.pdf"</span><span class="op">)</span>   <span class="co"># needs poppler's pdftotext; returns text</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="va">article_txt</span>, <span class="st">"article.txt"</span><span class="op">)</span>      <span class="co"># the detectors take a file path</span></span>
+<p>The same detectors run on plain-text (PDF-derived) articles, given either a file path or the text itself, and return the same column names as the XML detectors:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/rt_all_pdf.html">rt_all_pdf</a></span><span class="op">(</span><span class="st">"article.pdf"</span><span class="op">)</span>                   <span class="co"># all ten indicators from a PDF (needs pdftotext)</span></span>
+<span><span class="fu"><a href="reference/rt_all.html">rt_all</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span>                       <span class="co"># all ten indicators from a text file</span></span>
+<span><span class="fu"><a href="reference/rt_all.html">rt_all</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="reference/rt_read_pdf.html">rt_read_pdf</a></span><span class="op">(</span><span class="st">"article.pdf"</span><span class="op">)</span><span class="op">)</span>   <span class="co"># or from text already in memory</span></span>
+<span><span class="fu"><a href="reference/rt_coi.html">rt_coi</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">my_text</span><span class="op">)</span>                      <span class="co"># one indicator at a time</span></span>
 <span></span>
-<span><span class="fu"><a href="reference/rt_all.html">rt_all</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span>                       <span class="co"># COI, funding, registration, novelty, replication</span></span>
-<span><span class="fu"><a href="reference/rt_coi.html">rt_coi</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span>                       <span class="co"># or one indicator at a time</span></span>
-<span><span class="fu"><a href="reference/rt_ai.html">rt_ai</a></span><span class="op">(</span><span class="st">"article.txt"</span><span class="op">)</span>                        <span class="co"># generative-AI-use disclosure</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/rt_all_txt_dir.html">rt_all_txt_dir</a></span><span class="op">(</span><span class="st">"path/to/txt_and_pdf"</span><span class="op">)</span>       <span class="co"># a whole directory, resumable and parallel</span></span></code></pre></div>
 <p><code><a href="reference/rt_ai.html">rt_ai()</a></code> is the plain-text counterpart of <code><a href="reference/rt_ai_pmc.html">rt_ai_pmc()</a></code>. Because a text file carries no reliable publication date, it applies <strong>no 2023 year gate</strong> (it returns <code>TRUE</code>/<code>FALSE</code>, never <code>NA</code>) and cannot confine the scan to back-matter sections, so restrict its use to 2023-or-later articles and expect a slightly higher false-positive rate on papers that use AI as a research method.</p>
 </div>
 <div class="section level2">
 <h2 id="summarizing-a-corpus">Summarizing a corpus<a class="anchor" aria-label="anchor" href="#summarizing-a-corpus"></a>
 </h2>
 <p>Once you have one row per article, summarize the corpus:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rt_demo</span><span class="op">)</span>            <span class="co"># a small simulated example shipped with the package</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/rt_summary.html">rt_summary</a></span><span class="op">(</span><span class="va">rt_demo</span><span class="op">)</span>      <span class="co"># per-indicator prevalence with a Wilson confidence</span></span>
 <span>                         <span class="co"># interval and a sensitivity/specificity-corrected</span></span>
-<span>                         <span class="co"># (Rogan-Gladen) prevalence</span></span>
+<span>                         <span class="co"># (Rogan-Gladen) prevalence whose interval carries the</span></span>
+<span>                         <span class="co"># uncertainty of the detector's validation</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/rt_summary.html">rt_summary</a></span><span class="op">(</span><span class="va">rt_demo</span>, by <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span>   <span class="co"># subgroup summaries</span></span>
 <span></span>
@@ -245,7 +267,7 @@
 <span><span class="fu"><a href="reference/rt_plot.html">rt_plot</a></span><span class="op">(</span><span class="va">rt_demo</span><span class="op">)</span>                                  <span class="co"># prevalence bar chart</span></span>
 <span><span class="fu"><a href="reference/rt_plot.html">rt_plot</a></span><span class="op">(</span><span class="va">rt_demo</span>, type <span class="op">=</span> <span class="st">"trend"</span>, year <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span>   <span class="co"># prevalence over time</span></span></code></pre></div>
 <p>The accuracy correction uses the bundled <code>rt_accuracy</code> table (detector sensitivity and specificity for eight indicators; open-access licensing and AI-use disclosure are reported uncorrected). Supply your own estimates:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rt_accuracy</span>                              <span class="co"># the bundled estimates</span></span>
 <span><span class="va">my_acc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>variable <span class="op">=</span> <span class="st">"is_open_data"</span>, sensitivity <span class="op">=</span> <span class="fl">0.84</span>, specificity <span class="op">=</span> <span class="fl">0.97</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/rt_summary.html">rt_summary</a></span><span class="op">(</span><span class="va">rt_demo</span>, accuracy <span class="op">=</span> <span class="va">my_acc</span><span class="op">)</span>   <span class="co"># correct with your own values</span></span></code></pre></div>
@@ -258,7 +280,7 @@
 <div class="section level2">
 <h2 id="validation">Validation<a class="anchor" aria-label="anchor" href="#validation"></a>
 </h2>
-<p>Benchmarked against the human-labeled XML benchmark of Serghiou et al. (2021), reproducible under <code>data-raw/benchmark/</code>, with results in <code>inst/benchmark/</code>:</p>
+<p>Every indicator is benchmarked against hand labels; the reports and the scripts that reproduce them are in <code>inst/benchmark/</code> and <code>data-raw/benchmark/</code>. On the held-out, independently labeled test set of Serghiou et al. (2021):</p>
 <table class="table">
 <thead><tr>
 <th>Indicator</th>
@@ -273,13 +295,13 @@
 </tr>
 <tr>
 <td>Funding</td>
-<td>100%</td>
+<td>91.7%</td>
 <td>95.7%</td>
 </tr>
 <tr>
 <td>Protocol registration</td>
-<td>99.2%</td>
-<td>96.9%</td>
+<td>98.3%</td>
+<td>92.7%</td>
 </tr>
 <tr>
 <td>Data sharing</td>
@@ -293,8 +315,7 @@
 </tr>
 </tbody>
 </table>
-<p>Registration and code in the Serghiou benchmark table above are labeled independently of the detector; COI, funding and data labels in the 1000-article 2023 sample were reconciled against detector-extracted statements (detector-adjudicated), so their agreement is not a fully independent estimate. Data sharing is deliberately precision-favoring: its 76.5% sensitivity trades recall for 99.0% specificity (the original <code>oddpub</code> algorithm scores about 84%/97% on this set).</p>
-<p>The newer indicators are validated against maintainer-built, hand-labeled benchmarks in <code>inst/benchmark/</code>:</p>
+<p>Data sharing is deliberately precision-favoring, and the native data/code detector was developed against this set, so its figures are regression estimates rather than an untouched validation. The newer indicators are validated against maintainer-built, hand-labeled benchmarks:</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -317,31 +338,31 @@
 </tr>
 <tr>
 <td>Replication</td>
-<td>92.8%</td>
-<td>98.5%</td>
-<td>replication-enriched sample (111 positives); correction is approximate</td>
+<td>96.4%</td>
+<td>98.4%</td>
+<td>sensitivity from a replication-enriched sample (111 positives), specificity from the 2023 sample</td>
 </tr>
 <tr>
 <td>AI-use disclosure</td>
-<td>not accuracy-corrected</td>
-<td>—</td>
-<td>experimental; only 9 positives in the 2023 sample</td>
+<td>100%</td>
+<td>100%</td>
+<td>2023 sample, only 9 positives and detector-adjudicated labels; not accuracy-corrected</td>
 </tr>
 <tr>
 <td>Open-access license</td>
 <td>100%</td>
 <td>not estimable</td>
-<td>structured <code>&lt;license&gt;</code> extraction; <strong>license-type exact match 99.8%</strong>; specificity rests on 1 negative in the OA subset, so it is reported uncorrected</td>
+<td>structured <code>&lt;license&gt;</code> extraction; license-type exact match 99.8%; one negative in the OA subset</td>
 </tr>
 <tr>
 <td>Reporting guideline</td>
-<td>93.8%</td>
+<td>95.4%</td>
 <td>99.0%</td>
-<td>1000-article 2023 sample hand-labeled (65 positives)</td>
+<td>1000-article 2023 sample, hand-labeled (65 positives)</td>
 </tr>
 </tbody>
 </table>
-<p>Replication’s correction mixes designs (sensitivity from the enriched sample, specificity from the representative 2023 sample), so it is less clean than the single-design corrections above. AI-use disclosure is reported uncorrected and is excluded from <code>rt_accuracy</code> until a larger labeled post-2022 sample exists. Two further benchmarks live in <code>inst/benchmark/</code>: a <strong>five-language sample</strong> for multilingual COI and funding, and a <strong>TXT-parity benchmark</strong> comparing the text and XML detectors.</p>
+<p>These estimates, with the validation counts behind them, form the <code>rt_accuracy</code> table that <code><a href="reference/rt_summary.html">rt_summary()</a></code> uses to correct prevalence, and the corrected intervals carry their uncertainty. Further reports cover a five-language sample for multilingual COI and funding, plain-text parity, and Europe PMC parity. Fresh, blind validation rounds for 2025 are prepared in <code>data-raw/validation/</code>.</p>
 <p>See <code><a href="articles/rtransparency.html">vignette("rtransparency")</a></code> for the methodology and <code><a href="articles/scope-and-limitations.html">vignette("scope-and-limitations")</a></code> for what each indicator does and does not capture.</p>
 </div>
 <div class="section level2">
@@ -349,13 +370,13 @@
 </h2>
 <ul>
 <li>
-<code><a href="articles/rtransparency.html">vignette("rtransparency")</a></code> — introduction and methodology</li>
+<code><a href="articles/rtransparency.html">vignette("rtransparency")</a></code>: introduction and methodology</li>
 <li>
-<code><a href="articles/transparency-summary.html">vignette("transparency-summary")</a></code> — corpus prevalence, scoring and plotting</li>
+<code><a href="articles/transparency-summary.html">vignette("transparency-summary")</a></code>: corpus prevalence, scoring and plotting</li>
 <li>
-<code><a href="articles/ai-disclosure.html">vignette("ai-disclosure")</a></code> — the AI-use disclosure indicator in depth</li>
+<code><a href="articles/ai-disclosure.html">vignette("ai-disclosure")</a></code>: the AI-use disclosure indicator in depth</li>
 <li>
-<code><a href="articles/scope-and-limitations.html">vignette("scope-and-limitations")</a></code> — indicator semantics, limitations, output schema</li>
+<code><a href="articles/scope-and-limitations.html">vignette("scope-and-limitations")</a></code>: indicator semantics, limitations, output schema</li>
 <li>Package website: <a href="https://choxos.github.io/rtransparency/" class="uri">https://choxos.github.io/rtransparency/</a>
 </li>
 </ul>
@@ -381,6 +402,7 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=rtransparency" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/choxos/rtransparency/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/choxos/rtransparency/issues" class="external-link">Report a bug</a></li>
 </ul>
@@ -437,7 +459,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -7,7 +7,7 @@ Funding statement exists, it extracts it.
 ## Usage
 
 ``` r
-rt_register_pmc(filename, remove_ns = FALSE)
+rt_register_pmc(filename, remove_ns = TRUE)
 ```
 
 ## Arguments
@@ -18,7 +18,9 @@ rt_register_pmc(filename, remove_ns = FALSE)
 
 - remove_ns:
 
-  TRUE if an XML namespace exists, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 ## Value
 
@@ -45,6 +47,6 @@ filepath <- system.file(
 )
 
 # Identify and extract meta-data and indicators of transparency.
-results_table <- rt_register_pmc(filepath, remove_ns = TRUE)
+results_table <- rt_register_pmc(filepath)
 # }
 ```

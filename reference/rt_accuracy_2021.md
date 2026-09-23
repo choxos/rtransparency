@@ -1,0 +1,29 @@
+# Published 2021 detector accuracy estimates
+
+The importance-weighted sensitivity and specificity that Serghiou et al.
+(2021) published for their conflict-of-interest, funding and
+registration detectors. They describe the 2021 detectors, not the
+current ones (see \[rt_accuracy\]), and are kept for comparability with
+that paper: \`rt_summary(data, accuracy = rt_accuracy_2021)\`. Without
+validation counts, \[rt_summary()\] uses the fixed interval for them.
+
+## Usage
+
+``` r
+rt_accuracy_2021
+```
+
+## Format
+
+A tibble with 3 rows and 5 columns: \`variable\`, \`label\`,
+\`sensitivity\`, \`specificity\` and \`source\`.
+
+## Source
+
+Serghiou et al. (2021), PLOS Biology 19(3): e3001107.
+[doi:10.1371/journal.pbio.3001107](https://doi.org/10.1371/journal.pbio.3001107)
+.
+
+## See also
+
+\[rt_accuracy\]

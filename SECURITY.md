@@ -6,10 +6,11 @@ Security fixes are applied to the current development branch. Until the
 package has multiple released branches, only the latest public release
 is supported.
 
-| Version  | Supported |
-|----------|-----------|
-| 1.1.x    | Yes       |
-| \< 1.1.0 | No        |
+| Version  | Supported                   |
+|----------|-----------------------------|
+| 1.2.x    | Yes                         |
+| 1.0.x    | Yes, until 1.2.0 is on CRAN |
+| \< 1.0.0 | No                          |
 
 ## Reporting a vulnerability
 

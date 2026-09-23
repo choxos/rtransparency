@@ -11,7 +11,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_data_code</span><span class="op">(</span><span class="va">filename</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rt_data_code</span><span class="op">(</span>filename <span class="op">=</span> <span class="cn">NULL</span>, text <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -60,13 +60,22 @@
 
 
 <dl><dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
-<dd><p>The name of the TXT file as a string.</p></dd>
+<dd><p>The path to a TXT file as a string.</p></dd>
+
+
+<dt id="arg-text">text<a class="anchor" aria-label="anchor" href="#arg-text"></a></dt>
+<dd><p>Alternatively, the article text itself as a character vector
+(for example the output of [rt_read_pdf()]). Supply `filename` or `text`.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A dataframe of results. It returns whether text suggesting the
-    presence of data or code was found, and if so, what this text was.</p>
+    <p>A tibble with the file name (`article`), the PMID (`NA` if absent),
+    whether data or code sharing was found (`is_open_data`, `is_open_code`),
+    the statements that triggered each (`open_data_statements`,
+    `open_code_statements`) and the identifiers extracted from them
+    (`open_data_links`, `open_code_links`), with the same columns and
+    meaning as [rt_data_code_pmc()].</p>
     </div>
 
     <div class="section level2">
@@ -97,7 +106,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

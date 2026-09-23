@@ -10,18 +10,24 @@ prose and any license URL it contains.
 ## Usage
 
 ``` r
-rt_oa(filename)
+rt_oa(filename = NULL, text = NULL)
 ```
 
 ## Arguments
 
 - filename:
 
-  The name of the TXT file as a string.
+  The path to a TXT file as a string.
+
+- text:
+
+  Alternatively, the article text itself as a character vector (for
+  example the output of \[rt_read_pdf()\]). Supply \`filename\` or
+  \`text\`.
 
 ## Value
 
-A tibble with the filename, the PMID (if present in the file name),
+A tibble with the file name (\`article\`), the PMID (\`NA\` if absent),
 whether the article is openly licensed (\`is_open_access\`), the
 canonical license (\`oa_license\`) and the license statement
 (\`oa_text\`).

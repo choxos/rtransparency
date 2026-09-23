@@ -56,10 +56,11 @@ in the literature.
   [`rt_ai_pmc()`](https://choxos.github.io/rtransparency/reference/rt_ai_pmc.md).
 - **Reporting guideline is claim detection.** It identifies a stated
   adherence to a reporting guideline, not whether the study fully
-  complied. It is tuned for precision (validated 93.8% sensitivity /
-  99.0% specificity on a hand-labeled 1000-article sample); the residual
-  misses are mostly non-English statements, and residual false positives
-  are guidelines named but not actually followed by the article.
+  complied. It is tuned for precision (validated on a hand-labeled
+  1000-article sample; see `rt_accuracy` for the current sensitivity and
+  specificity); the residual misses are mostly non-English statements,
+  and residual false positives are guidelines named but not actually
+  followed by the article.
 - **Open-access licensing is XML-structural.** It reads the JATS
   `<license>` element, so it is near-deterministic for PMC XML but, in
   plain text, depends on a license statement being present in the
@@ -84,13 +85,35 @@ the extracted text or value.
 [`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
 returns all ten for one file;
 [`rt_all_pmc_dir()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc_dir.md)
-runs a whole directory.
+runs a whole directory. The plain-text functions
+([`rt_all()`](https://choxos.github.io/rtransparency/reference/rt_all.md)
+and the single-indicator ones) return the same indicator column names,
+so plain-text and XML results can be stacked and summarized together.
+
+A few columns describe a statement rather than detect one: `ai_used`,
+`ai_tools` and `ai_purpose` read an AI-use disclosure (whether it
+reports use, of which tools, for what), and `has_das` / `das_text`
+record whether the article has a data-availability section at all, which
+is not the same as sharing data (a statement can say the data are
+available only on request). A failed file has `is_success = FALSE` and
+the reason in `error`.
+
+Two limitations are worth stating plainly. Presence of a statement is
+not its quality: a registration can be retrospective
+([`rt_registration_timing()`](https://choxos.github.io/rtransparency/reference/rt_registration_timing.md)
+checks this for ClinicalTrials.gov) and a data link can be dead
+([`rt_check_links()`](https://choxos.github.io/rtransparency/reference/rt_check_links.md)).
+And the XML detector cannot see a statement that is printed only in the
+PDF:
+[`rt_fill_coi_pubmed()`](https://choxos.github.io/rtransparency/reference/rt_fill_coi_pubmed.md)
+recovers conflict-of-interest statements PubMed records for such
+articles.
 
 ``` r
 
 library(rtransparency)
 
-res <- rt_all_pmc("article.xml", remove_ns = TRUE)
+res <- rt_all_pmc("article.xml")
 res[, c("is_coi_pred", "is_fund_pred", "is_open_data", "is_open_code")]
 ```
 
@@ -104,7 +127,7 @@ findability and accessibility of the shared resources.
 
 ``` r
 
-res <- rt_all_pmc("article.xml", remove_ns = TRUE)
+res <- rt_all_pmc("article.xml")
 links <- strsplit(res$open_data_links, " ; ")[[1]]
 # rfair::assess_fair(links)
 ```

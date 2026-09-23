@@ -17,7 +17,7 @@ rt_demo
 
 ## Format
 
-A tibble with 1200 rows and 11 columns:
+A tibble with 1200 rows and 13 columns:
 
 - pmid:
 
@@ -63,6 +63,14 @@ A tibble with 1200 rows and 11 columns:
 
   Disclosure of generative-AI use detected. \`NA\` before 2023, when the
   practice did not yet exist (see \[rt_ai_pmc()\]).
+
+- is_open_access:
+
+  Open license detected.
+
+- is_reporting_pred:
+
+  Reporting-guideline use detected.
 
 ## See also
 

@@ -14,7 +14,7 @@ same AI detection as \[rt_ai_pmc()\], the same licensing detection as
 ## Usage
 
 ``` r
-rt_all_pmc(filename, remove_ns = FALSE, all_meta = FALSE)
+rt_all_pmc(filename, remove_ns = TRUE, all_meta = FALSE)
 ```
 
 ## Arguments
@@ -25,7 +25,9 @@ rt_all_pmc(filename, remove_ns = FALSE, all_meta = FALSE)
 
 - remove_ns:
 
-  TRUE if an XML namespace exists, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 - all_meta:
 
@@ -59,6 +61,6 @@ filepath <- system.file(
 )
 
 # Identify and extract meta-data and indicators of transparency.
-results_table <- rt_all_pmc(filepath, remove_ns = TRUE, all_meta = TRUE)
+results_table <- rt_all_pmc(filepath, all_meta = TRUE)
 # }
 ```

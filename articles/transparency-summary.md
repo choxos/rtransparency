@@ -23,14 +23,14 @@ indicators:
 ``` r
 
 library(rtransparency)
-#> rtransparency 1.1.0: identify indicators of transparency (conflicts of interest, funding,
+#> rtransparency 1.2.0: identify indicators of transparency (conflicts of interest, funding,
 #> protocol registration, novelty, replication, data and code sharing, AI-use disclosure,
 #> open-access licensing and reporting-guideline use) in biomedical articles. GitHub: https://github.com/choxos/rtransparency | vignette("rtransparency")
 
 xml <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-one <- rt_all_pmc(xml, remove_ns = TRUE)
+one <- rt_all_pmc(xml)
 one[, c("pmid", "is_coi_pred", "is_fund_pred", "is_register_pred")]
 #> # A tibble: 1 × 4
 #>   pmid     is_coi_pred is_fund_pred is_register_pred
@@ -39,10 +39,10 @@ one[, c("pmid", "is_coi_pred", "is_fund_pred", "is_register_pred")]
 ```
 
 To study a corpus you run a detector over many files and stack the rows;
-`purrr::map_dfr(files, rt_all_pmc, remove_ns = TRUE)` returns all ten
-indicators per article in one pass. The result is one row per article
-with the indicator columns `is_coi_pred`, `is_fund_pred`,
-`is_register_pred`, `is_open_data`, `is_open_code`, `is_novelty_pred`,
+`purrr::map_dfr(files, rt_all_pmc)` returns all ten indicators per
+article in one pass. The result is one row per article with the
+indicator columns `is_coi_pred`, `is_fund_pred`, `is_register_pred`,
+`is_open_data`, `is_open_code`, `is_novelty_pred`,
 `is_replication_pred`, `is_ai_pred`, `is_open_access` and
 `is_reporting_pred`. `is_ai_pred` is `NA` for articles published before
 2023, and
@@ -61,7 +61,7 @@ so the rest of the vignette runs without downloading anything:
 
 data(rt_demo)
 head(rt_demo)
-#> # A tibble: 6 × 11
+#> # A tibble: 6 × 13
 #>   pmid      year type     is_coi_pred is_fund_pred is_register_pred is_open_data
 #>   <chr>    <int> <chr>    <lgl>       <lgl>        <lgl>            <lgl>       
 #> 1 28143943  2011 review-… FALSE       TRUE         TRUE             FALSE       
@@ -70,8 +70,9 @@ head(rt_demo)
 #> 4 37703615  2026 researc… TRUE        TRUE         TRUE             TRUE        
 #> 5 26030375  2022 researc… TRUE        TRUE         FALSE            FALSE       
 #> 6 21738034  2018 researc… TRUE        TRUE         FALSE            FALSE       
-#> # ℹ 4 more variables: is_open_code <lgl>, is_novelty_pred <lgl>,
-#> #   is_replication_pred <lgl>, is_ai_pred <lgl>
+#> # ℹ 6 more variables: is_open_code <lgl>, is_novelty_pred <lgl>,
+#> #   is_replication_pred <lgl>, is_ai_pred <lgl>, is_open_access <lgl>,
+#> #   is_reporting_pred <lgl>
 ```
 
 ## Prevalence of each indicator
@@ -100,6 +101,8 @@ knitr::kable(
 | Novelty               |     1200 |      653 | 54.4 |   51.6 |    57.2 |
 | Replication           |     1200 |      113 |  9.4 |    7.9 |    11.2 |
 | AI disclosure         |      282 |       71 | 25.2 |   20.5 |    30.6 |
+| Open-access license   |     1200 |      986 | 82.2 |   79.9 |    84.2 |
+| Reporting guideline   |     1200 |      167 | 13.9 |   12.1 |    16.0 |
 
 ### Correcting for detector error
 
@@ -121,14 +124,16 @@ knitr::kable(
 
 | Indicator             | Apparent % | Corrected % | CI low | CI high |
 |:----------------------|-----------:|------------:|-------:|--------:|
-| Conflicts of interest |       70.4 |        70.8 |   68.2 |    73.4 |
-| Funding disclosure    |       79.6 |        79.4 |   77.0 |    81.7 |
-| Protocol registration |       29.7 |        30.8 |   28.2 |    33.6 |
-| Data sharing          |       20.4 |        25.7 |   22.8 |    28.9 |
-| Code sharing          |        8.5 |         9.1 |    7.5 |    11.1 |
-| Novelty               |       54.4 |        62.8 |   59.2 |    66.3 |
-| Replication           |        9.4 |         8.7 |    7.0 |    10.6 |
+| Conflicts of interest |       70.4 |        74.9 |   70.6 |    81.1 |
+| Funding disclosure    |       79.6 |        86.1 |   80.7 |    95.2 |
+| Protocol registration |       29.7 |        24.6 |   18.2 |    29.1 |
+| Data sharing          |       20.4 |        25.7 |   20.8 |    30.3 |
+| Code sharing          |        8.5 |         9.1 |    6.7 |    11.2 |
+| Novelty               |       54.4 |        62.8 |   56.7 |    71.1 |
+| Replication           |        9.4 |         8.2 |    6.4 |    10.3 |
 | AI disclosure         |       25.2 |          NA |     NA |      NA |
+| Open-access license   |       82.2 |          NA |     NA |      NA |
+| Reporting guideline   |       13.9 |        13.7 |   11.6 |    16.2 |
 
 The accuracy values come from
 [`rt_accuracy`](https://choxos.github.io/rtransparency/reference/rt_accuracy.md):
@@ -136,35 +141,53 @@ The accuracy values come from
 ``` r
 
 rt_accuracy
-#> # A tibble: 8 × 5
-#>   variable            label                 sensitivity specificity source      
-#>   <chr>               <chr>                       <dbl>       <dbl> <chr>       
-#> 1 is_coi_pred         Conflicts of interest       0.992       0.995 Serghiou et…
-#> 2 is_fund_pred        Funding disclosure          0.997       0.981 Serghiou et…
-#> 3 is_register_pred    Protocol registration       0.955       0.997 Serghiou et…
-#> 4 is_open_data        Data sharing                0.765       0.99  rtransparen…
-#> 5 is_open_code        Code sharing                0.881       0.995 rtransparen…
-#> 6 is_novelty_pred     Novelty                     0.838       0.952 rtransparen…
-#> 7 is_replication_pred Replication                 0.928       0.985 rtransparen…
-#> 8 is_reporting_pred   Reporting guideline         0.938       0.99  rtransparen…
+#> # A tibble: 8 × 9
+#>   variable          label sensitivity specificity    tp    fn    tn    fp source
+#>   <chr>             <chr>       <dbl>       <dbl> <int> <int> <int> <int> <chr> 
+#> 1 is_coi_pred       Conf…       0.94        1        79     5    69     0 Sergh…
+#> 2 is_fund_pred      Fund…       0.917       0.957    66     6   111     5 Sergh…
+#> 3 is_register_pred  Prot…       0.983       0.927   116     2    89     7 Sergh…
+#> 4 is_open_data      Data…       0.765       0.99     88    27   100     1 Sergh…
+#> 5 is_open_code      Code…       0.881       0.995    96    13   214     1 Sergh…
+#> 6 is_novelty_pred   Nove…       0.838       0.952    83    16   258    13 rtran…
+#> 7 is_replication_p… Repl…       0.964       0.984   107     4   967    16 sensi…
+#> 8 is_reporting_pred Repo…       0.954       0.99     62     3   926     9 rtran…
 ```
 
-AI-use disclosure has no bundled accuracy estimate here, so its
-corrected value is `NA`. Novelty’s estimate comes from a hand-labeled
-gold set (`inst/benchmark/results_novelty_replication.md`); the
-data/code values are reproducible benchmark estimates for the native
-detector, not untouched external-validation estimates. Replication’s
-correction is approximate: its sensitivity comes from a
-replication-enriched sample and its specificity from the representative
-2023 sample, so it does not rest on the single-design validation of
-conflicts of interest, funding or registration, and the Rogan-Gladen
-interval does not propagate uncertainty in these estimates. To use your
-own validation (or the published `oddpub` values for data and code),
-pass any table with `variable`, `sensitivity` and `specificity` columns:
+AI-use disclosure and open-access licensing have no bundled accuracy
+estimate, so their corrected values are `NA`. Each row of `rt_accuracy`
+records where its estimate comes from (`source`) and the validation
+counts behind it (`tp`, `fn`, `tn`, `fp`).
+
+**The corrected interval carries the validation’s uncertainty.** A
+detector’s sensitivity and specificity are themselves estimates from a
+finite hand-labeled sample. By default (`adj_interval = "simulation"`)
+[`rt_summary()`](https://choxos.github.io/rtransparency/reference/rt_summary.md)
+draws the apparent prevalence, the sensitivity and the specificity from
+their Jeffreys posteriors, corrects each draw and reports the percentile
+interval, so the corrected interval widens when the validation sample is
+small. For rare indicators (registration, code sharing, replication)
+this matters most: their correction subtracts the false-positive rate
+`1 - specificity`, which is only known to within a percentage point or
+so. `adj_interval = "fixed"` gives the narrower interval that treats the
+accuracy as known.
+
+**Registration is summarized over the articles its detector assesses.**
+When the data carry `is_research` (as
+[`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
+output does), the registration denominator is restricted to research
+articles and reviews, the types the detector assesses; set
+`register_assessed_only = FALSE` to count every article.
+
+To use your own validation (or the published `oddpub` values for data
+and code), pass any table with `variable`, `sensitivity` and
+`specificity` columns:
 
 ``` r
 
-my_acc <- rt_accuracy
+# Keep only the point estimates: the bundled validation counts would no longer
+# match an edited sensitivity (rt_summary() warns when they disagree).
+my_acc <- rt_accuracy[, c("variable", "sensitivity", "specificity")]
 my_acc$sensitivity[my_acc$variable == "is_open_data"] <- 0.758
 rt_summary(rt_demo, indicators = "is_open_data", accuracy = my_acc)[,
   c("label", "percent", "adj_percent")]
@@ -278,7 +301,7 @@ the rows, then
 
 ``` r
 
-results <- purrr::map_dfr(xml_files, rt_all_pmc, remove_ns = TRUE)
+results <- purrr::map_dfr(xml_files, rt_all_pmc)
 rt_summary(results)                       # prevalence + corrected prevalence
 rt_score(results)                         # per-article practice count
 rt_plot(results, type = "trend", year = "year")

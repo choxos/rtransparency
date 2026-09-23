@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -196,11 +196,11 @@ AI-method papers than <code><a href="../reference/rt_ai_pmc.html">rt_ai_pmc()</a
 <li>
 <strong>Reporting guideline is claim detection.</strong> It
 identifies a stated adherence to a reporting guideline, not whether the
-study fully complied. It is tuned for precision (validated 93.8%
-sensitivity / 99.0% specificity on a hand-labeled 1000-article sample);
-the residual misses are mostly non-English statements, and residual
-false positives are guidelines named but not actually followed by the
-article.</li>
+study fully complied. It is tuned for precision (validated on a
+hand-labeled 1000-article sample; see <code>rt_accuracy</code> for the
+current sensitivity and specificity); the residual misses are mostly
+non-English statements, and residual false positives are guidelines
+named but not actually followed by the article.</li>
 <li>
 <strong>Open-access licensing is XML-structural.</strong> It reads
 the JATS <code>&lt;license&gt;</code> element, so it is
@@ -228,11 +228,30 @@ stable estimate).</li>
 <code>oa_license</code>) and <code>is_reporting_pred</code> (with
 <code>reporting_guideline</code>), each paired with the extracted text
 or value. <code><a href="../reference/rt_all_pmc.html">rt_all_pmc()</a></code> returns all ten for one file;
-<code><a href="../reference/rt_all_pmc_dir.html">rt_all_pmc_dir()</a></code> runs a whole directory.</p>
+<code><a href="../reference/rt_all_pmc_dir.html">rt_all_pmc_dir()</a></code> runs a whole directory. The plain-text
+functions (<code><a href="../reference/rt_all.html">rt_all()</a></code> and the single-indicator ones) return
+the same indicator column names, so plain-text and XML results can be
+stacked and summarized together.</p>
+<p>A few columns describe a statement rather than detect one:
+<code>ai_used</code>, <code>ai_tools</code> and <code>ai_purpose</code>
+read an AI-use disclosure (whether it reports use, of which tools, for
+what), and <code>has_das</code> / <code>das_text</code> record whether
+the article has a data-availability section at all, which is not the
+same as sharing data (a statement can say the data are available only on
+request). A failed file has <code>is_success = FALSE</code> and the
+reason in <code>error</code>.</p>
+<p>Two limitations are worth stating plainly. Presence of a statement is
+not its quality: a registration can be retrospective
+(<code><a href="../reference/rt_registration_timing.html">rt_registration_timing()</a></code> checks this for
+ClinicalTrials.gov) and a data link can be dead
+(<code><a href="../reference/rt_check_links.html">rt_check_links()</a></code>). And the XML detector cannot see a
+statement that is printed only in the PDF:
+<code><a href="../reference/rt_fill_coi_pubmed.html">rt_fill_coi_pubmed()</a></code> recovers conflict-of-interest
+statements PubMed records for such articles.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/choxos/rtransparency" class="external-link">rtransparency</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="st">"article.xml"</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="st">"article.xml"</span><span class="op">)</span></span>
 <span><span class="va">res</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"is_coi_pred"</span>, <span class="st">"is_fund_pred"</span>, <span class="st">"is_open_data"</span>, <span class="st">"is_open_code"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -244,7 +263,7 @@ passed to FAIR-assessment tooling such as <a href="https://github.com/choxos/rfa
 R implementation of FAIR data and software assessment, to score the
 findability and accessibility of the shared resources.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="st">"article.xml"</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="st">"article.xml"</span><span class="op">)</span></span>
 <span><span class="va">links</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">open_data_links</span>, <span class="st">" ; "</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co"># rfair::assess_fair(links)</span></span></code></pre></div>
 </div>
@@ -259,7 +278,7 @@ findability and accessibility of the shared resources.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

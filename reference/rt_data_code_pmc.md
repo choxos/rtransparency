@@ -9,7 +9,7 @@ longer depends on `oddpub` or `tokenizers`.
 ## Usage
 
 ``` r
-rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
+rt_data_code_pmc(filename, remove_ns = TRUE, specificity = NULL)
 ```
 
 ## Arguments
@@ -20,14 +20,18 @@ rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
 
 - remove_ns:
 
-  TRUE if an XML namespace exists, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 - specificity:
 
-  Retained for backward compatibility; it no longer changes the result.
-  The native detector extracts a fixed, broad set of article text (body
-  paragraphs and titles, back matter, footnotes and supplements) and
-  applies repository, accession and availability-statement patterns.
+  Deprecated and ignored (it has not changed the result since the native
+  detector replaced oddpub); supplying it gives a warning, and it will
+  be removed in a future release. The native detector extracts a fixed,
+  broad set of article text (body paragraphs and titles, back matter,
+  footnotes and supplements) and applies repository, accession and
+  availability-statement patterns.
 
 ## Value
 
@@ -38,7 +42,11 @@ text that triggered each detection (`open_data_statements`,
 was shared (`open_data_links`, `open_code_links`). The links are the
 DOIs (as `doi.org` URLs), repository URLs and database accessions (as
 identifiers.org `prefix:accession`) extracted from the statements,
-separated by `" ; "`.
+separated by `" ; "`. `has_das` records whether the article has a
+data-availability section (tagged, or titled as such) and `das_text`
+holds its text: having the statement is itself a reporting indicator,
+separate from whether data were actually shared (a statement can say
+data are available only on request).
 
 ## Examples
 
@@ -50,6 +58,6 @@ filepath <- system.file(
 )
 
 # Identify and extract indicators of data and code sharing
-results_table <- rt_data_code_pmc(filepath, remove_ns = TRUE)
+results_table <- rt_data_code_pmc(filepath)
 # }
 ```

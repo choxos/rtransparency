@@ -1,6 +1,213 @@
 # Changelog
 
+## rtransparency 1.2.0
+
+A correctness, speed and usability release. Detection changes were
+measured article by article on every labeled set
+(`data-raw/benchmark/snapshot.R` and `evaluate.R`); behavior-preserving
+changes were verified to give identical predictions on 3124 cached
+articles.
+
+### Bug fixes
+
+- **Plain-text results now have the same columns as XML results.**
+  [`rt_fund()`](https://choxos.github.io/rtransparency/reference/rt_fund.md)
+  returned `is_funded_pred`/`funding_text`, so
+  [`rt_summary()`](https://choxos.github.io/rtransparency/reference/rt_summary.md)
+  silently dropped funding from plain-text output; it now returns
+  `is_fund_pred`/`fund_text` (the old names remain as deprecated copies
+  for one release). `pmid` is `NA` when the file name has no
+  `PMID<digits>` (it used to be the whole path), `article` is always the
+  file name,
+  [`rt_coi()`](https://choxos.github.io/rtransparency/reference/rt_coi.md)
+  returns a tibble, and
+  [`rt_data_code()`](https://choxos.github.io/rtransparency/reference/rt_data_code.md)
+  returns the PMID and the extracted links.
+- **Namespaced XML.** With the default `remove_ns = FALSE`, an article
+  whose `<article>` element declared a default namespace (as OAI-PMH
+  records do) gave all-`FALSE` indicators with `is_success = TRUE`.
+  Namespaces are now always removed; `remove_ns` is accepted and
+  ignored.
+- **PMC identifiers.** Current PMC XML tags the PMCID as
+  `pub-id-type = "pmcid"`; only the older `"pmc"` was read, so
+  `pmcid_pmc` and `pmcid_uid` were empty for every current article. Both
+  are read now.
+- **[`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
+  agrees with the standalone detectors.** It removed citation markers
+  and tables from the XML before the AI, data/code and reporting
+  detectors ran, and `all_meta = TRUE` removed `<sup>`/`<label>`
+  elements before all of them, so results differed from
+  [`rt_data_code_pmc()`](https://choxos.github.io/rtransparency/reference/rt_data_code_pmc.md),
+  [`rt_reporting_pmc()`](https://choxos.github.io/rtransparency/reference/rt_reporting_pmc.md),
+  etc. and depended on `all_meta`.
+  [`rt_register_pmc()`](https://choxos.github.io/rtransparency/reference/rt_register_pmc.md)
+  was a separate implementation that missed some registrations. All now
+  share one path, checked by a test on the benchmark fixtures.
+- **Data sharing:** a request clause no longer cancels a concrete
+  deposit (“available in Zenodo, doi:…, and further information is
+  available from the corresponding author on request”); publisher
+  supplement notices and tables of imputed data are no longer counted.
+- **Replication:** the relevance gate missed “externally validated” and
+  “validated in an independent cohort”; “independent samples t-test” is
+  no longer read as replication.
+- **AI disclosure:** product names that are ordinary words (Claude,
+  Gemini, Llama, Bard, Mistral, …) now need a version, vendor or usage
+  context, so acknowledgments such as “We thank Claude Martin” are no
+  longer disclosures.
+- **Reporting guidelines:** recommendations (“future studies should
+  follow CONSORT”) are not adherence, a non-use statement must concern
+  the guideline, and the Spanish cue “según” matches.
+- **Conflicts of interest:** headings written as paragraphs (author
+  manuscripts’ `<p>Declaration of competing interest</p><p>None.</p>`)
+  and French, Spanish, Portuguese, Italian and German section titles
+  (“Liens d’intérêts”, “Conflits d’intérêts” with a typographic
+  apostrophe, “Conflito de interesses”, …) are recognized.
+- **Plain text:** conflict-of-interest headings (“Declaration of
+  interests” / “None.”) are recognized; PDF hyphen repair no longer
+  deletes every hyphen in
+  [`rt_fund()`](https://choxos.github.io/rtransparency/reference/rt_fund.md);
+  paragraph cleaning and transliteration no longer depend on the locale
+  or the system iconv (accented text was transliterated differently on
+  macOS and Linux).
+- [`rt_read_pdf()`](https://choxos.github.io/rtransparency/reference/rt_read_pdf.md)
+  fails when `pdftotext` fails; EFetch error responses are no longer
+  saved as articles; the PMC OAI-PMH endpoint moved and is updated.
+
+### Measured effect
+
+[`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
+before (1.1.0) and after, on the labeled sets (sensitivity /
+specificity, %):
+
+| Indicator | Labeled set | 1.1.0 | 1.2.0 |
+|----|----|----|----|
+| Replication | enriched sample (111 positives) | 92.8 / 34.5 | 96.4 / 33.1 |
+| Replication | 2023 sample (17 positives) | 82.4 / 98.5 | 82.4 / 98.4 |
+| Data sharing | 2023 sample (123 positives) | 90.2 / 98.1 | 91.9 / 98.1 |
+| Code sharing | held-out set (109 positives) | 86.2 / 98.6 | 88.1 / 99.5 |
+| Code sharing | 2023 sample (33 positives) | 93.9 / 99.1 | 93.9 / 99.0 |
+| Conflicts of interest | 2023 sample (927 positives) | 100 / 91.8 | 100 / 90.4 |
+
+Funding, registration, novelty, open access, AI disclosure and reporting
+guidelines are unchanged on every labeled set, as are conflicts of
+interest on the independently labeled held-out set. The code row moves
+because
+[`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
+now matches the standalone detectors, which the published benchmarks
+already used. Reporting stays at 95.4 / 99.0 for
+[`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md),
+and
+[`rt_reporting_pmc()`](https://choxos.github.io/rtransparency/reference/rt_reporting_pmc.md)
+rises from 93.8 to 95.4 because citation markers no longer hide
+guideline names.
+
+The one conflict-of-interest change in the 2023 sample is an article
+whose footnote reads “Declaration of competing interest: None.” but
+whose label is `FALSE`. Those labels were reconciled against the 1.1.0
+detector’s output, so they inherit its misses; three more articles with
+a “Competing interests: …” statement labeled `FALSE` explain most of the
+plain-text specificity in `results_txt_parity.md`. The labels are left
+as they are, pending the maintainer’s review, and the new blind 2025
+rounds are the fix. Outside the labeled sets, the AI fixes catch two
+more genuine disclosures, the data vetoes remove four false positives,
+and French conflict-of-interest detection on the multilingual corpus
+rises from 30% to 77%.
+
+Regenerating every benchmark report for this release also exposed drift
+that predates it: on the held-out Serghiou et al. (2021) set, the 1.1.0
+detectors (like this release’s) score funding at 91.7% sensitivity and
+registration at 92.7% specificity, where the report last generated for
+0.9.0 said 100% and 96.9%. The reports and `rt_accuracy` now show the
+current values; finding the changes responsible is on the roadmap.
+
+### Performance
+
+- The reporting-guideline detector is 8.6 times faster (identical
+  output), roughly halving
+  [`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md)
+  time per article.
+- [`rt_all_pmc_dir()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc_dir.md)
+  appends each chunk to its output instead of rewriting the whole file,
+  records each file by its absolute path so a run resumes from any
+  working directory, and records why a file failed in a new `error`
+  column.
+
+### New features
+
+- **Downloading:**
+  [`rt_fetch_pmc()`](https://choxos.github.io/rtransparency/reference/rt_fetch_pmc.md)
+  downloads PMC full text for PMCIDs, PubMed IDs or DOIs, from NCBI or
+  Europe PMC (the detectors give the same decisions on both;
+  `inst/benchmark/results_europepmc_parity.md`), and flags articles
+  without a full-text body.
+  [`rt_convert_ids()`](https://choxos.github.io/rtransparency/reference/rt_convert_ids.md)
+  maps PubMed IDs, PMCIDs and DOIs.
+- **Plain text:** every plain-text detector accepts `text =` as well as
+  a file;
+  [`rt_all()`](https://choxos.github.io/rtransparency/reference/rt_all.md)
+  returns all ten indicators from one read;
+  [`rt_all_pdf()`](https://choxos.github.io/rtransparency/reference/rt_all_pdf.md)
+  scores a PDF in one call;
+  [`rt_all_txt_dir()`](https://choxos.github.io/rtransparency/reference/rt_all_txt_dir.md)
+  batch-processes TXT and PDF files. `rt_read_pdf(engine = "pdftools")`
+  works without the poppler utility.
+- **AI disclosure details:** `ai_used` (use vs explicit non-use),
+  `ai_tools` and `ai_purpose`.
+- **Structured JATS metadata:**
+  [`rt_authors_pmc()`](https://choxos.github.io/rtransparency/reference/rt_authors_pmc.md)
+  (ORCID coverage, CRediT roles),
+  [`rt_funders_pmc()`](https://choxos.github.io/rtransparency/reference/rt_funders_pmc.md)
+  (Crossref Funder IDs, ROR IDs, award numbers), and
+  `has_das`/`das_text` for the data-availability section.
+- **Follow-up checks:**
+  [`rt_trial_ids()`](https://choxos.github.io/rtransparency/reference/rt_trial_ids.md)
+  and
+  [`rt_registration_timing()`](https://choxos.github.io/rtransparency/reference/rt_registration_timing.md)
+  (prospective vs retrospective ClinicalTrials.gov registration),
+  [`rt_coi_pubmed()`](https://choxos.github.io/rtransparency/reference/rt_coi_pubmed.md)/[`rt_fill_coi_pubmed()`](https://choxos.github.io/rtransparency/reference/rt_fill_coi_pubmed.md)
+  (COI statements recorded only in PubMed), and
+  [`rt_check_links()`](https://choxos.github.io/rtransparency/reference/rt_check_links.md)
+  (do data and code links resolve).
+- **Experimental:**
+  [`rt_ethics_pmc()`](https://choxos.github.io/rtransparency/reference/rt_ethics_pmc.md)/[`rt_ethics()`](https://choxos.github.io/rtransparency/reference/rt_ethics.md)
+  detect ethics approval and informed consent statements. Not yet
+  validated, so not part of
+  [`rt_all_pmc()`](https://choxos.github.io/rtransparency/reference/rt_all_pmc.md).
+
+### Methodology
+
+- `rt_accuracy` now describes the current detectors, scored on the
+  labeled sets, and stores the validation counts (`tp`, `fn`, `tn`,
+  `fp`). The 2021 published values are kept as `rt_accuracy_2021`.
+- [`rt_summary()`](https://choxos.github.io/rtransparency/reference/rt_summary.md)
+  intervals for the corrected prevalence propagate the uncertainty of
+  sensitivity and specificity by simulation (the previous interval is
+  `adj_interval = "fixed"`), summarize registration over the articles
+  its detector assesses (research articles and reviews) when
+  `is_research` is present, and keep rows with a missing group as an
+  `NA` group.
+- `data-raw/validation/` draws fresh samples and builds blind labeling
+  sheets (two 2025 rounds are ready to label) with inter-rater kappa.
+- A benchmark workflow fails a pull request whose predictions differ
+  from the committed snapshot; all benchmark scripts now run from the
+  repository.
+- Multilingual funding patterns are unchanged in this release: the
+  benchmark corpus is now reproducible, but it has no labels to tune
+  against yet.
+
+### Other changes
+
+- `rt_data_code_pmc(specificity =)` is deprecated (it has been ignored
+  since 1.0.0).
+- `rt_demo` gains `is_open_access` and `is_reporting_pred`.
+- 110 unreachable or shadowed internal functions were removed.
+- Minimum versions: purrr 1.0.0, dplyr 1.0.0, rlang 1.0.0. stringi is
+  now imported directly; utf8 and tidyselect are no longer needed.
+  jsonlite and pdftools are suggested.
+
 ## rtransparency 1.1.0
+
+Not released to CRAN; these changes ship in 1.2.0.
 
 Two new transparency indicators, bringing the total to ten.
 
@@ -12,9 +219,9 @@ Two new transparency indicators, bringing the total to ten.
   detects whether an article is openly licensed and the canonical
   license (`is_open_access`, `oa_license`; for example `CC-BY-4.0`,
   `CC-BY-NC-ND-4.0`, `CC0-1.0`), the reuse (“R”) dimension of FAIR. Read
-  from the JATS `<license>` element. Validated at 100% sensitivity /
-  100% specificity, with 99.8% license-type accuracy, on the
-  1000-article 2023 sample.
+  from the JATS `<license>` element. On the 1000-article 2023 sample:
+  100% sensitivity and 99.8% license-type accuracy; specificity is not
+  estimable there (one negative).
 
 - **Reporting-guideline use**
   ([`rt_reporting_pmc()`](https://choxos.github.io/rtransparency/reference/rt_reporting_pmc.md),

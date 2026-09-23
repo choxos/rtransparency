@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rtransparency</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -84,23 +84,23 @@ that kind of summary, using <code><a href="../reference/rt_summary.html">rt_summ
 indicators:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/choxos/rtransparency" class="external-link">rtransparency</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; rtransparency 1.1.0: identify indicators of transparency (conflicts of interest, funding,</span></span>
+<span><span class="co">#&gt; rtransparency 1.2.0: identify indicators of transparency (conflicts of interest, funding,</span></span>
 <span><span class="co">#&gt; protocol registration, novelty, replication, data and code sharing, AI-use disclosure,</span></span>
 <span><span class="co">#&gt; open-access licensing and reporting-guideline use) in biomedical articles. GitHub: https://github.com/choxos/rtransparency | vignette("rtransparency")</span></span>
 <span></span>
 <span><span class="va">xml</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>  <span class="st">"extdata"</span>, <span class="st">"PMID32171256-PMC7071725.xml"</span>, package <span class="op">=</span> <span class="st">"rtransparency"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">one</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="va">xml</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">one</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rt_all_pmc.html">rt_all_pmc</a></span><span class="op">(</span><span class="va">xml</span><span class="op">)</span></span>
 <span><span class="va">one</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pmid"</span>, <span class="st">"is_coi_pred"</span>, <span class="st">"is_fund_pred"</span>, <span class="st">"is_register_pred"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
 <span><span class="co">#&gt;   pmid     is_coi_pred is_fund_pred is_register_pred</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>           </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 32171256 TRUE        FALSE        FALSE</span></span></code></pre></div>
 <p>To study a corpus you run a detector over many files and stack the
-rows; <code>purrr::map_dfr(files, rt_all_pmc, remove_ns = TRUE)</code>
-returns all ten indicators per article in one pass. The result is one
-row per article with the indicator columns <code>is_coi_pred</code>,
+rows; <code>purrr::map_dfr(files, rt_all_pmc)</code> returns all ten
+indicators per article in one pass. The result is one row per article
+with the indicator columns <code>is_coi_pred</code>,
 <code>is_fund_pred</code>, <code>is_register_pred</code>,
 <code>is_open_data</code>, <code>is_open_code</code>,
 <code>is_novelty_pred</code>, <code>is_replication_pred</code>,
@@ -119,7 +119,7 @@ downloading anything:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">rt_demo</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">rt_demo</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 11</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 13</span></span></span>
 <span><span class="co">#&gt;   pmid      year type     is_coi_pred is_fund_pred is_register_pred is_open_data</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>       </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 28143943  <span style="text-decoration: underline;">2</span>011 review-… FALSE       TRUE         TRUE             FALSE       </span></span>
@@ -128,8 +128,9 @@ downloading anything:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 37703615  <span style="text-decoration: underline;">2</span>026 researc… TRUE        TRUE         TRUE             TRUE        </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 26030375  <span style="text-decoration: underline;">2</span>022 researc… TRUE        TRUE         FALSE            FALSE       </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 21738034  <span style="text-decoration: underline;">2</span>018 researc… TRUE        TRUE         FALSE            FALSE       </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: is_open_code &lt;lgl&gt;, is_novelty_pred &lt;lgl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   is_replication_pred &lt;lgl&gt;, is_ai_pred &lt;lgl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: is_open_code &lt;lgl&gt;, is_novelty_pred &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   is_replication_pred &lt;lgl&gt;, is_ai_pred &lt;lgl&gt;, is_open_access &lt;lgl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   is_reporting_pred &lt;lgl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="prevalence-of-each-indicator">Prevalence of each indicator<a class="anchor" aria-label="anchor" href="#prevalence-of-each-indicator"></a>
@@ -218,6 +219,22 @@ and its 95% confidence interval:</p>
 <td align="right">20.5</td>
 <td align="right">30.6</td>
 </tr>
+<tr class="odd">
+<td align="left">Open-access license</td>
+<td align="right">1200</td>
+<td align="right">986</td>
+<td align="right">82.2</td>
+<td align="right">79.9</td>
+<td align="right">84.2</td>
+</tr>
+<tr class="even">
+<td align="left">Reporting guideline</td>
+<td align="right">1200</td>
+<td align="right">167</td>
+<td align="right">13.9</td>
+<td align="right">12.1</td>
+<td align="right">16.0</td>
+</tr>
 </tbody>
 </table>
 <div class="section level3">
@@ -248,51 +265,51 @@ Rogan-Gladen estimator). The correction is on by default and adds
 <tr class="odd">
 <td align="left">Conflicts of interest</td>
 <td align="right">70.4</td>
-<td align="right">70.8</td>
-<td align="right">68.2</td>
-<td align="right">73.4</td>
+<td align="right">74.9</td>
+<td align="right">70.6</td>
+<td align="right">81.1</td>
 </tr>
 <tr class="even">
 <td align="left">Funding disclosure</td>
 <td align="right">79.6</td>
-<td align="right">79.4</td>
-<td align="right">77.0</td>
-<td align="right">81.7</td>
+<td align="right">86.1</td>
+<td align="right">80.7</td>
+<td align="right">95.2</td>
 </tr>
 <tr class="odd">
 <td align="left">Protocol registration</td>
 <td align="right">29.7</td>
-<td align="right">30.8</td>
-<td align="right">28.2</td>
-<td align="right">33.6</td>
+<td align="right">24.6</td>
+<td align="right">18.2</td>
+<td align="right">29.1</td>
 </tr>
 <tr class="even">
 <td align="left">Data sharing</td>
 <td align="right">20.4</td>
 <td align="right">25.7</td>
-<td align="right">22.8</td>
-<td align="right">28.9</td>
+<td align="right">20.8</td>
+<td align="right">30.3</td>
 </tr>
 <tr class="odd">
 <td align="left">Code sharing</td>
 <td align="right">8.5</td>
 <td align="right">9.1</td>
-<td align="right">7.5</td>
-<td align="right">11.1</td>
+<td align="right">6.7</td>
+<td align="right">11.2</td>
 </tr>
 <tr class="even">
 <td align="left">Novelty</td>
 <td align="right">54.4</td>
 <td align="right">62.8</td>
-<td align="right">59.2</td>
-<td align="right">66.3</td>
+<td align="right">56.7</td>
+<td align="right">71.1</td>
 </tr>
 <tr class="odd">
 <td align="left">Replication</td>
 <td align="right">9.4</td>
-<td align="right">8.7</td>
-<td align="right">7.0</td>
-<td align="right">10.6</td>
+<td align="right">8.2</td>
+<td align="right">6.4</td>
+<td align="right">10.3</td>
 </tr>
 <tr class="even">
 <td align="left">AI disclosure</td>
@@ -301,38 +318,67 @@ Rogan-Gladen estimator). The correction is on by default and adds
 <td align="right">NA</td>
 <td align="right">NA</td>
 </tr>
+<tr class="odd">
+<td align="left">Open-access license</td>
+<td align="right">82.2</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+</tr>
+<tr class="even">
+<td align="left">Reporting guideline</td>
+<td align="right">13.9</td>
+<td align="right">13.7</td>
+<td align="right">11.6</td>
+<td align="right">16.2</td>
+</tr>
 </tbody>
 </table>
 <p>The accuracy values come from <a href="../reference/rt_accuracy.html"><code>rt_accuracy</code></a>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rt_accuracy</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 5</span></span></span>
-<span><span class="co">#&gt;   variable            label                 sensitivity specificity source      </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> is_coi_pred         Conflicts of interest       0.992       0.995 Serghiou et…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> is_fund_pred        Funding disclosure          0.997       0.981 Serghiou et…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> is_register_pred    Protocol registration       0.955       0.997 Serghiou et…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> is_open_data        Data sharing                0.765       0.99  rtransparen…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> is_open_code        Code sharing                0.881       0.995 rtransparen…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> is_novelty_pred     Novelty                     0.838       0.952 rtransparen…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> is_replication_pred Replication                 0.928       0.985 rtransparen…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> is_reporting_pred   Reporting guideline         0.938       0.99  rtransparen…</span></span></code></pre></div>
-<p>AI-use disclosure has no bundled accuracy estimate here, so its
-corrected value is <code>NA</code>. Novelty’s estimate comes from a
-hand-labeled gold set
-(<code>inst/benchmark/results_novelty_replication.md</code>); the
-data/code values are reproducible benchmark estimates for the native
-detector, not untouched external-validation estimates. Replication’s
-correction is approximate: its sensitivity comes from a
-replication-enriched sample and its specificity from the representative
-2023 sample, so it does not rest on the single-design validation of
-conflicts of interest, funding or registration, and the Rogan-Gladen
-interval does not propagate uncertainty in these estimates. To use your
-own validation (or the published <code>oddpub</code> values for data and
-code), pass any table with <code>variable</code>,
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 9</span></span></span>
+<span><span class="co">#&gt;   variable          label sensitivity specificity    tp    fn    tn    fp source</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> is_coi_pred       Conf…       0.94        1        79     5    69     0 Sergh…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> is_fund_pred      Fund…       0.917       0.957    66     6   111     5 Sergh…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> is_register_pred  Prot…       0.983       0.927   116     2    89     7 Sergh…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> is_open_data      Data…       0.765       0.99     88    27   100     1 Sergh…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> is_open_code      Code…       0.881       0.995    96    13   214     1 Sergh…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> is_novelty_pred   Nove…       0.838       0.952    83    16   258    13 rtran…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> is_replication_p… Repl…       0.964       0.984   107     4   967    16 sensi…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> is_reporting_pred Repo…       0.954       0.99     62     3   926     9 rtran…</span></span></code></pre></div>
+<p>AI-use disclosure and open-access licensing have no bundled accuracy
+estimate, so their corrected values are <code>NA</code>. Each row of
+<code>rt_accuracy</code> records where its estimate comes from
+(<code>source</code>) and the validation counts behind it
+(<code>tp</code>, <code>fn</code>, <code>tn</code>,
+<code>fp</code>).</p>
+<p><strong>The corrected interval carries the validation’s
+uncertainty.</strong> A detector’s sensitivity and specificity are
+themselves estimates from a finite hand-labeled sample. By default
+(<code>adj_interval = "simulation"</code>) <code><a href="../reference/rt_summary.html">rt_summary()</a></code>
+draws the apparent prevalence, the sensitivity and the specificity from
+their Jeffreys posteriors, corrects each draw and reports the percentile
+interval, so the corrected interval widens when the validation sample is
+small. For rare indicators (registration, code sharing, replication)
+this matters most: their correction subtracts the false-positive rate
+<code>1 - specificity</code>, which is only known to within a percentage
+point or so. <code>adj_interval = "fixed"</code> gives the narrower
+interval that treats the accuracy as known.</p>
+<p><strong>Registration is summarized over the articles its detector
+assesses.</strong> When the data carry <code>is_research</code> (as
+<code><a href="../reference/rt_all_pmc.html">rt_all_pmc()</a></code> output does), the registration denominator is
+restricted to research articles and reviews, the types the detector
+assesses; set <code>register_assessed_only = FALSE</code> to count every
+article.</p>
+<p>To use your own validation (or the published <code>oddpub</code>
+values for data and code), pass any table with <code>variable</code>,
 <code>sensitivity</code> and <code>specificity</code> columns:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">my_acc</span> <span class="op">&lt;-</span> <span class="va">rt_accuracy</span></span>
+<code class="sourceCode R"><span><span class="co"># Keep only the point estimates: the bundled validation counts would no longer</span></span>
+<span><span class="co"># match an edited sensitivity (rt_summary() warns when they disagree).</span></span>
+<span><span class="va">my_acc</span> <span class="op">&lt;-</span> <span class="va">rt_accuracy</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"variable"</span>, <span class="st">"sensitivity"</span>, <span class="st">"specificity"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">my_acc</span><span class="op">$</span><span class="va">sensitivity</span><span class="op">[</span><span class="va">my_acc</span><span class="op">$</span><span class="va">variable</span> <span class="op">==</span> <span class="st">"is_open_data"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0.758</span></span>
 <span><span class="fu"><a href="../reference/rt_summary.html">rt_summary</a></span><span class="op">(</span><span class="va">rt_demo</span>, indicators <span class="op">=</span> <span class="st">"is_open_data"</span>, accuracy <span class="op">=</span> <span class="va">my_acc</span><span class="op">)</span><span class="op">[</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label"</span>, <span class="st">"percent"</span>, <span class="st">"adj_percent"</span><span class="op">)</span><span class="op">]</span></span>
@@ -471,7 +517,7 @@ error-corrected prevalence instead of the apparent prevalence.</p>
 <p>A typical analysis is therefore: run a detector over your corpus,
 stack the rows, then</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html" class="external-link">map_dfr</a></span><span class="op">(</span><span class="va">xml_files</span>, <span class="va">rt_all_pmc</span>, remove_ns <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html" class="external-link">map_dfr</a></span><span class="op">(</span><span class="va">xml_files</span>, <span class="va">rt_all_pmc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/rt_summary.html">rt_summary</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span>                       <span class="co"># prevalence + corrected prevalence</span></span>
 <span><span class="fu"><a href="../reference/rt_score.html">rt_score</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span>                         <span class="co"># per-article practice count</span></span>
 <span><span class="fu"><a href="../reference/rt_plot.html">rt_plot</a></span><span class="op">(</span><span class="va">results</span>, type <span class="op">=</span> <span class="st">"trend"</span>, year <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></span></code></pre></div>
@@ -489,7 +535,7 @@ stack the rows, then</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

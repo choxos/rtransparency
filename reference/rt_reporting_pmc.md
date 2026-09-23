@@ -11,7 +11,7 @@ does not count.
 ## Usage
 
 ``` r
-rt_reporting_pmc(filename, remove_ns = FALSE)
+rt_reporting_pmc(filename, remove_ns = TRUE)
 ```
 
 ## Arguments
@@ -22,7 +22,9 @@ rt_reporting_pmc(filename, remove_ns = FALSE)
 
 - remove_ns:
 
-  TRUE if an XML namespace exists, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 ## Value
 
@@ -38,11 +40,11 @@ and \`is_success\`.
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_reporting_pmc(filepath, remove_ns = TRUE)
+rt_reporting_pmc(filepath)
 #> # A tibble: 1 × 9
 #>   pmid  pmcid_pmc pmcid_uid doi   filename is_reporting_pred reporting_guideline
 #>   <chr> <chr>     <chr>     <chr> <chr>    <lgl>             <chr>              
-#> 1 3217… ""        ""        10.1… /home/r… FALSE             ""                 
+#> 1 3217… PMC70717… 7071725   10.1… /home/r… FALSE             ""                 
 #> # ℹ 2 more variables: reporting_text <chr>, is_success <lgl>
 # }
 ```

@@ -17,7 +17,11 @@ rt_summary(
   by = NULL,
   adjust = TRUE,
   accuracy = NULL,
-  conf_level = 0.95
+  conf_level = 0.95,
+  adj_interval = c("simulation", "fixed"),
+  n_sim = 10000,
+  seed = 2021,
+  register_assessed_only = TRUE
 )
 ```
 
@@ -55,11 +59,42 @@ rt_summary(
 - accuracy:
 
   A data frame of detector accuracy with columns \`variable\`,
-  \`sensitivity\` and \`specificity\`. Defaults to \[rt_accuracy\].
+  \`sensitivity\` and \`specificity\`, and optionally the validation
+  counts \`tp\`, \`fn\`, \`tn\` and \`fp\`. Defaults to \[rt_accuracy\].
 
 - conf_level:
 
   Confidence level for the intervals (default \`0.95\`).
+
+- adj_interval:
+
+  How the interval of the corrected prevalence is computed.
+  \`"simulation"\` (the default) propagates the uncertainty of the
+  detector's sensitivity and specificity, estimated from the validation
+  counts in \`accuracy\`, together with that of the apparent prevalence
+  (see Details). \`"fixed"\` treats sensitivity and specificity as known
+  and corrects the bounds of the apparent-prevalence interval, which is
+  too narrow when the validation sample is small. Indicators without
+  validation counts always use \`"fixed"\`.
+
+- n_sim:
+
+  Number of simulation draws for \`adj_interval = "simulation"\`.
+
+- seed:
+
+  Random seed for the simulation, so results are reproducible. The
+  caller's random number stream is left untouched.
+
+- register_assessed_only:
+
+  If \`TRUE\` (default) and \`data\` has an \`is_research\` column (as
+  \[rt_all_pmc()\] output does), protocol registration is summarized
+  over the articles the registration detector assesses: research
+  articles and, when \`is_review\` is present, reviews (where PROSPERO
+  registration applies). Editorials, letters, news and similar types are
+  not assessed and return \`FALSE\`, so counting them in the denominator
+  understates registration. \`FALSE\` counts every article.
 
 ## Value
 
@@ -68,6 +103,23 @@ grouping column (when \`by\` is used), \`indicator\`, \`label\`,
 \`n_articles\`, \`n_detected\`, \`percent\`, \`conf_low\`, \`conf_high\`
 and, when \`adjust = TRUE\`, \`adj_percent\`, \`adj_low\` and
 \`adj_high\`. Percentages and interval bounds are on the 0-100 scale.
+
+## Details
+
+\*\*Corrected prevalence.\*\* The Rogan-Gladen estimator corrects an
+apparent prevalence \`p\` for detector error: \`(p + specificity - 1) /
+(sensitivity + specificity - 1)\`, truncated to \`\[0, 1\]\`. With
+\`adj_interval = "simulation"\`, the apparent prevalence, sensitivity
+and specificity are drawn from their Jeffreys posteriors (\`Beta(x +
+0.5, n - x + 0.5)\`) using the corpus counts and the validation counts,
+each draw is corrected, and the percentile interval of the draws is
+reported. Because the correction divides by \`sensitivity +
+specificity - 1\` and subtracts \`1 - specificity\`, uncertainty in
+specificity dominates for rare indicators (registration, code sharing,
+replication), which the fixed interval ignores.
+
+Rows whose grouping value is \`NA\` form their own group, labelled
+\`NA\`.
 
 ## See also
 
@@ -78,36 +130,40 @@ and, when \`adjust = TRUE\`, \`adj_percent\`, \`adj_low\` and
 ``` r
 data(rt_demo)
 rt_summary(rt_demo)
-#> # A tibble: 8 × 10
-#>   indicator   label n_articles n_detected percent conf_low conf_high adj_percent
-#>   <chr>       <chr>      <int>      <int>   <dbl>    <dbl>     <dbl>       <dbl>
-#> 1 is_coi_pred Conf…       1200        845   70.4     67.8       72.9       70.8 
-#> 2 is_fund_pr… Fund…       1200        955   79.6     77.2       81.8       79.4 
-#> 3 is_registe… Prot…       1200        356   29.7     27.2       32.3       30.8 
-#> 4 is_open_da… Data…       1200        245   20.4     18.2       22.8       25.7 
-#> 5 is_open_co… Code…       1200        102    8.5      7.05      10.2        9.13
-#> 6 is_novelty… Nove…       1200        653   54.4     51.6       57.2       62.8 
-#> 7 is_replica… Repl…       1200        113    9.42     7.89      11.2        8.67
-#> 8 is_ai_pred  AI d…        282         71   25.2     20.5       30.6       NA   
+#> # A tibble: 10 × 10
+#>    indicator  label n_articles n_detected percent conf_low conf_high adj_percent
+#>    <chr>      <chr>      <int>      <int>   <dbl>    <dbl>     <dbl>       <dbl>
+#>  1 is_coi_pr… Conf…       1200        845   70.4     67.8       72.9       74.9 
+#>  2 is_fund_p… Fund…       1200        955   79.6     77.2       81.8       86.1 
+#>  3 is_regist… Prot…       1200        356   29.7     27.2       32.3       24.6 
+#>  4 is_open_d… Data…       1200        245   20.4     18.2       22.8       25.7 
+#>  5 is_open_c… Code…       1200        102    8.5      7.05      10.2        9.13
+#>  6 is_novelt… Nove…       1200        653   54.4     51.6       57.2       62.8 
+#>  7 is_replic… Repl…       1200        113    9.42     7.89      11.2        8.25
+#>  8 is_ai_pred AI d…        282         71   25.2     20.5       30.6       NA   
+#>  9 is_open_a… Open…       1200        986   82.2     79.9       84.2       NA   
+#> 10 is_report… Repo…       1200        167   13.9     12.1       16.0       13.7 
 #> # ℹ 2 more variables: adj_low <dbl>, adj_high <dbl>
 
 # Apparent prevalence only, no accuracy correction
 rt_summary(rt_demo, adjust = FALSE)
-#> # A tibble: 8 × 7
-#>   indicator           label     n_articles n_detected percent conf_low conf_high
-#>   <chr>               <chr>          <int>      <int>   <dbl>    <dbl>     <dbl>
-#> 1 is_coi_pred         Conflict…       1200        845   70.4     67.8       72.9
-#> 2 is_fund_pred        Funding …       1200        955   79.6     77.2       81.8
-#> 3 is_register_pred    Protocol…       1200        356   29.7     27.2       32.3
-#> 4 is_open_data        Data sha…       1200        245   20.4     18.2       22.8
-#> 5 is_open_code        Code sha…       1200        102    8.5      7.05      10.2
-#> 6 is_novelty_pred     Novelty         1200        653   54.4     51.6       57.2
-#> 7 is_replication_pred Replicat…       1200        113    9.42     7.89      11.2
-#> 8 is_ai_pred          AI discl…        282         71   25.2     20.5       30.6
+#> # A tibble: 10 × 7
+#>    indicator           label    n_articles n_detected percent conf_low conf_high
+#>    <chr>               <chr>         <int>      <int>   <dbl>    <dbl>     <dbl>
+#>  1 is_coi_pred         Conflic…       1200        845   70.4     67.8       72.9
+#>  2 is_fund_pred        Funding…       1200        955   79.6     77.2       81.8
+#>  3 is_register_pred    Protoco…       1200        356   29.7     27.2       32.3
+#>  4 is_open_data        Data sh…       1200        245   20.4     18.2       22.8
+#>  5 is_open_code        Code sh…       1200        102    8.5      7.05      10.2
+#>  6 is_novelty_pred     Novelty        1200        653   54.4     51.6       57.2
+#>  7 is_replication_pred Replica…       1200        113    9.42     7.89      11.2
+#>  8 is_ai_pred          AI disc…        282         71   25.2     20.5       30.6
+#>  9 is_open_access      Open-ac…       1200        986   82.2     79.9       84.2
+#> 10 is_reporting_pred   Reporti…       1200        167   13.9     12.1       16.0
 
 # By article type
 rt_summary(rt_demo, by = "type")
-#> # A tibble: 24 × 11
+#> # A tibble: 30 × 11
 #>    type         indicator label n_articles n_detected percent conf_low conf_high
 #>    <chr>        <chr>     <chr>      <int>      <int>   <dbl>    <dbl>     <dbl>
 #>  1 review-arti… is_coi_p… Conf…        241        174   72.2     66.2       77.5
@@ -118,8 +174,8 @@ rt_summary(rt_demo, by = "type")
 #>  6 review-arti… is_novel… Nove…        241        120   49.8     43.5       56.1
 #>  7 review-arti… is_repli… Repl…        241         22    9.13     6.11      13.4
 #>  8 review-arti… is_ai_pr… AI d…         66         14   21.2     13.1       32.5
-#>  9 systematic-… is_coi_p… Conf…        132         82   62.1     53.6       69.9
-#> 10 systematic-… is_fund_… Fund…        132        109   82.6     75.2       88.1
-#> # ℹ 14 more rows
+#>  9 review-arti… is_open_… Open…        241        201   83.4     78.2       87.6
+#> 10 review-arti… is_repor… Repo…        241         30   12.4      8.86      17.2
+#> # ℹ 20 more rows
 #> # ℹ 3 more variables: adj_percent <dbl>, adj_low <dbl>, adj_high <dbl>
 ```

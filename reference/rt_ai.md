@@ -15,20 +15,27 @@ method is more likely to be flagged than under \[rt_ai_pmc()\].
 ## Usage
 
 ``` r
-rt_ai(filename)
+rt_ai(filename = NULL, text = NULL)
 ```
 
 ## Arguments
 
 - filename:
 
-  The name of the TXT file as a string.
+  The path to a TXT file as a string.
+
+- text:
+
+  Alternatively, the article text itself as a character vector (for
+  example the output of \[rt_read_pdf()\]). Supply \`filename\` or
+  \`text\`.
 
 ## Value
 
-A tibble with the filename, the PMID (if present in the file name),
-whether an AI-use disclosure was found (\`is_ai_pred\`) and the matched
-statement (\`ai_text\`).
+A tibble with the file name (\`article\`), the PMID (\`NA\` if absent),
+whether an AI-use disclosure was found (\`is_ai_pred\`), the matched
+statement (\`ai_text\`) and what it says (\`ai_used\`, \`ai_tools\`,
+\`ai_purpose\`), as described in \[rt_ai_pmc()\].
 
 ## See also
 
@@ -48,9 +55,9 @@ writeLines(
 
 # Identify and extract an AI-use disclosure.
 rt_ai(filepath)
-#> # A tibble: 1 × 4
-#>   article                     pmid     is_ai_pred ai_text                       
-#>   <chr>                       <chr>    <lgl>      <chr>                         
-#> 1 PMID00000000-PMC0000000.txt 00000000 TRUE       "The authors used ChatGPT to …
+#> # A tibble: 1 × 7
+#>   article                   pmid  is_ai_pred ai_text ai_used ai_tools ai_purpose
+#>   <chr>                     <chr> <lgl>      <chr>   <lgl>   <chr>    <chr>     
+#> 1 PMID00000000-PMC0000000.… 0000… TRUE       The au… TRUE    ChatGPT  drafting  
 # }
 ```

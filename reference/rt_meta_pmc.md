@@ -8,7 +8,7 @@ counts.
 ## Usage
 
 ``` r
-rt_meta_pmc(filename, remove_ns = FALSE)
+rt_meta_pmc(filename, remove_ns = TRUE)
 ```
 
 ## Arguments
@@ -19,7 +19,9 @@ rt_meta_pmc(filename, remove_ns = FALSE)
 
 - remove_ns:
 
-  TRUE if an XML namespace should be removed, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 ## Value
 
@@ -33,11 +35,11 @@ whether the file was parsed successfully.
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_meta_pmc(filepath, remove_ns = TRUE)
+rt_meta_pmc(filepath)
 #> # A tibble: 1 × 29
 #>   filename           pmid  pmcid_pmc doi   pii   date_epub date_ppub journal_nlm
 #>   <chr>              <chr> <chr>     <chr> <chr> <chr>     <chr>     <chr>      
-#> 1 /home/runner/work… 3217… ""        10.1… ""    14-03-20… ""        BMC Med Re…
+#> 1 /home/runner/work… 3217… PMC70717… 10.1… ""    14-03-20… ""        BMC Med Re…
 #> # ℹ 21 more variables: journal_iso <chr>, publisher_id <chr>, issn_ppub <chr>,
 #> #   issn_epub <chr>, affiliation_all <chr>, title <chr>, subject <chr>,
 #> #   license <chr>, author <chr>, author_aff_id <chr>, affiliation_aff_id <chr>,

@@ -7,7 +7,7 @@ Data or Code exist, it will extract the relevant text for each.
 ## Usage
 
 ``` r
-rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = "low")
+rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = NULL)
 ```
 
 ## Arguments
@@ -18,7 +18,9 @@ rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = "low")
 
 - remove_ns:
 
-  TRUE if an XML namespace exists, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 - specificity:
 
@@ -40,6 +42,6 @@ filepath <- system.file(
 filepaths <- list(filepath)
 
 # Identify and extract indicators of data and code sharing
-results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
+results_table <- rt_data_code_pmc_list(filepaths)
 # }
 ```

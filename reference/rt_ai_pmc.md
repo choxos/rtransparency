@@ -9,7 +9,7 @@ published in 2023 or later; for earlier articles \`is_ai_pred\` is
 ## Usage
 
 ``` r
-rt_ai_pmc(filename, remove_ns = FALSE)
+rt_ai_pmc(filename, remove_ns = TRUE)
 ```
 
 ## Arguments
@@ -20,13 +20,33 @@ rt_ai_pmc(filename, remove_ns = FALSE)
 
 - remove_ns:
 
-  TRUE if an XML namespace exists, else FALSE (default).
+  Ignored since version 1.2.0 and kept for backward compatibility.
+  Default XML namespaces are now always removed, so a namespaced PMC XML
+  file gives the same result as a plain one.
 
 ## Value
 
 A tibble with the article IDs, the publication \`year\`, whether an AI
 disclosure was found (\`is_ai_pred\`, \`NA\` before 2023), the matched
-statement (\`ai_text\`) and \`is_success\`.
+statement (\`ai_text\`), what the disclosure says (\`ai_used\`,
+\`ai_tools\`, \`ai_purpose\`; see Details) and \`is_success\`.
+
+## Details
+
+The year gate uses the earliest publication year the XML records
+(electronic, print or collection date), so an article first published
+online in December 2022 is gated out even if its issue is dated 2023.
+
+A disclosure can state use or non-use, and \`is_ai_pred\` counts both.
+\`ai_used\` separates them: \`TRUE\` when a disclosure states that AI
+was used, \`FALSE\` when it states that no AI was used, and \`NA\` when
+there is no disclosure or the use cannot be read from it (for example
+when only a section title was found). \`ai_tools\` names the tools
+mentioned in statements of use (for example \`"ChatGPT; DeepL"\`) and
+\`ai_purpose\` the stated purposes, from \`"language editing"\`,
+\`"translation"\`, \`"drafting"\`, \`"figures and images"\`, \`"code and
+analysis"\` and \`"literature search"\`. These are read with the same
+rules as the disclosure itself and have not been separately validated.
 
 ## Examples
 
@@ -35,10 +55,11 @@ statement (\`ai_text\`) and \`is_success\`.
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_ai_pmc(filepath, remove_ns = TRUE)
-#> # A tibble: 1 × 9
-#>   pmid    pmcid_pmc pmcid_uid doi   filename  year is_ai_pred ai_text is_success
-#>   <chr>   <chr>     <chr>     <chr> <chr>    <int> <lgl>      <chr>   <lgl>     
-#> 1 321712… ""        ""        10.1… /home/r…  2020 NA         ""      TRUE      
+rt_ai_pmc(filepath)
+#> # A tibble: 1 × 12
+#>   pmid     pmcid_pmc  pmcid_uid doi    filename  year is_ai_pred ai_text ai_used
+#>   <chr>    <chr>      <chr>     <chr>  <chr>    <int> <lgl>      <chr>   <lgl>  
+#> 1 32171256 PMC7071725 7071725   10.11… /home/r…  2020 NA         ""      NA     
+#> # ℹ 3 more variables: ai_tools <chr>, ai_purpose <chr>, is_success <lgl>
 # }
 ```

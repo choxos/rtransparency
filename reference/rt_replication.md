@@ -8,19 +8,25 @@ findings from a prior study in a new sample.
 ## Usage
 
 ``` r
-rt_replication(filename)
+rt_replication(filename = NULL, text = NULL)
 ```
 
 ## Arguments
 
 - filename:
 
-  The name of the TXT file as a string.
+  The path to a TXT file as a string.
+
+- text:
+
+  Alternatively, the article text itself as a character vector (for
+  example the output of \[rt_read_pdf()\]). Supply \`filename\` or
+  \`text\`.
 
 ## Value
 
-A tibble of results. It returns the filename, PMID (if it was part of
-the file name), whether a replication component was found, the text
+A tibble of results. It returns the file name (\`article\`), the PMID
+(\`NA\` if absent), whether a replication component was found, the text
 identified, and whether each pattern-matching function identified
 relevant text or not.
 

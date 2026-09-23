@@ -1,12 +1,12 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   ai-disclosure: ai-disclosure.html
   rtransparency: rtransparency.html
   scope-and-limitations: scope-and-limitations.html
   transparency-summary: transparency-summary.html
-last_built: 2026-06-25T13:01Z
+last_built: 2026-09-23T13:40Z
 urls:
   reference: https://choxos.github.io/rtransparency/reference
   article: https://choxos.github.io/rtransparency/articles
