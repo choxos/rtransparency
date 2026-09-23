@@ -167,7 +167,9 @@
 }
 
 # Statements that should not count as open sharing (data only on request, or
-# explicitly not available). Applied only to weak signals.
+# explicitly not available). The request/author forms are "soft": they veto only
+# weak signals, never a concrete deposit or public code repository in the same
+# sentence. The hard forms below veto everything.
 .dc_negation <- function() {
   paste(
     "(up)?on (reasonable )?request", "from the (corresponding )?authors?",
@@ -178,6 +180,15 @@
   )
 }
 
+
+# Genuine non-availability: vetoes data and code regardless of other signals.
+.dc_hard_negation <- function() {
+  paste(
+    "not (publicly )?available", "not be (made )?available", "not shown",
+    "restricted access", "controlled access", "cannot be shared",
+    sep = "|"
+  )
+}
 
 # Split text chunks (paragraphs) into sentences without breaking URLs, DOIs or
 # accession identifiers: only split on sentence punctuation followed by space and
@@ -348,6 +359,13 @@
     # not a data-availability statement (for example the Springer line
     # "The online version contains supplementary material available at <doi>").
     "online version.{0,40}contains supplementary materials? available at",
+    # "Supplementary data accompanying this article are available online at
+    # <journal site>": a publisher notice, not the authors' data statement.
+    paste0("supplementary (data|materials?|information) (accompanying|associated ",
+           "with|related to|for) this (article|paper) (is|are|can be) ",
+           "(available|found)"),
+    # Reporting where imputed or missing values are tabulated is not sharing.
+    "\\b(imputed|missing|incomplete) data\\b",
     sep = "|"
   )
   calculated_table_summary <- paste(
@@ -394,8 +412,17 @@
     has(calculated_table_summary, s) |
     has(code_or_ui_table, s) |
     has(protocol_or_code_only, s)
+  # Negation splits in two. Hard negation ("not publicly available",
+  # "controlled access", "cannot be shared") vetoes any data signal. Soft
+  # negation is about how *additional* data are delivered ("upon request",
+  # "from the corresponding author"); it vetoes only weak signals, because a
+  # data-availability statement often pairs a concrete deposit with a
+  # request clause ("available in Zenodo, doi:..., and further information is
+  # available from the corresponding author on reasonable request").
+  data_hard_negation <- has(.dc_hard_negation(), s)
+  data_soft_negation <- has(negation, s) & !concrete_data
   veto <- (has(reuse, s) & !has_deposit & !public_source_hit) |
-    has(negation, s) | data_boilerplate
+    data_hard_negation | data_soft_negation | data_boilerplate
 
   data_hit <- (concrete_data | soft_data) & !veto
 
@@ -525,12 +552,7 @@
   # hosted on a public repository. Genuine non-availability ("not publicly
   # available", "restricted/controlled access", "cannot be shared") still vetoes
   # code regardless of where it lives.
-  hard_negation <- paste(
-    "not (publicly )?available", "not be (made )?available", "not shown",
-    "restricted access", "controlled access", "cannot be shared",
-    sep = "|"
-  )
-  code_negation <- has(hard_negation, s) | (has(negation, s) & !strong_code)
+  code_negation <- has(.dc_hard_negation(), s) | (has(negation, s) & !strong_code)
   code_hit <- (strong_code | registry_code | weak_code | explicit_code) &
     !code_negation & !has(generic_code_discussion, s) &
     !has(code_use_only, s)
@@ -622,4 +644,72 @@
   }
 
   unique(out)
+}
+
+
+#' Check whether extracted data and code links resolve
+#'
+#' Takes the links extracted by the data and code detectors (the
+#' `open_data_links` and `open_code_links` columns of [rt_data_code_pmc()],
+#' [rt_all_pmc()] or [rt_data_code()]) and checks whether each one resolves,
+#' following redirects. A shared-data statement whose link is dead is weaker
+#' evidence of sharing than one whose link works, which availability-statement
+#' indicators alone cannot tell apart.
+#'
+#' DOIs are checked through `https://doi.org/`, and database accessions in
+#' identifiers.org `prefix:accession` form through `https://identifiers.org/`.
+#' Only the response headers are requested. Some servers refuse automated
+#' requests (status 403) or header-only requests (405) although the page
+#' exists, so a failing status is a prompt to look, not proof of a dead link.
+#'
+#' @param links A character vector of links; elements holding several links
+#'   separated by `" ; "` (as the detectors return them) are split.
+#' @param timeout Seconds to wait for each server.
+#' @return A tibble with one row per unique link: the `link`, the `url`
+#'   checked, the HTTP `status` (`NA` when the server could not be reached),
+#'   `is_ok` (a status below 400) and the `error` message when unreachable.
+#' @seealso [rt_data_code_pmc()]
+#' @examples
+#' \donttest{
+#' # Needs internet access; unreachable links are reported, not errors.
+#' res <- rt_data_code_pmc(system.file(
+#'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
+#' ))
+#' if (capabilities("libcurl")) rt_check_links(res$open_data_links)
+#' }
+#' @export
+rt_check_links <- function(links, timeout = 10) {
+  if (!capabilities("libcurl")) {
+    stop("This R build has no libcurl support, which rt_check_links() needs.",
+         call. = FALSE)
+  }
+  links <- trimws(unlist(strsplit(as.character(links), " ; ", fixed = TRUE)))
+  links <- unique(links[!is.na(links) & nzchar(links)])
+  url <- .link_url(links)
+  status <- rep(NA_integer_, length(links))
+  error <- rep(NA_character_, length(links))
+  # curlGetHeaders() gained its own timeout argument only in R 4.1.0; the
+  # timeout option works on every supported R version.
+  old <- options(timeout = timeout)
+  on.exit(options(old), add = TRUE)
+  for (i in seq_along(links)) {
+    h <- tryCatch(curlGetHeaders(url[i], redirect = TRUE),
+                  error = function(e) e)
+    if (inherits(h, "error")) {
+      error[i] <- conditionMessage(h)
+    } else {
+      status[i] <- as.integer(attr(h, "status"))
+    }
+  }
+  tibble::tibble(link = links, url = url, status = status,
+                 is_ok = !is.na(status) & status < 400, error = error)
+}
+
+
+# The URL to check for an extracted link: DOIs through doi.org, and
+# identifiers.org prefix:accession forms through identifiers.org.
+.link_url <- function(links) {
+  ifelse(grepl("^https?://", links, ignore.case = TRUE), links,
+         ifelse(grepl("^10\\.[0-9]{4,9}/", links), paste0("https://doi.org/", links),
+                paste0("https://identifiers.org/", links)))
 }

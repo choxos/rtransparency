@@ -103,3 +103,30 @@ test_that("rt_read_pdf -> writeLines -> text detector workflow works end to end"
   expect_equal(ai$article, basename(txt))
   expect_false(is.na(ai$is_ai_pred))
 })
+
+test_that("plain-text COI headings are recognized like XML section titles", {
+  coi <- function(x) rtransparency::rt_coi(text = x)$is_coi_pred
+  expect_true(coi(c("Declaration of interests", "None.")))
+  expect_true(coi(c("Competing interests", "None.")))
+  expect_true(coi(c("Declaration of competing interest", "None.")))
+  expect_true(coi("Declaration of interests: JS reports grants from Pfizer."))
+  expect_false(coi(c("Declarations", "Ethics approval: approved by the IRB.")))
+})
+
+test_that("a COI heading written as a paragraph in XML footnotes is found", {
+  f <- tempfile(fileext = ".xml")
+  writeLines(paste0(
+    '<article article-type="research-article"><front><article-meta>',
+    '<article-id pub-id-type="pmid">1</article-id></article-meta></front>',
+    '<body><p>Text.</p></body><back><fn-group><fn id="FN1">',
+    '<p>Declaration of competing interest</p><p>None.</p>',
+    '</fn></fn-group></back></article>'), f)
+  expect_true(rt_coi_pmc(f)$is_coi_pred)
+  expect_true(rt_all_pmc(f)$is_coi_pred)
+})
+
+
+test_that("plain-text headings that are title stems in the vocabulary are found", {
+  expect_true(rt_coi(text = c("Liens d'int\u00e9r\u00eats", "Aucun."))$is_coi_pred)
+  expect_true(rt_coi(text = c("Conflicting financial interests", "None."))$is_coi_pred)
+})

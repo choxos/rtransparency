@@ -10,7 +10,7 @@ confidence intervals are stratified bootstrap (2000 resamples).
 | Indicator | n | Positives | Negatives | Sensitivity | Specificity | PPV | Accuracy |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Open-access license | 1000 | 999 | 1 | 100.0% | (not estimable, see note) | 100.0% | 100.0% |
-| Reporting guideline | 1000 | 65 | 935 | 93.8% [87.7, 98.5] | 99.0% [98.3, 99.6] | 87.1% | 98.7% |
+| Reporting guideline | 1000 | 65 | 935 | 95.4% [89.2, 100.0] | 99.0% [98.3, 99.6] | 87.3% | 98.8% |
 
 ## Open-access licensing
 
@@ -45,6 +45,6 @@ context judged not followed.
 
 The PMC XML corpus is **not committed** (too large for an R package): the script
 fetches each article by PMCID from NCBI EFetch into `$RT_XML_DIR`
-(default `/tmp/newcache/xml`) and caches it. Set `RT_NO_FETCH=1` to validate
+(default `data-raw/benchmark/.cache`) and caches it. Set `RT_NO_FETCH=1` to validate
 strictly against a pre-populated cache; the run then aborts if any XML is
 missing rather than writing a partial benchmark.

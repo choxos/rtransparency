@@ -1,15 +1,23 @@
 #' Convert a PDF file to text.
 #'
 #' Takes a path to a PDF file and returns its text content as a single
-#'     character string, extracted with the poppler `pdftotext` utility (the
-#'     same extractor the original `oddpub` package relied on, implemented here
-#'     as a standard system call). Different extractors format text differently;
-#'     the detectors in this package were tuned to the layout `pdftotext`
-#'     produces. To analyze the result with the plain-text detectors, write it
-#'     to a `.txt` file first (see Examples).
+#'     character string, extracted by default with the poppler `pdftotext`
+#'     utility (the same extractor the original `oddpub` package relied on,
+#'     called as a system command). Different extractors format text
+#'     differently; the detectors were tuned to the reading-order layout
+#'     `pdftotext` produces. The result can be passed straight to the
+#'     plain-text detectors through their `text` argument, or scored in one
+#'     call with [rt_all_pdf()].
 #'
 #' @param filepath The path to the PDF file as a string (must end in `.pdf`).
-#' @return A character string with the extracted text.
+#' @param engine `"pdftotext"` (default) calls the poppler command-line
+#'     utility, which must be on the PATH. `"pdftools"` uses the \pkg{pdftools}
+#'     package instead, which bundles poppler (convenient on Windows) but
+#'     keeps the physical page layout, so text in two-column articles can be
+#'     interleaved and some statements missed; prefer `"pdftotext"` when it is
+#'     available.
+#' @return A character string with the extracted text, transliterated to
+#'     ASCII.
 #' @examples
 #' \dontrun{
 #' # Path to a PDF file.
@@ -17,36 +25,46 @@
 #'   "extdata", "PMID32171256-PMC7071725.pdf", package = "rtransparency"
 #' )
 #'
-#' # Extract the text, write it to a TXT file, then run the detectors.
+#' # Extract the text and run a detector on it, or score all indicators at once.
 #' article_txt <- rt_read_pdf(pdf_path)
-#' writeLines(article_txt, "article.txt")
-#' rt_coi("article.txt")
+#' rt_coi(text = article_txt)
+#' rt_all_pdf(pdf_path)
 #' }
 #' @export
-rt_read_pdf <- function(filepath){
+rt_read_pdf <- function(filepath, engine = c("pdftotext", "pdftools")) {
+
+  engine <- match.arg(engine)
 
   if (!file.exists(filepath)) {
-    stop("The provided filepath does not exist.")
+    stop("The provided filepath does not exist.", call. = FALSE)
   }
 
   if (!grepl("\\.pdf$", filepath, ignore.case = TRUE)) {
-    stop("The filepath of a PDF file should end in '.pdf'.")
+    stop("The filepath of a PDF file should end in '.pdf'.", call. = FALSE)
+  }
+
+  if (engine == "pdftools") {
+    rlang::check_installed("pdftools", reason = "to read PDFs with engine = \"pdftools\"")
+    pages <- pdftools::pdf_text(filepath)
+    return(.to_ascii(paste(pages, collapse = "\n")))
   }
 
   if (Sys.which("pdftotext") == "") {
-    stop("The 'pdftotext' utility (from poppler) was not found on the PATH.")
+    stop("The 'pdftotext' utility (from poppler) was not found on the PATH. ",
+         "Install poppler, or use engine = \"pdftools\".", call. = FALSE)
   }
 
-  # Convert PDF to TXT; pdftotext writes to stdout when the output path is "-".
-  txt_as_vector <- tryCatch(
-    system2("pdftotext", args = c(shQuote(filepath), "-"), stdout = TRUE),
-    error = function(e) stop("Could not convert PDF to text.")
+  # pdftotext writes to stdout when the output path is "-". system2() does not
+  # fail on a non-zero exit status, so check it explicitly.
+  txt_as_vector <- suppressWarnings(
+    system2("pdftotext", args = c(shQuote(filepath), "-"), stdout = TRUE,
+            stderr = FALSE)
   )
+  status <- attr(txt_as_vector, "status")
+  if (!is.null(status) && status != 0) {
+    stop("pdftotext could not convert the PDF (exit status ", status, ").",
+         call. = FALSE)
+  }
 
-  # Collapse into appropriate format
-  txt_as_string <- paste(txt_as_vector, collapse = "\n")
-
-  # Convert character vector into ASCII to ease text processing
-  txt <- iconv(txt_as_string, from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "")
-  return(txt)
+  .to_ascii(paste(txt_as_vector, collapse = "\n"))
 }

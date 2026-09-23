@@ -76,3 +76,15 @@ test_that("TXT detectors are line-ending agnostic (CRLF)", {
   on.exit(unlink(f3), add = TRUE)
   expect_true(rt_coi(f3)$is_coi_pred)
 })
+
+test_that("PDF hyphen repair only joins words split across a line break", {
+  res <- rtransparency::rt_fund(text = c(
+    "Funding",
+    "This work was funded by the not-for-profit Foo Foundation under a co-",
+    "operative agreement (grant 123)."
+  ))
+  expect_true(res$is_fund_pred)
+  expect_match(res$fund_text, "not-for-profit", fixed = TRUE)
+  expect_match(res$fund_text, "cooperative", fixed = TRUE)
+  expect_identical(rtransparency:::.clean_txt("a\fb"), "a b")
+})

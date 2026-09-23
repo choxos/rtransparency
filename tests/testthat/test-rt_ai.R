@@ -123,8 +123,59 @@ test_that("rt_ai rejoins a tool name hyphenated across a line break", {
 
 test_that("rt_ai returns the documented schema, the PMID and never NA (no year gate)", {
   r <- .run_rt_ai_txt("The authors used ChatGPT to improve the manuscript wording.", pmid = "99887766")
-  expect_identical(names(r), c("article", "pmid", "is_ai_pred", "ai_text"))
+  expect_identical(names(r), c("article", "pmid", "is_ai_pred", "ai_text",
+                               "ai_used", "ai_tools", "ai_purpose"))
   expect_equal(r$pmid, "99887766")
   expect_false(is.na(r$is_ai_pred))            # TXT applies no 2023 year gate
   expect_gt(nchar(r$ai_text), 0)
+})
+
+test_that("ordinary names that match AI products are not disclosures", {
+  detect <- function(x) rtransparency:::.detect_ai_disclosure(x)$is_ai_disclosed
+  expect_false(detect("We thank Claude Martin, who edited the manuscript."))
+  expect_false(detect("We thank the Llama facility for the use of their equipment."))
+  expect_false(detect("We thank Gemini Observatory staff for the use of the telescope."))
+  expect_false(detect("We acknowledge the use of the Artificial Intelligence core facility."))
+  expect_false(detect("Funding was provided by Bard College."))
+
+  expect_true(detect(paste("During the preparation of this work the authors used",
+                           "Claude 3.5 Sonnet to edit the text.")))
+  expect_true(detect("We used Google Gemini to check the grammar of the manuscript."))
+  expect_true(detect("Llama 3 was used to improve readability of the text."))
+  expect_true(detect("DeepL was used to translate the manuscript."))
+})
+
+test_that("AI disclosures report use, tools and purpose", {
+  r <- rtransparency::rt_ai(text = paste(
+    "During the preparation of this work the authors used Claude 3.5 Sonnet",
+    "and DeepL to translate and edit the text."
+  ))
+  expect_true(r$ai_used)
+  expect_identical(r$ai_tools, "Claude; DeepL")
+  expect_identical(r$ai_purpose, "language editing; translation")
+
+  none <- rtransparency::rt_ai(text = "No generative AI was used in the writing of this manuscript.")
+  expect_true(none$is_ai_pred)
+  expect_false(none$ai_used)
+  expect_identical(none$ai_tools, "")
+
+  except <- rtransparency::rt_ai(text = "AI tools were not used, except for grammar checking with QuillBot.")
+  expect_true(except$ai_used)
+  expect_identical(except$ai_tools, "QuillBot")
+
+  draft <- rtransparency::rt_ai(text = "We used the large language model ChatGPT to draft the introduction.")
+  expect_true(draft$ai_used)
+  expect_identical(draft$ai_purpose, "drafting")
+
+  absent <- rtransparency::rt_ai(text = "The authors declare no competing interests.")
+  expect_false(absent$is_ai_pred)
+  expect_true(is.na(absent$ai_used))
+})
+
+test_that("AI disclosure text lists each sentence once and reads spaced model names", {
+  r <- rtransparency:::.detect_ai_disclosure(rep(paste(
+    "During the preparation of this work the author(s) used the GPT – 4",
+    "model in order to improve readability and language of the manuscript."), 3))
+  expect_true(r$is_ai_disclosed)
+  expect_false(grepl(" | ", r$ai_text, fixed = TRUE))
 })

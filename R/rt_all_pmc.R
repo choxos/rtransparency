@@ -1,24 +1,4 @@
 
-#' @noRd
-.get_xml <- function(filename, remove_ns = FALSE) {
-
-  if (remove_ns) {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml() %>%
-      xml2::xml_ns_strip()
-
-  } else {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml()
-
-  }
-}
-
-
 
 .get_coi_pmc <- function(article_xml, synonyms) {
 
@@ -47,7 +27,6 @@
     "is_coi_pmc_title" = is_coi_pmc_title
   ))
 }
-
 
 
 .get_fund_pmc <- function(article_xml, synonyms) {
@@ -120,7 +99,6 @@
 }
 
 
-
 .get_register_pmc <- function(article_xml) {
 
   type <- ""
@@ -179,7 +157,6 @@
 }
 
 
-
 #' @returns Article sections as a list
 .get_article_txt <- function(article_xml) {
 
@@ -208,30 +185,11 @@
 }
 
 
-
-#' @returns A list of PubMed IDs
-#' @noRd
-.get_ids <- function(article_xml, remove_ns = FALSE) {
-
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
-
-  xpath %>%
-    purrr::map(~ .get_text(article_xml, .x, TRUE)) %>%
-    rlang::set_names(c("pmid", "pmcid_pmc", "pmcid_uid", "doi"))
-}
-
-
-
 #' @returns A vector of pre-processed strings
 .preprocess_txt <- function(article) {
 
   article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     trimws() %>%
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead
@@ -256,7 +214,9 @@
 #'     reporting-guideline detection as [rt_reporting_pmc()].
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @param all_meta TRUE extracts all meta-data, FALSE extracts some (default).
 #' @return A dataframe of results. It returns the unique identifiers of the
 #'     article, whether each indicator of transparency was identified
@@ -280,17 +240,17 @@
 #' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_all_pmc(filepath, remove_ns = TRUE, all_meta = TRUE)
+#' results_table <- rt_all_pmc(filepath, all_meta = TRUE)
 #' }
 #' @export
-rt_all_pmc <- function(filename, remove_ns = FALSE, all_meta = FALSE) {
+rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
 
   if (inherits(article_xml, "error")) {
 
-     return(tibble::tibble(filename, is_success = FALSE))
+     return(.xml_failure(filename, article_xml))
 
   }
 
@@ -299,66 +259,24 @@ rt_all_pmc <- function(filename, remove_ns = FALSE, all_meta = FALSE) {
   id_ls <- .get_ids(article_xml)
   id_ls$filename <- filename
 
-  # Meta-data
-  # metadata-all: 78ms
-  # metadata-unique: 75ms (only the ones not captured already)
-  # metadata-lean: 60ms (only the absolute basics for cool analyses)
-  # no metadata: 56ms
-  if (all_meta) {
-
-    meta_ls <- .xml_metadata_all(article_xml, as_list = TRUE)
-
-  } else{
-
-    meta_ls <- .xml_metadata_lean(article_xml, as_list = TRUE)
-
+  # The full metadata extraction removes <sup> and <label> elements, so it
+  # works on a copy of the document; the detectors never see its changes.
+  meta_ls <- if (all_meta) {
+    .xml_metadata_all(xml2::read_xml(as.character(article_xml)), as_list = TRUE)
+  } else {
+    .xml_metadata_lean(article_xml, as_list = TRUE)
   }
 
-
+  # Order matters: .get_article_txt() removes citation markers and tables from
+  # the body in place. The detectors that read the XML directly therefore run
+  # first, on the untouched document, exactly as their standalone functions
+  # (rt_ai_pmc(), rt_data_code_pmc(), rt_oa_pmc(), rt_reporting_pmc()) do.
   pmc_coi_ls <- .get_coi_pmc(article_xml, dict)
   pmc_fund_ls <- .get_fund_pmc(article_xml, dict)
   pmc_reg_ls <- .get_register_pmc(article_xml)
+  ai_ls <- .get_ai_pmc(article_xml)
 
-
-  article_ls <- .get_article_txt(article_xml)
-  # TODO Uncomment when I implement the .is_relevant functions
-  # article_processed_ls <- purrr::map(article_ls, .preprocess_txt)
-
-
-  coi_out  <- .rt_coi_pmc(
-    article_ls,
-    pmc_coi_ls,
-    dict
-  )
-
-  coi_ls <- purrr::list_modify(pmc_coi_ls, !!!coi_out)
-
-
-
-  fund_out <- .rt_fund_pmc(
-    article_ls,
-    pmc_fund_ls
-  )
-
-  fund_ls <- purrr::list_modify(pmc_fund_ls, !!!fund_out)
-
-
-
-  reg_out  <- .rt_register_pmc(
-    article_ls,
-    pmc_reg_ls,
-    dict
-  )
-
-  reg_ls <- purrr::list_modify(pmc_reg_ls, !!!reg_out)
-
-
-  novelty_ls     <- .rt_novelty_pmc(article_ls)
-  replication_ls <- .rt_replication_pmc(article_ls)
-  ai_ls          <- .get_ai_pmc(article_xml)
-
-  # Data and code sharing, from the same native detector as rt_data_code_pmc(),
-  # so a single rt_all_pmc() call covers all ten indicators.
+  # Data and code sharing, from the same native detector as rt_data_code_pmc().
   dc_found <- .detect_data_code(.dc_article_text(article_xml))
   dc_data_links <- if (isTRUE(dc_found$is_open_data))
     .extract_data_code_links(dc_found$data_text) else character(0)
@@ -370,15 +288,28 @@ rt_all_pmc <- function(filename, remove_ns = FALSE, all_meta = FALSE) {
     open_data_links = paste(dc_data_links, collapse = " ; "),
     is_open_code = dc_found$is_open_code,
     open_code_statements = dc_found$code_text,
-    open_code_links = paste(dc_code_links, collapse = " ; ")
+    open_code_links = paste(dc_code_links, collapse = " ; "),
+    has_das = nzchar(das_text <- .get_das_pmc(article_xml)),
+    das_text = das_text
   )
 
-  # Open-access status and reuse license (same detector as rt_oa_pmc()), and
-  # reporting-guideline use (same detector as rt_reporting_pmc()), so the
-  # combined output matches the standalone detectors exactly.
   oa_ls <- .get_oa_pmc(article_xml)
   reporting_ls <- .get_reporting_pmc(article_xml)
 
+  # Text-based detectors on the article sections.
+  article_ls <- .get_article_txt(article_xml)
+
+  coi_out <- .rt_coi_pmc(article_ls, pmc_coi_ls, dict)
+  coi_ls <- purrr::list_modify(pmc_coi_ls, !!!coi_out)
+
+  fund_out <- .rt_fund_pmc(article_ls, pmc_fund_ls)
+  fund_ls <- purrr::list_modify(pmc_fund_ls, !!!fund_out)
+
+  reg_out <- .rt_register_pmc(article_ls, pmc_reg_ls, dict)
+  reg_ls <- purrr::list_modify(pmc_reg_ls, !!!reg_out)
+
+  novelty_ls <- .rt_novelty_pmc(article_ls)
+  replication_ls <- .rt_replication_pmc(article_ls)
 
   status_ls <- list(is_success = TRUE)
   tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls,

@@ -25,8 +25,10 @@ reference:
   desc: Detect every indicator in one pass, for one file or a whole corpus.
   contents:
   - rt_all
+  - rt_all_pdf
   - rt_all_pmc
   - rt_all_pmc_dir
+  - rt_all_txt_dir
 - title: Individual indicators (PMC XML)
   desc: One detector per indicator, for PMC JATS XML files.
   contents:
@@ -52,11 +54,31 @@ reference:
   - rt_ai
   - rt_oa
   - rt_reporting
-- title: Metadata and input
-  desc: Article metadata and PDF-to-text conversion.
+- title: Get articles
+  desc: Download PMC full text, convert identifiers and read PDFs.
+  contents:
+  - rt_fetch_pmc
+  - rt_convert_ids
+  - rt_read_pdf
+- title: Structured metadata (PMC XML)
+  desc: Tagged JATS metadata read directly, not detected from prose.
   contents:
   - rt_meta_pmc
-  - rt_read_pdf
+  - rt_authors_pmc
+  - rt_funders_pmc
+- title: Follow-up checks
+  desc: Go beyond presence of a statement, using registries, PubMed and the web.
+  contents:
+  - rt_trial_ids
+  - rt_registration_timing
+  - rt_coi_pubmed
+  - rt_fill_coi_pubmed
+  - rt_check_links
+- title: Experimental
+  desc: Detectors not yet validated against hand labels; not part of rt_all_pmc().
+  contents:
+  - rt_ethics_pmc
+  - rt_ethics
 - title: Summarize and visualize
   desc: Corpus-level prevalence, per-article scores and plots.
   contents:
@@ -66,4 +88,5 @@ reference:
 - title: Datasets
   contents:
   - rt_accuracy
+  - rt_accuracy_2021
   - rt_demo

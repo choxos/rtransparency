@@ -103,7 +103,7 @@
     "check-?list", "guideline", "statement", "reporting",
     "flow ?(diagram|chart)", "extension", "\\bequator\\b",
     # Spanish / Portuguese reporting cues (the acronyms are language-independent).
-    "consistente con", "de acuerdo con", "seg[uu]n", "siguiendo",
+    "consistente con", "de acuerdo con", "seg(u|\\x{00fa})n", "siguiendo",
     "teniendo en cuenta", "de acordo com", "seguindo", "metodolog",
     "lista de (chequeo|verificaci|checagem)", "segundo a", "conforme",
     sep = "|"
@@ -121,8 +121,32 @@
 .reporting_veto <- function() {
   paste(
     "care and use of",                                            # animal welfare
-    "(could|was|were|is|are|been|cannot|can|did)\\s?n[o']t (be )?(use|used|appl|follow|possible|feasible)",
-    "\\bnot (be )?(used|applied|followed|possible|feasible)\\b",
+    # Non-use of a guideline, anchored to the guideline mention within the same
+    # clause, so an unrelated "not possible" elsewhere in the sentence ("adheres
+    # to CONSORT; however, blinding was not possible") does not veto adherence.
+    paste0("(guidelines?|statement|check-?list|criteria|reporting standards?|",
+           "prisma|consort|strobe|stard|tripod|coreq|srqr|arrive|spirit|",
+           "cheers|moose|squire|care)",
+           # The gap may not cross a relative pronoun or participant/record
+           # noun: "the patients who were not followed up" is not non-use.
+           "(?:(?!\\b(?:who|whom|which|that|patients?|participants?|subjects?|records?|studies)\\b)[^.;]){0,60}",
+           "\\b(could|was|were|is|are|been|cannot|can|did|has|have)",
+           "\\s?n[o']t (be )?(use|used|appl|follow|adher|possible|feasible)"),
+    # ... and a relative clause on the guideline itself: "the PRISMA statement
+    # that was not used".
+    paste0("\\b(?:guidelines?|statement|check-?list|criteria|reporting standards?|",
+           "prisma|consort|strobe|stard|tripod|coreq|srqr|arrive|spirit|",
+           "cheers|moose|squire|care)\\s+(?:that|which)\\s+",
+           "(could|was|were|is|are|been|cannot|can|did|has|have)",
+           "\\s?n[o']t (be )?(use|used|appl|follow|adher|possible|feasible)"),
+    paste0("\\b(n[o']t|never) (be |been )?(use|used|appl\\w*|follow\\w*|adher\\w*)",
+           "\\b[^.;]{0,40}(guidelines?|statement|check-?list|criteria|reporting standards?)"),
+    "\\bnot (possible|feasible) to (follow|use|apply|adhere)",
+    # Recommendations for future work, not the authors' own adherence.
+    paste0("(future (studies|research|trials|work|reviews|investigations)|",
+           "\\b(should|must|ought to|needs? to)\\b)[^.;]{0,40}",
+           "\\b(follow|adher|use|adopt|apply|comply|conform)"),
+    "\\b(we|authors?) (recommend|encourage|urge|suggest)\\w*\\b[^.;]{0,60}\\b(follow|adher|use|adopt|apply)",
     "reporting (guidelines?|standards?|checklists?) (are|is|were|remain|will|should|may|can|could|might)? ?(be )?(needed|lacking|scarce|absent|important|essential|required|developed|advocated|recommended for future|warranted|improve|enhance|increase|promote|help|exist|provide)",
     # Discourse / background ABOUT a guideline, not the authors following it.
     "(is|are|remains?|was|were|provides?) (a |an |the )?(widely|commonly|frequently|well)[ -]?(used|established|known|accepted|recognized)",
@@ -165,52 +189,50 @@
   extra    <- .reporting_extra()
   veto     <- .reporting_veto()
 
-  hit_sentences <- character(0)
-  guidelines <- character(0)
+  # Each pattern is applied once to the whole sentence vector (not sentence by
+  # sentence), which keeps the scan fast on long articles. A sentence's matches
+  # are then read off in the fixed pattern order below, so the output is the
+  # same as checking each sentence in turn.
+  keep <- !grepl(veto, s, ignore.case = TRUE, perl = TRUE)
+  has_ctx <- keep & grepl(ctx, s, ignore.case = TRUE, perl = TRUE)
+  hits <- list()
 
-  for (sent in s) {
-    if (grepl(veto, sent, ignore.case = TRUE, perl = TRUE)) next
-
-    matched <- character(0)
-
-    # Full spelled-out names: unambiguous, no extra context required.
-    for (nm in names(spelled)) {
-      if (grepl(spelled[[nm]], sent, ignore.case = TRUE, perl = TRUE)) {
-        matched <- c(matched, nm)
-      }
-    }
-
-    # Distinctive acronyms: whole-word match plus a reporting context.
-    if (grepl(ctx, sent, ignore.case = TRUE, perl = TRUE)) {
-      for (nm in names(distinct)) {
-        if (grepl(paste0("\\b(", distinct[[nm]], ")\\b"), sent,
-                  ignore.case = TRUE, perl = TRUE)) {
-          matched <- c(matched, nm)
-        }
-      }
-    }
-
-    # Overloaded acronyms: UPPER-CASE acronym (case-sensitive) directly beside a
-    # guideline noun. CARE additionally excludes the animal-welfare phrase.
-    for (o in overload) {
-      if (grepl(paste0("\\b", o, "\\b[ -]?(?:\\w+ ){0,2}", noun), sent, perl = TRUE)) {
-        if (o == "CARE" && grepl("care and use of", sent, ignore.case = TRUE)) next
-        matched <- c(matched, o)
-      }
-    }
-
-    # Wider reportilo catalogue: same upper-case + adjacent guideline-noun rule.
-    for (x in extra) {
-      if (grepl(paste0("\\b", x, "\\b[ -]?(?:\\w+ ){0,2}", noun), sent, perl = TRUE)) {
-        matched <- c(matched, x)
-      }
-    }
-
-    if (length(matched)) {
-      hit_sentences <- c(hit_sentences, trimws(sent))
-      guidelines <- c(guidelines, matched)
-    }
+  # Full spelled-out names: unambiguous, no extra context required.
+  for (nm in names(spelled)) {
+    hits[[length(hits) + 1]] <- keep &
+      grepl(spelled[[nm]], s, ignore.case = TRUE, perl = TRUE)
+    names(hits)[length(hits)] <- nm
   }
+
+  # Distinctive acronyms: whole-word match plus a reporting context.
+  for (nm in names(distinct)) {
+    hits[[length(hits) + 1]] <- has_ctx &
+      grepl(paste0("\\b(", distinct[[nm]], ")\\b"), s, ignore.case = TRUE, perl = TRUE)
+    names(hits)[length(hits)] <- nm
+  }
+
+  # Overloaded acronyms and the wider reportilo catalogue: the UPPER-CASE
+  # acronym (case-sensitive) directly beside a guideline noun. CARE
+  # additionally excludes the animal-welfare phrase. A single prefilter on the
+  # bare acronyms limits the per-acronym patterns to candidate sentences.
+  upper <- c(overload, extra)
+  cand <- keep & grepl(paste0("\\b(", paste(upper, collapse = "|"), ")\\b"), s, perl = TRUE)
+  for (o in upper) {
+    h <- cand
+    if (any(cand)) {
+      h[cand] <- grepl(paste0("\\b", o, "\\b[ -]?(?:\\w+ ){0,2}", noun), s[cand], perl = TRUE)
+    }
+    if (o == "CARE") h <- h & !grepl("care and use of", s, ignore.case = TRUE)
+    hits[[length(hits) + 1]] <- h
+    names(hits)[length(hits)] <- o
+  }
+
+  hit_mat <- do.call(cbind, hits)
+  if (is.null(dim(hit_mat))) hit_mat <- matrix(hit_mat, nrow = length(s))
+  any_hit <- rowSums(hit_mat) > 0
+  hit_sentences <- trimws(s[any_hit])
+  guidelines <- unlist(lapply(which(any_hit), function(i) names(hits)[hit_mat[i, ]]),
+                       use.names = FALSE)
 
   if (length(guidelines)) {
     out$is_reporting_pred <- TRUE
@@ -233,7 +255,11 @@
     sep = " | "
   )
   nodes <- tryCatch(xml2::xml_find_all(article_xml, xp), error = function(e) NULL)
-  text <- if (length(nodes)) xml2::xml_text(nodes) else character(0)
+  # Citation markers are left out of the text, so a superscript reference glued
+  # to a guideline name ("PRISMA<xref>12</xref>") does not hide it. The
+  # document itself is not modified.
+  text <- vapply(nodes, function(n) paste(xml2::xml_text(xml2::xml_find_all(
+    n, ".//text()[not(ancestor::xref)]")), collapse = ""), character(1))
   .detect_reporting(text)
 }
 
@@ -248,7 +274,9 @@
 #' "checklist" or "guideline"), so a bare citation does not count.
 #'
 #' @param filename The filename of the PMC XML file to analyze.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A tibble with the article IDs, whether a reporting-guideline statement
 #'   was found (`is_reporting_pred`), the guideline(s) named
 #'   (`reporting_guideline`), the matched statement (`reporting_text`) and
@@ -258,14 +286,14 @@
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 #' )
-#' rt_reporting_pmc(filepath, remove_ns = TRUE)
+#' rt_reporting_pmc(filepath)
 #' }
 #' @export
-rt_reporting_pmc <- function(filename, remove_ns = FALSE) {
+rt_reporting_pmc <- function(filename, remove_ns = TRUE) {
 
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
   if (inherits(article_xml, "error")) {
-    return(tibble::tibble(filename = filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
   }
 
   id_ls <- .get_ids(article_xml)
@@ -282,8 +310,8 @@ rt_reporting_pmc <- function(filename, remove_ns = FALSE) {
 #' states that it followed a reporting guideline and which one, using the same
 #' precision-first rules.
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A tibble with the filename, the PMID (if present in the file name),
+#' @inheritParams rt_coi
+#' @return A tibble with the file name (`article`), the PMID (`NA` if absent),
 #'   whether a reporting-guideline statement was found (`is_reporting_pred`), the
 #'   guideline(s) named (`reporting_guideline`) and the matched statement
 #'   (`reporting_text`).
@@ -299,19 +327,18 @@ rt_reporting_pmc <- function(filename, remove_ns = FALSE) {
 #' }
 #' @seealso [rt_reporting_pmc()] for the PMC XML detector.
 #' @export
-rt_reporting <- function(filename) {
+rt_reporting <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_reporting_txt(input$text))
+}
 
-  article <- basename(filename)
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
 
-  paper_text <- .read_txt(filename)
+# Reporting-guideline use from plain text.
+.rt_reporting_txt <- function(paper_text) {
   found <- .detect_reporting(paper_text)
-
-  tibble::as_tibble(list(
-    article = article,
-    pmid = pmid,
+  list(
     is_reporting_pred = found$is_reporting_pred,
     reporting_guideline = found$reporting_guideline,
     reporting_text = found$reporting_text
-  ))
+  )
 }

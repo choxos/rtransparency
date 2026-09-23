@@ -4,12 +4,14 @@
 \alias{rt_novelty_pmc}
 \title{Identify and extract novelty claims in PMC XML files.}
 \usage{
-rt_novelty_pmc(filename, remove_ns = FALSE)
+rt_novelty_pmc(filename, remove_ns = TRUE)
 }
 \arguments{
 \item{filename}{The name of the PMC XML as a string.}
 
-\item{remove_ns}{TRUE if an XML namespace exists, else FALSE (default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 }
 \value{
 A tibble of results. It returns the unique identifiers of the
@@ -30,6 +32,6 @@ filepath <- system.file(
 )
 
 # Identify and extract novelty claims.
-results_table <- rt_novelty_pmc(filepath, remove_ns = TRUE)
+results_table <- rt_novelty_pmc(filepath)
 }
 }

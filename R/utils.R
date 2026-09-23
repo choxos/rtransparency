@@ -1,4 +1,4 @@
-' Remove fullstops that are unlikely to represent end of sentence
+#' Remove fullstops that are unlikely to represent end of sentence
 #'
 #' Returns the list of paragraphs without potentially misleading fullstops.
 #'
@@ -73,20 +73,6 @@
 }
 
 
-#' Remove hash
-#'
-#' Removes hashes to make ease creation of regular expressions.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The list of paragraphs without mentions of financial COIs.
-#' @noRd
-.obliterate_hash_1 <- function(article) {
-
-  article %>% stringr::str_replace_all("#", "")
-
-}
-
-
 #' Remove uninformative punctuation
 #'
 #' Removes irrelevant puncutation to ease creation of regular expressions.
@@ -116,24 +102,6 @@
   article %>% stringr::str_replace_all("\n", " ")
 
 }
-
-
-#' Remove references
-#'
-#' Returns the list of paragraphs without references.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The list of paragraphs without misleading fullstops.
-#' @noRd
-.obliterate_refs_1 <- function(article) {
-
-  # Built like this to avoid destabilizing the algorithm
-  article <- gsub("^.*\\([0-9]{4}\\).*$", "References", article)
-  article <- gsub("^.* et al\\..*$", "References", article)
-
-  return(article)
-}
-
 
 
 #' Remove author contribution statements
@@ -179,160 +147,79 @@
 }
 
 
-#' Find the index of the references
+#' Transliterate text to ASCII, identically on every platform.
 #'
-#' Returns the index with the elements of interest. More generic than _1.
+#' `iconv(x, to = "ASCII//TRANSLIT")` depends on the system iconv: glibc turns
+#'     "erkl\u00e4ren" into "erklaren" but macOS libiconv into "erkl\"aren", so
+#'     the detectors gave platform-dependent results for accented text. ICU's
+#'     Latin-ASCII transform (via stringi) is the same everywhere; characters it
+#'     cannot map are then dropped, as `sub = ""` did before.
 #'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the start and finish of this section.
+#' @param x A character vector.
+#' @return The ASCII character vector.
 #' @noRd
-.where_refs_txt <- function(article) {
-
-  synonyms <- .create_synonyms()
-  words <- c("References")
-  next_sentence <- "((|:|\\.)|(|:|\\.) [A-Z0-9]+.*)$"
-
-  ref_index <-
-    synonyms %>%
-    magrittr::extract(words) %>%
-    lapply(paste0, next_sentence) %>%
-    # lapply(.title) %>%
-    lapply(.encase) %>%
-    # lapply(.max_words) %>%
-    paste() %>%
-    grep(article, perl = TRUE)
-
-  # ref_synonyms <- c(
-  #   "R(?i)eferences(?-i)(| [A-Z0-9]+.*)",
-  #   "L(?i)terature(?-i)(| [A-Z0-9]+.*)",
-  #   "L(?i)iterature Cited(?-i)(| [A-Z0-9]+.*)",
-  #   "N(?i)otes and References(?-i)(| [A-Z0-9]+.*)",
-  #   "W(?i)orks Cited(?-i)(| [A-Z0-9]+.*)",
-  #   "^C(?i)itations(?-i)(| [A-Z0-9]+.*)",
-  #   "B(?i)ibliographic references(?-i)(| [A-Z0-9]+.*)",
-  #   "R(?i)eferences and recommended reading(?-i)(| [A-Z0-9]+.*)"
-  # )
-
-  # no "^" b/c of UTF-8 characters, e.g. "\\fReferences"
-  # regex <- paste0("(", paste(ref_synonyms, collapse = "|"), ")$")
-  # ref_index <- grep(regex, article, perl = TRUE)
-
-  if (!!length(ref_index)) {
-
-    ref_index <- ref_index[length(ref_index)]
-
-  } else {
-
-    ref_index <- grep("^1(|\\.)\\s+[A-Z]", article)
-    if (!!length(ref_index)) ref_index <- ref_index[length(ref_index)]
-
-  }
-  return(ref_index)
+.to_ascii <- function(x) {
+  x <- stringi::stri_trans_general(x, "Latin-ASCII")
+  iconv(x, from = "UTF-8", to = "ASCII", sub = "")
 }
 
 
-#' Restrict to text after the body of the article and references
-#'
-#' Returns the index with the elements of interest. More generic than _1.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the start and finish of this section.
+#' Clean paragraphs of plain text: drop invalid UTF-8 bytes and turn control
+#'     characters (form feeds and the like from PDF conversion) into spaces.
+#'     Replaces utf8::utf8_encode(), whose output depends on the session
+#'     locale (it escapes non-ASCII text outside UTF-8 locales).
 #' @noRd
-.where_acknows_txt <- function(article) {
+.clean_txt <- function(x) {
+  x <- iconv(x, from = "UTF-8", to = "UTF-8", sub = "")
+  gsub("[\\x01-\\x08\\x0b-\\x1f\\x7f]", " ", x, perl = TRUE)
+}
 
-  acknow_index <- get_acknow_2(article)
-  fund_index <- get_fund_2(article)
-  finance_index <- get_financial_1(article)
-  grant_index <- get_grant_1(article)
 
-  if (length(acknow_index) > 0) acknow_index <- acknow_index[length(acknow_index)]
-  if (length(fund_index) > 0) fund_index <- fund_index[1]
-  if (length(finance_index) > 0) finance_index <- finance_index[1]
-  if (length(grant_index) > 0) grant_index <- grant_index[1]
-
-  all <- c(acknow_index, fund_index, finance_index, grant_index)
-
-  from <- integer()
-  if (!!length(all)) {
-
-    all_max <- max(all)
-    all_min <- min(all)
-
-    if (all_max - all_min <= 10) {
-
-      from <- all_min
-
-    } else {
-
-      from <- all_max
-
+#' Resolve the input of a plain-text detector.
+#'
+#' Every plain-text detector accepts either the path to a text file or the text
+#'     itself. This returns the text as one string with LF line endings,
+#'     together with the `article` (file name) and `pmid` (the digits after
+#'     "PMID" in the file name) identifiers; both are `NA` for direct text.
+#'
+#' @param filename The path to a text file, or `NULL`.
+#' @param text A character vector of text (joined with line breaks), or `NULL`.
+#' @return A list with `text`, `article` and `pmid`.
+#' @noRd
+.txt_input <- function(filename = NULL, text = NULL) {
+  if (!is.null(text)) {
+    if (!is.null(filename)) {
+      stop("Supply either `filename` or `text`, not both.", call. = FALSE)
     }
+    if (!is.character(text)) {
+      stop("`text` must be a character vector.", call. = FALSE)
+    }
+    text <- text[!is.na(text)]
+    return(list(text = gsub("\r\n?", "\n", paste(text, collapse = "\n")),
+                article = NA_character_, pmid = NA_character_))
   }
-  return(from)
+  if (!is.character(filename) || length(filename) != 1 || is.na(filename) ||
+      !file.exists(filename)) {
+    stop("`filename` must be the path to an existing text file ",
+         "(or supply the text itself via `text`).", call. = FALSE)
+  }
+  list(text = .read_txt(filename), article = basename(filename),
+       pmid = .pmid_from_filename(filename))
 }
 
 
-
-#' Find the Methods section
-#'
-#' Find the index of the start of the Methods section.
-#'
-#' @param article The text as a vector of strings.
-#' @return Index of element with phrase of interest
+#' The PubMed ID encoded in a file name as "PMID<digits>", or NA.
 #' @noRd
-.where_methods_txt  <- function(article) {
+.pmid_from_filename <- function(filename) {
+  m <- regmatches(basename(filename), regexpr("PMID[0-9]+", basename(filename)))
+  if (length(m)) sub("^PMID", "", m) else NA_character_
+}
 
-  method_index <- integer()
 
-  synonyms <- .create_synonyms()
-  words <- c("Methods", "Abstract", "Results", "Conclusion")
-
-  method_index <-
-    synonyms %>%
-    magrittr::extract(words[1]) %>%
-    lapply(.title_strict) %>%
-    lapply(stringr::str_sub, end = -2) %>%  # remove the $
-    # lapply(paste, "($|\\s+[A-Z]") %>%  # TODO: if too sensitive, uncomment
-    lapply(.encase) %>%
-    paste() %>%
-    grep(article, perl = TRUE)
-
-  if (!!length(method_index)) {
-
-    method_index <- method_index[length(method_index)]
-    return(method_index)
-
-    # TODO: if too sensitive, uncomment
-    # is_abstract <-
-    #   synonyms %>%
-    #   magrittr::extract(words[2:4]) %>%
-    #   grepl(article[(method_index - 3):(method_index + 3)]) %>%
-    #   any()
-    #
-    # if (!is_abstract) {
-    #
-    #   return(method_index)
-    #
-    # }
-  }
-
-  method_index <-
-    synonyms %>%
-    magrittr::extract(words[1]) %>%
-    lapply(.title_strict, within_text = TRUE) %>%
-    lapply(paste, "[A-Z]", sep = "\\s*") %>%
-    lapply(.encase) %>%
-    paste() %>%
-    grep(article, perl = TRUE)
-
-  if (!!length(method_index)) {
-
-    method_index <- method_index[length(method_index)]
-
-  }
-
-  return(method_index)
-
+#' One output row of a plain-text detector: the identifiers, then the fields.
+#' @noRd
+.txt_row <- function(input, fields) {
+  tibble::as_tibble(c(list(article = input$article, pmid = input$pmid), fields))
 }
 
 
@@ -406,7 +293,6 @@
 }
 
 
-
 #' Create a regex for titles
 #'
 #' Returns words designed to identify titles.
@@ -430,7 +316,6 @@
 }
 
 
-
 #' Create a regex for titles
 #'
 #' Returns words designed to identify titles.
@@ -452,41 +337,6 @@
 
   }
 }
-
-
-
-#' Create a regular expression where the first letter is capital
-#'
-#' Returns a regular expression that necessitates that the first letter is
-#'     capital and the rest can be any case.
-#'
-#' @param x A vector of strings.
-#' @param location Whether to "start", "end" or "both" with a capital letter.
-#' @return A string pattern.
-#' @noRd
-.first_capital <- function(x, location = "both") {
-
-  if (location == "both") {
-
-    return(gsub("^([A-Z])(.*)$", "\\1(?i)\\2(?-i)", x))
-
-  }
-
-  if (location == "start") {
-
-    return(gsub("^(.)(.*)$", "\\1(?i)\\2", x))
-
-  }
-
-  if (location == "end") {
-
-    return(gsub("^(.*)$", "\\1(?-i)", x))
-
-  }
-
-
-}
-
 
 
 #' A list of word synonyms
@@ -1188,6 +1038,16 @@
     "C(?i)onflicting of interest(|s)(?-i)",
     "C(?i)onflits d'int(?-i)",
     "C(?i)onflictos de Inter(?-i)",
+    # Other languages' section titles. "." stands for any apostrophe (' or
+    # a typographic one) so "d'int" and "d\u2019int" both match.
+    "C(?i)onflits? d.int(?-i)",                    # FR conflit(s) d'interets
+    "L(?i)iens? d.int(?-i)",                       # FR lien(s) d'interets
+    "D(?i)[e\u00e9]claration de liens? d.int(?-i)", # FR declaration de liens
+    "C(?i)onflictos? de inter(?-i)",               # ES conflicto(s) de interes
+    "C(?i)onflitos? de interesses?(?-i)",          # PT conflito(s) de interesse(s)
+    "C(?i)onflitt[oi] d.interess[ei](?-i)",        # IT conflitto d'interessi
+    "C(?i)onflitt[oi] di interess[ei](?-i)",       # IT conflitto di interessi
+    "I(?i)nteressenkonflikte?(?-i)",               # DE Interessenkonflikt(e)
     "C(?i)ompeting interest(|s)(?-i)",
     "C(?i)ompeting interest(|s) declaration(?-i)",
     "C(?i)ompeting of interest(|s)(?-i)",

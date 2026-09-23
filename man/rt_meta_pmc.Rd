@@ -4,13 +4,14 @@
 \alias{rt_meta_pmc}
 \title{Extract article metadata from a PMC XML file.}
 \usage{
-rt_meta_pmc(filename, remove_ns = FALSE)
+rt_meta_pmc(filename, remove_ns = TRUE)
 }
 \arguments{
 \item{filename}{The path to the PMC XML file as a string.}
 
-\item{remove_ns}{TRUE if an XML namespace should be removed, else FALSE
-(default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 }
 \value{
 A one-row tibble of metadata. The column `is_success` indicates
@@ -27,6 +28,6 @@ Reads a PMC XML file and returns its metadata as a one-row data frame:
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_meta_pmc(filepath, remove_ns = TRUE)
+rt_meta_pmc(filepath)
 }
 }

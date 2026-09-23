@@ -32,7 +32,7 @@ test_that("rt_all_pmc_dir accepts an explicit vector of paths", {
 
   res <- rt_all_pmc_dir(paths, remove_ns = TRUE, progress = FALSE)
   expect_equal(nrow(res), 2L)
-  expect_setequal(res$filename, paths)
+  expect_setequal(res$filename, normalizePath(paths, winslash = "/"))
 })
 
 
@@ -48,12 +48,66 @@ test_that("rt_all_pmc_dir isolates per-file failures", {
   bad  <- file.path(d, "bad.xml")
   file.copy(src, good)
   writeLines("this is not xml <<<", bad)
+  good <- normalizePath(good, winslash = "/")
+  bad <- normalizePath(bad, winslash = "/")
 
   res <- rt_all_pmc_dir(c(good, bad), remove_ns = TRUE, progress = FALSE)
 
   expect_equal(nrow(res), 2L)
   expect_false(res$is_success[res$filename == bad])
   expect_true(res$is_success[res$filename == good])
+  expect_true(nzchar(res$error[res$filename == bad]))
+  expect_true(is.na(res$error[res$filename == good]))
+})
+
+
+test_that("rt_all_pmc_dir output survives a first chunk of failures", {
+  src <- system.file("extdata", "PMID32171256-PMC7071725.xml",
+                     package = "rtransparency")
+  skip_if(!nzchar(src), "bundled XML not found")
+
+  d <- tempfile("rtbatch_")
+  dir.create(d)
+  on.exit(unlink(d, recursive = TRUE), add = TRUE)
+  bad  <- file.path(d, "a_bad.xml")
+  good <- file.path(d, "b_good.xml")
+  writeLines("not xml", bad)
+  file.copy(src, good)
+  good <- normalizePath(good, winslash = "/")
+  out <- tempfile(fileext = ".csv")
+  on.exit(unlink(out), add = TRUE)
+
+  # The first chunk has only the failure's three columns; the second must widen
+  # the file rather than be appended under the wrong header.
+  rt_all_pmc_dir(c(bad, good), output = out, progress = FALSE, chunk_size = 1L)
+  back <- readr::read_csv(out, show_col_types = FALSE)
+  expect_equal(nrow(back), 2L)
+  expect_true("is_coi_pred" %in% names(back))
+  expect_true(back$is_success[back$filename == good])
+})
+
+
+test_that("rt_all_pmc_dir resumes when the same files are given by another path", {
+  src <- system.file("extdata", "PMID32171256-PMC7071725.xml",
+                     package = "rtransparency")
+  skip_if(!nzchar(src), "bundled XML not found")
+
+  d <- tempfile("rtbatch_")
+  dir.create(d)
+  on.exit(unlink(d, recursive = TRUE), add = TRUE)
+  file.copy(src, file.path(d, c("a.xml", "b.xml")))
+  out <- tempfile(fileext = ".csv")
+  on.exit(unlink(out), add = TRUE)
+
+  rt_all_pmc_dir(file.path(d, c("a.xml", "b.xml")), output = out,
+                 progress = FALSE)
+  # Same files, reached through a "sub/.." detour: nothing is left to process,
+  # so the output is not grown with duplicate rows.
+  dir.create(file.path(d, "sub"))
+  again <- file.path(d, "sub", "..", c("a.xml", "b.xml"))
+  res <- rt_all_pmc_dir(again, output = out, progress = FALSE)
+  expect_equal(nrow(res), 2L)
+  expect_equal(nrow(readr::read_csv(out, show_col_types = FALSE)), 2L)
 })
 
 
@@ -80,6 +134,7 @@ test_that("rt_all_pmc_dir resumes from and appends to an existing output", {
   r2 <- rt_all_pmc_dir(d, remove_ns = TRUE, output = out, progress = FALSE)
   expect_equal(nrow(r2), 3L)
   expect_setequal(basename(r2$filename), c("a.xml", "b.xml", "c.xml"))
+  expect_equal(nrow(readr::read_csv(out, show_col_types = FALSE)), 3L)
 })
 
 

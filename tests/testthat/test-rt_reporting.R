@@ -94,3 +94,35 @@ test_that("rt_reporting_pmc returns is_success = FALSE on a malformed file", {
   f <- tempfile(fileext = ".xml"); writeLines("<broken", f); on.exit(unlink(f))
   expect_false(rt_reporting_pmc(f, remove_ns = TRUE)$is_success)
 })
+
+test_that("recommendations are not adherence, and non-use vetoes are clause-local", {
+  detect <- function(x) rtransparency:::.detect_reporting(x)$is_reporting_pred
+  expect_false(detect("Future studies should follow the CONSORT statement."))
+  expect_false(detect("Authors should adhere to the PRISMA guidelines when reporting systematic reviews."))
+  expect_false(detect("We recommend that researchers follow the ARRIVE guidelines."))
+  expect_false(detect("The STROBE guideline was not used because this is a qualitative study."))
+  expect_false(detect("It was not possible to follow the CONSORT checklist."))
+  expect_false(detect(paste("A search using all the core terms yielded zero papers;",
+                            "therefore, a standard PRISMA compliant search method could not be used.")))
+
+  expect_true(detect("This study adheres to CONSORT guidelines; however, blinding was not possible."))
+  expect_true(detect("The study was conducted and reported as recommended by the PRISMA statement."))
+  expect_true(detect("El estudio se reporto seg\u00fan la declaraci\u00f3n STROBE."))
+})
+
+test_that("a citation marker glued to a guideline name does not hide it", {
+  f <- tempfile(fileext = ".xml")
+  writeLines(paste0(
+    '<article><front><article-meta/></front><body><p>The review was reported ',
+    'following PRISMA<xref ref-type="bibr" rid="B1">12</xref>.</p></body></article>'), f)
+  expect_identical(rt_reporting_pmc(f)$reporting_guideline, "PRISMA")
+  expect_identical(rt_all_pmc(f)$reporting_guideline, "PRISMA")
+})
+
+
+test_that("a non-use veto does not cross a relative clause about participants", {
+  detect <- function(x) rtransparency:::.detect_reporting(x)$is_reporting_pred
+  expect_true(detect("The CONSORT flow diagram shows the patients who were not followed up."))
+  expect_false(detect("The PRISMA statement that was not used in this review is described elsewhere."))
+  expect_false(detect("The STROBE guideline was not used because this is a qualitative study."))
+})

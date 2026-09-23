@@ -30,12 +30,12 @@ library(rtransparency)
 xml <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-one <- rt_all_pmc(xml, remove_ns = TRUE)
+one <- rt_all_pmc(xml)
 one[, c("pmid", "is_coi_pred", "is_fund_pred", "is_register_pred")]
 ```
 
 To study a corpus you run a detector over many files and stack the rows;
-`purrr::map_dfr(files, rt_all_pmc, remove_ns = TRUE)` returns all ten
+`purrr::map_dfr(files, rt_all_pmc)` returns all ten
 indicators per article in one pass. The result is one row per article with the
 indicator columns `is_coi_pred`, `is_fund_pred`, `is_register_pred`,
 `is_open_data`, `is_open_code`, `is_novelty_pred`, `is_replication_pred`,
@@ -90,20 +90,34 @@ The accuracy values come from [`rt_accuracy`](../reference/rt_accuracy.html):
 rt_accuracy
 ```
 
-AI-use disclosure has no bundled accuracy estimate here, so its corrected value
-is `NA`. Novelty's estimate comes from a hand-labeled gold set
-(`inst/benchmark/results_novelty_replication.md`); the data/code values are
-reproducible benchmark estimates for the native detector, not untouched
-external-validation estimates. Replication's correction is approximate: its
-sensitivity comes from a replication-enriched sample and its specificity from
-the representative 2023 sample, so it does not rest on the single-design
-validation of conflicts of interest, funding or registration, and the
-Rogan-Gladen interval does not propagate uncertainty in these estimates.
+AI-use disclosure and open-access licensing have no bundled accuracy estimate,
+so their corrected values are `NA`. Each row of `rt_accuracy` records where its
+estimate comes from (`source`) and the validation counts behind it (`tp`, `fn`,
+`tn`, `fp`).
+
+**The corrected interval carries the validation's uncertainty.** A detector's
+sensitivity and specificity are themselves estimates from a finite hand-labeled
+sample. By default (`adj_interval = "simulation"`) `rt_summary()` draws the
+apparent prevalence, the sensitivity and the specificity from their Jeffreys
+posteriors, corrects each draw and reports the percentile interval, so the
+corrected interval widens when the validation sample is small. For rare
+indicators (registration, code sharing, replication) this matters most: their
+correction subtracts the false-positive rate `1 - specificity`, which is only
+known to within a percentage point or so. `adj_interval = "fixed"` gives the
+narrower interval that treats the accuracy as known.
+
+**Registration is summarized over the articles its detector assesses.** When
+the data carry `is_research` (as `rt_all_pmc()` output does), the registration
+denominator is restricted to research articles and reviews, the types the
+detector assesses; set `register_assessed_only = FALSE` to count every article.
+
 To use your own validation (or the published `oddpub` values for data and
 code), pass any table with `variable`, `sensitivity` and `specificity` columns:
 
 ```{r}
-my_acc <- rt_accuracy
+# Keep only the point estimates: the bundled validation counts would no longer
+# match an edited sensitivity (rt_summary() warns when they disagree).
+my_acc <- rt_accuracy[, c("variable", "sensitivity", "specificity")]
 my_acc$sensitivity[my_acc$variable == "is_open_data"] <- 0.758
 rt_summary(rt_demo, indicators = "is_open_data", accuracy = my_acc)[,
   c("label", "percent", "adj_percent")]
@@ -172,7 +186,7 @@ A typical analysis is therefore: run a detector over your corpus, stack the
 rows, then
 
 ```r
-results <- purrr::map_dfr(xml_files, rt_all_pmc, remove_ns = TRUE)
+results <- purrr::map_dfr(xml_files, rt_all_pmc)
 rt_summary(results)                       # prevalence + corrected prevalence
 rt_score(results)                         # per-article practice count
 rt_plot(results, type = "trend", year = "year")

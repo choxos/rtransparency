@@ -875,6 +875,16 @@
     }
   }
 
+  # A heading written as a paragraph rather than a title, as in author
+  # manuscripts: <fn><p>Declaration of competing interest</p><p>None.</p></fn>.
+  # The same heading rule as the plain-text detector applies.
+  if (!nzchar(b)) {
+    paras <- article_xml %>%
+      xml2::xml_find_all("back//fn//p | back//notes//p | back//sec//p") %>%
+      xml2::xml_text()
+    b <- .coi_title_txt(paras[nzchar(trimws(paras))], dict)
+  }
+
   return(b)
 }
 
@@ -1080,7 +1090,7 @@
 
   article_processed <-
     article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     trimws() %>%
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead
@@ -1184,7 +1194,9 @@
 #'     exists, it extracts it.
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A dataframe of results. It returns unique article identifiers,
 #'     whether this article was deemed relevant to COI, whether a COI was found,
 #'     the text that suggested the presence of COI and the name of the function
@@ -1199,20 +1211,14 @@
 #' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_coi_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_coi_pmc(filepath)
 #' }
 #' @export
-rt_coi_pmc <- function(filename, remove_ns = FALSE) {
+rt_coi_pmc <- function(filename, remove_ns = TRUE) {
 
   index <- integer()
   dict <- .create_synonyms()
 
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
 
   # Way faster than index_any[["reg_title_pmc"]] <- NA
   index_any <- list(
@@ -1263,13 +1269,13 @@ rt_coi_pmc <- function(filename, remove_ns = FALSE) {
 
   if (inherits(article_xml, "error")) {
 
-    return(tibble::tibble(filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
 
   }
 
 
   # Extract IDs
-  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, TRUE)))
+  out %<>% purrr::list_modify(!!!.get_ids(article_xml))
 
 
   # Capture coi fn elements
@@ -1338,7 +1344,7 @@ rt_coi_pmc <- function(filename, remove_ns = FALSE) {
   # .xml_preprocess(article_xml)  # 5x faster to obliterate within each section
   article_processed <-
     article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     trimws() %>%
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead

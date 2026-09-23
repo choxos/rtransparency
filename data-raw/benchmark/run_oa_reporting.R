@@ -5,14 +5,14 @@
 # was read and hand-labeled by the maintainer (columns is_open_access_label,
 # oa_license_label, is_reporting_label, reporting_guideline_label).
 #
-# The PMC XML is read from $RT_XML_DIR (default /tmp/newcache/xml); files are
+# The PMC XML is read from $RT_XML_DIR (default data-raw/benchmark/.cache); files are
 # fetched by PMCID with the package's internal NCBI EFetch helper if absent.
 # Re-run with:  Rscript data-raw/benchmark/run_oa_reporting.R
 
 suppressMessages(devtools::load_all(quiet = TRUE))
 
 labels <- read.csv("data-raw/benchmark/labels_oa_reporting.csv", stringsAsFactors = FALSE)
-xml_dir <- Sys.getenv("RT_XML_DIR", "/tmp/newcache/xml")
+xml_dir <- Sys.getenv("RT_XML_DIR", "data-raw/benchmark/.cache")
 dir.create(xml_dir, recursive = TRUE, showWarnings = FALSE)
 
 # Set RT_NO_FETCH=1 to fail fast on missing XML instead of fetching from NCBI.
@@ -134,7 +134,7 @@ sprintf("open-access subset contains only %d non-open article(s) (classified", o
 "## Reproducing", "",
 "The PMC XML corpus is **not committed** (too large for an R package): the script",
 "fetches each article by PMCID from NCBI EFetch into `$RT_XML_DIR`",
-"(default `/tmp/newcache/xml`) and caches it. Set `RT_NO_FETCH=1` to validate",
+"(default `data-raw/benchmark/.cache`) and caches it. Set `RT_NO_FETCH=1` to validate",
 "strictly against a pre-populated cache; the run then aborts if any XML is",
 "missing rather than writing a partial benchmark.")
 writeLines(md, "inst/benchmark/results_oa_reporting.md")

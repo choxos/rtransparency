@@ -4,15 +4,18 @@
 \alias{rt_data_code_pmc}
 \title{Identify and extract Data and Code sharing from PMC XML files.}
 \usage{
-rt_data_code_pmc(filename, remove_ns = TRUE, specificity = "low")
+rt_data_code_pmc(filename, remove_ns = TRUE, specificity = NULL)
 }
 \arguments{
 \item{filename}{The filename of the XML file to be analyzed as a string.}
 
-\item{remove_ns}{TRUE if an XML namespace exists, else FALSE (default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 
-\item{specificity}{Retained for backward compatibility; it no longer changes
-the result. The native detector extracts a fixed, broad set of article
+\item{specificity}{Deprecated and ignored (it has not changed the result
+since the native detector replaced oddpub); supplying it gives a
+warning, and it will be removed in a future release. The native detector extracts a fixed, broad set of article
 text (body paragraphs and titles, back matter, footnotes and supplements)
 and applies repository, accession and availability-statement patterns.}
 }
@@ -25,7 +28,11 @@ A dataframe of results: the unique IDs of the article, whether data or
     (\code{open_data_links}, \code{open_code_links}). The links are the DOIs
     (as \code{doi.org} URLs), repository URLs and database accessions (as
     identifiers.org \code{prefix:accession}) extracted from the statements,
-    separated by \code{" ; "}.
+    separated by \code{" ; "}. \code{has_das} records whether the article
+    has a data-availability section (tagged, or titled as such) and
+    \code{das_text} holds its text: having the statement is itself a
+    reporting indicator, separate from whether data were actually shared
+    (a statement can say data are available only on request).
 }
 \description{
 Takes a PMC XML file and returns data related to the presence of Data or
@@ -42,6 +49,6 @@ filepath <- system.file(
 )
 
 # Identify and extract indicators of data and code sharing
-results_table <- rt_data_code_pmc(filepath, remove_ns = TRUE)
+results_table <- rt_data_code_pmc(filepath)
 }
 }

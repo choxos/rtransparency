@@ -4,17 +4,21 @@
 \alias{rt_fund}
 \title{Identify and extract Funding statements in TXT files.}
 \usage{
-rt_fund(filename)
+rt_fund(filename = NULL, text = NULL)
 }
 \arguments{
-\item{filename}{The name of the TXT file as a string.}
+\item{filename}{The path to a TXT file as a string.}
+
+\item{text}{Alternatively, the article text itself as a character vector
+(for example the output of [rt_read_pdf()]). Supply `filename` or `text`.}
 }
 \value{
-A dataframe of results. It returns the PMID (if this was part of the
-    filename), whether a funding statement was found, what this statement
-    was and the name of the function that identified this text. The functions
-    are returned to add flexibility in how this package is used, such as
-    future definitions of COI that may differ from the one we used.
+A tibble with the file name (`article`), the PMID (`NA` if absent),
+    whether a statement that funding was received was found
+    (`is_fund_pred`) and the statement (`fund_text`). These are the same
+    column names as [rt_fund_pmc()] and [rt_all_pmc()]. The former names
+    `is_funded_pred` and `funding_text` are still returned, as deprecated
+    copies, and will be removed in a future release.
 }
 \description{
 Takes a TXT file and returns data related to the presence of a Funding

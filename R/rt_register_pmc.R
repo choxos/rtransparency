@@ -1,18 +1,3 @@
-#' Identify mentions of registration on ClinicalTrials.gov
-#'
-#' Extract the index of mentions such as: "The study is registered at
-#'     www.clinicaltrials.gov (NCT01624883)."
-#'
-#' @param article A string or a list of strings.
-#' @return Index of element with phrase of interest
-#' @noRd
-.which_ct_1 <- function(article) {
-
-  # Just using the NCT was too sensitive
-  # e.g. picked up references to protocols, mentions of trials underway, etc.
-  grep("\\b(|pre|pre-)regist.{0,20}NCT[0-9]{8}", article, perl = TRUE)
-
-}
 
 
 #' Identify mentions of registration on ClinicalTrials.gov
@@ -454,8 +439,6 @@
 }
 
 
-
-
 #' Identify registration titles - sensitive with negation
 #'
 #' Extract the index of mentions such as: "Study registration: ..."
@@ -810,21 +793,6 @@
 }
 
 
-#' Identify mentions of protocol
-#'
-#' Extract the index of mentions such as: "Alliance for Clinical Trials in
-#'     Oncology (formerly Cancer and Leukemia Group B) Protocol #369901"
-#'
-#' @param article A string or a list of strings.
-#' @return Index of element with phrase of interest
-#' @noRd
-.which_protocol_2 <- function(article) {
-
-  grep("[Pp]rotocol .{0,5}(|[A-Z]+)[0-9]{5}", article, perl = TRUE)
-
-}
-
-
 #' Identify mentions of funding followed by NCT
 #'
 #' Extract the index of mentions such as: "Funded by: the National Heart, Lung,
@@ -887,20 +855,6 @@
 }
 
 
-#' Negate titles that mention that there was no registration
-#'
-#' Negate mentions such as "Clinical Trial Registration: N/A"
-#'
-#' @param article A string or a list of strings.
-#' @return Index of element with phrase of interest
-#' @noRd
-.negate_reg_title_2 <- function(article) {
-
-  article %>% stringr::str_detect("\\bNA\\b|\\bN/A\\b|not registered")
-
-}
-
-
 #' Remove mentions of previously reported registered studies
 #'
 #' Removes mentions such as: "An active o <- servational cohort study was
@@ -925,35 +879,6 @@
 
   # TODO: This to be inserted only for .which_ct_2!
 
-}
-
-
-#' Remove references
-#'
-#' Removes mentions such as: "An active observational cohort study was
-#'     conducted as previously reported (ClinicalTrials.gov identifier
-#'     NCT01280162) [16]."
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The list of paragraphs without mentions of financial COIs.
-#' @noRd
-.obliterate_references_1 <- function(article) {
-
-  # If within References or under references and starts with 1. or contains et al. then remove.
-
-  ref_from <- .where_refs_txt(article)
-
-  if (!!length(ref_from)) {
-
-    ref_to <- length(article)
-
-    article[ref_from] <- ""
-    article[ref_from:ref_to] <-
-      gsub("^([0-9]{1,3}\\.\\s|.*et al\\.).*$", "",
-           article[ref_from:ref_to], perl = TRUE)
-
-  }
-  return(article)
 }
 
 
@@ -1034,7 +959,6 @@
 
   return(b)
 }
-
 
 
 #' Identify mentions of registration on ISRCTN
@@ -1292,7 +1216,6 @@
   }
 
 
-
   # TODO Consider adding unique
   article <-
     article_ls[c("ack", "methods", "abstract", "footnotes")] %>%
@@ -1327,7 +1250,7 @@
   # Text pre-processing
   article_processed <-
     article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     trimws() %>%
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead
@@ -1437,7 +1360,6 @@
 }
 
 
-
 #' Identify and extract Conflicts of Interest statements in PMC XML files.
 #'
 #' Takes a PMC XML file and returns data related to the
@@ -1445,7 +1367,9 @@
 #'     exists. If a Funding statement exists, it extracts it.
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A dataframe of results. It returns the unique article identifiers,
 #'     whether this article was deemed a research, review or systematic review,
 #'     whether the text was deemed relevant to registration (e.g. contained the
@@ -1466,406 +1390,39 @@
 #' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_register_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_register_pmc(filepath)
 #' }
 #' @export
-rt_register_pmc <- function(filename, remove_ns = FALSE) {
+rt_register_pmc <- function(filename, remove_ns = TRUE) {
 
-  # TODO Update to match format of rt_coi_pmc.
-
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
-
-  var_names <- c(
-    "pmid",
-    "pmcid_pmc",
-    "pmcid_uid",
-    "doi"
-  )
-
-  # Creating and outputting these lists adds negligible time
-  # Way faster than index_any[["reg_title_pmc"]] <- NA
-  index_any <- list(
-    reg_title_pmc = NA,
-    prospero_1 = NA,
-    prospero_2 = NA,
-    prospero_redacted_1 = NA,
-    ct_4 = NA,
-    registered_1 = NA,
-    registered_2 = NA,
-    registered_3 = NA,
-    registered_4 = NA,
-    registered_5 = NA,
-    not_registered_1 = NA,
-    registration_1 = NA,
-    registration_2 = NA,
-    registration_3 = NA,
-    registration_4 = NA,
-    registry_1  = NA,
-    reg_title_1 = NA,
-    reg_title_2 = NA,
-    reg_title_3 = NA,
-    reg_title_4 = NA,
-    funded_ct_1 = NA,
-    isrctn_1    = NA,
-    anzctr_1    = NA,
-    drks_1      = NA,
-    irct_1      = NA,
-    umin_1      = NA,
-    chictr_1    = NA,
-    inplasy_1   = NA,
-    osf_protocol_1 = NA,
-    osf_preregistered_1 = NA
-  )
-
-  index_method <- list(
-    ct_2 = NA,
-    ct_3 = NA,
-    protocol_1 = NA
-  )
-
-  out <- list(  # do not change order of pmid:doi - id extraction depends on it
-    pmid = NA,
-    pmcid_pmc = NA,
-    pmcid_uid = NA,
-    doi = NA,
-    is_research = NA,
-    is_review = NA,
-    is_slr = FALSE,
-    is_relevant = NA,
-    is_method = NA,
-    is_NCT = NA,
-    is_register_pred = FALSE,
-    register_text = "",
-    is_explicit = NA
-  )
-
-
-  # A lot of the PMC XML files are malformed
-  article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
-
+  article_xml <- tryCatch(.get_xml(filename), error = function(e) e)
   if (inherits(article_xml, "error")) {
-
-    return(tibble::tibble(filename, is_success = FALSE))
-
+    return(.xml_failure(filename, article_xml))
   }
 
+  # The same core as rt_all_pmc(): article-type gate and XML title route
+  # (.get_register_pmc()), then the text rules (.rt_register_pmc()).
+  ids <- .get_ids(article_xml)
+  pmc <- .get_register_pmc(article_xml)
+  res <- .rt_register_pmc(.get_article_txt(article_xml), pmc, .create_synonyms())
+  reg <- purrr::list_modify(pmc, !!!res)
 
-  # Extract IDs
-  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, TRUE)))
-  # out <-
-  #   xpath %>%
-  #   lapply(.get_text, article_xml = article_xml, find_first = TRUE) %>%
-  #   {purrr::list_modify(out, !!!.)}
-
-
-  # Check for type
-  # Definitions at PMC -> Tagging Guidelines -> Document Objects
-  research_types <- c(
-    "research-article",
-    "protocol",
-    "letter",
-    "brief-report",
-    "data-paper"
-  )
-
-  review_types <- c(
-    "review-article",  # SLRs can also be labelled as review-article...
-    "systematic-review"
-  )
-
-  type <- article_xml %>% xml2::xml_attr("article-type")
-
-  out$is_research <- magrittr::is_in(type, research_types)
-  out$is_review <- magrittr::is_in(type, review_types)
-
-  if (!out$is_research & !out$is_review) {
-
-    return(tibble::as_tibble(c(out, index_any, index_method)))
-
-  }
-
-  # Check for SLR (code is marginally faster without this)
-  # if (out$is_review) {
-  #
-  #   txt <- xml_text(article_xml)
-  #   out$is_slr <- grepl("systematic review", txt, ignore.case = TRUE)
-  #
-  #   if (!out$is_slr) {
-  #
-  #     return(tibble::as_tibble(c(out, index_any, index_method)))
-  #
-  #   }
-  # }
-
-
-  # Go through titles
-  title_txt <- .get_register_pmc_title(article_xml)
-  is_title <- nchar(title_txt) > 0
-
-  if (is_title) {
-
-    index_any$reg_title_pmc <- TRUE
-    out$is_relevant <- TRUE
-    out$is_explicit <- TRUE
-    out$is_register_pred <- TRUE
-    out$register_text <- title_txt
-
-    return(tibble::as_tibble(c(out, index_any, index_method)))
-
-  }
-
-
-  # Check for relevance
-  # txt <- xml_text(article_xml)
-  # rel_regex <- "\\b(|-)([Rr]egist|(|[Cc]linical)[Tt]rial|NCT[0-9]{8}|PROSPERO)"
-  # out$is_relevant <- grepl(rel_regex, txt)
-  #
-  # if (!out$is_relevant) {
-  #
-  #   return(tibble::as_tibble(c(out, index_any, index_method)))
-  #
-  # }
-
-
-  # Check for methods (10x more costly than xml_text(article_xml))
-  # methods <- .xml_methods(article_xml)
-  # out$is_method <- !!length(methods)
-  #
-  # if (!out$is_method) {
-  #
-  #   return(tibble::as_tibble(c(out, index_any, index_method)))
-  #
-  # }
-
-
-  # Extract article text into a list
-  # article[["ack"]] <- .xml_ack(article_xml)
-  # article[["methods"]] <- .xml_methods(article_xml)
-  # article[["abstract"]] <- .xml_abstract(article_xml)
-  # article[["footnotes"]] <- .xml_footnotes(article_xml)
-
-
-  # Extract article text into a vector
-  ack <- .xml_ack(article_xml)
-  methods <- .xml_methods(article_xml)
-  abstract <- .xml_abstract(article_xml)
-  footnotes <- .xml_footnotes(article_xml)
-  article <- c(abstract, methods, footnotes, ack)
-
-  # Can use xpath, but x2 slower (8 vs 4ms) and cannot get refs
-  # article_xml %>%
-  #     xml_find_all("//text()[contains(translate(., 'REGIST', 'regist'), \
-  #                  'regist') or contains(translate(., 'TRIAL', 'trial'),\
-  #                  'trial') or contains(., 'NCT') or contains(., 'PROSPERO')\
-  #                  ]") %>%
-  #     xml_text()
-
-  # Can use article as list (negligible change in performance)
-  # article <-
-  #   list(abstract, methods, footnotes, ack) %>%
-  #   purrr::compact() %>%
-  #   purrr::map(~ keep(.x, ~ grepl(relevant_regex, .x))) %>%
-  #   purrr::compact()
-
-  # Adding PROPSERO adds negligible overhead
-  rel_regex <- "\\b(|-)([Rr]egist|(|[Cc]linical)[Tt]rial|NCT[0-9]{8}|ISRCTN|ACTRN|DRKS|IRCT|UMIN|ChiCTR|INPLASY|PROSPERO|Open Science Framework|OSF|osf\\.io|10\\.17605/OSF)"
-  article %<>% purrr::keep(stringr::str_detect, pattern = rel_regex)
-
-
-  out$is_relevant <- !!length(article)
-
-  # Check for relevance
-  if (!out$is_relevant) {
-
-    return(tibble::as_tibble(c(out, index_any, index_method)))
-
-  }
-
-  # Check for methods
-  out$is_method <- !!length(methods)
-
-  if (!out$is_method) {
-
-    return(tibble::as_tibble(c(out, index_any, index_method)))
-
-  }
-
-  # Activate if I want to check for title here.
-  # if (!!length(index_any$reg_title_pmc)) {
-  #
-  #   i <- index_any$reg_title_pmc[2]
-  #   is_true <- .negate_reg_title_1(article[i])
-  #
-  #   if (is_true) {
-  #
-  #   index <- unlist(index_any)
-  #   out[["is_register_pred"]] <- TRUE
-  #   out[["register_text"]] <- article[index] %>% paste(collapse = " ")
-  #
-  #   return(tibble::as_tibble(c(out, index_any, index_method)))
-  #   }
-  # }
-
-
-  # Text pre-processing
-  # .xml_preprocess(article_xml)  # 5x faster to obliterate within each section
-  article_processed <-
-    article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
-    .obliterate_fullstop_1() %>%
-    .obliterate_semicolon_1() %>%  # adds minimal overhead
-    .obliterate_comma_1() %>%   # adds minimal overhead
-    .obliterate_apostrophe_1() %>%
-    .obliterate_punct_1() %>%
-    .obliterate_line_break_1() %>%
-    .obliterate_refs_2()
-
-  # Way faster than: out[["is_NCT"]] <- ...
-  out$is_NCT <- purrr::some(article, stringr::str_detect, "NCT[0-9]{8}")
-
-  dict <- .create_synonyms()
-  index_any$reg_title_pmc <- integer()
-  index_any$prospero_1 <- .which_prospero_1(article_processed)
-  index_any$prospero_2 <- .which_prospero_2(article_processed)
-  index_any$prospero_redacted_1 <- .which_prospero_redacted_1(article_processed)
-  index_any$ct_4 <- .which_ct_4(article_processed)
-  index_any$registered_1 <- .which_registered_1(article_processed, dict)
-  index_any$registered_2 <- .which_registered_2(article_processed, dict)
-  index_any$registered_3 <- .which_registered_3(article_processed, dict)
-  index_any$registered_4 <- .which_registered_4(article_processed, dict)
-  index_any$registered_5 <- .which_registered_5(article_processed, dict)
-  index_any$not_registered_1 <- .which_not_registered_1(article_processed, dict)
-  index_any$registration_1 <- .which_registration_1(article_processed, dict)
-  index_any$registration_2 <- .which_registration_2(article_processed, dict)
-  index_any$registration_3 <- .which_registration_3(article_processed)
-  index_any$registration_4 <- .which_registration_4(article_processed, dict)
-  index_any$registry_1 <- .which_registry_1(article_processed, dict)
-  index_any$reg_title_1 <- .which_reg_title_1(article_processed, dict)
-  index_any$reg_title_2 <- .which_reg_title_2(article_processed)
-  index_any$reg_title_3 <- .which_reg_title_3(article_processed, dict)
-  index_any$reg_title_4 <- .which_reg_title_4(article_processed, dict)
-  index_any$funded_ct_1 <- .which_funded_ct_1(article_processed, dict)
-  index_any$isrctn_1    <- .which_isrctn_1(article_processed)
-  index_any$anzctr_1    <- .which_anzctr_1(article_processed)
-  index_any$drks_1      <- .which_drks_1(article_processed)
-  index_any$irct_1      <- .which_irct_1(article_processed)
-  index_any$umin_1      <- .which_umin_1(article_processed)
-  index_any$chictr_1    <- .which_chictr_1(article_processed)
-  index_any$inplasy_1   <- .which_inplasy_1(article_processed)
-  index_any$osf_protocol_1 <- .which_osf_protocol_1(article_processed)
-  index_any$osf_preregistered_1 <- .which_osf_preregistered_1(article_processed)
-  index <- unlist(index_any) %>% unique() %>% sort()
-
-  # Tidier but takes a median 11.0 ms vs current, which takes 10.6 ms
-#   index_any <- list(
-#     prospero_1 = NA,
-#     registered_1 = NA,
-#     registered_2 = NA,
-#     registered_3 = NA,
-#     registered_4 = NA,
-#     registered_5 = NA,
-#     not_registered_1 = NA,
-#     registration_1 = NA,
-#     registration_2 = NA,
-#     registration_3 = NA,
-#     registration_4 = NA,
-#     registry_1  = NA,
-#     reg_title_1 = NA,
-#     reg_title_2 = NA,
-#     reg_title_3 = NA,
-#     reg_title_4 = NA,
-#     funded_ct_1 = NA
-#   )
-#
-#   func <- list(
-#     .which_prospero_1,
-#     .which_registered_1,
-#     .which_registered_2,
-#     .which_registered_3,
-#     .which_registered_4,
-#     .which_registered_5,
-#     .which_not_registered_1,
-#     .which_registration_1,
-#     .which_registration_2,
-#     .which_registration_3,
-#     .which_registration_4,
-#     .which_registry_1,
-#     .which_reg_title_1,
-#     .which_reg_title_2,
-#     .which_reg_title_3,
-#     .which_reg_title_4,
-#     .which_funded_ct_1
-#   )
-#
-#   pepa <- article %>% purrr::invoke_map(func, .)
-#   index_any %<>% list_modify(!!!pepa)
-# }
-
-
-  if (!!length(index)) {
-
-    out$is_explicit <- !!length(unlist(index_any))
-    out$is_register_pred <- !!length(index)
-    out$register_text <- article[index] %>% paste(collapse = " ")
-
-    if (.is_false_register_statement(out$register_text)) {
-
-      out$is_register_pred <- FALSE
-      out$register_text <- ""
-      out$is_explicit <- NA
-      index <- integer()
-
-    } else {
-
-      index_any %<>% purrr::map(function(x) !!length(x))
-
-      return(tibble::as_tibble(c(out, index_any, index_method)))
-
-    }
-  }
-
-
-  # Apply a more sensitive search in Methods
-  if (out$is_method) {
-
-    # x30 faster than obliterating methods again
-    # article_processed %<>% purrr::keep(article %in% methods)
-    i <- which(article %in% methods)
-
-    # methods %<>%
-    #   .obliterate_fullstop_1() %>%
-    #   .obliterate_semicolon_1() %>%  # adds minimal overhead
-    #   .obliterate_comma_1() %>%   # adds minimal overhead
-    #   .obliterate_apostrophe_1() %>%
-    #   .obliterate_hash_1() %>%
-    #   .obliterate_backlash_1() %>%
-    #   .obliterate_line_break_1()
-    #
-    # article %<>% purrr::keep(magrittr::is_in, methods)
-
-    index_method$ct_2 <- .which_ct_2(article_processed[i], dict)
-    index_method$ct_3 <- .which_ct_3(article_processed[i], dict)
-    index_method$protocol_1 <- .which_protocol_1(article_processed[i], dict)
-
-    index <- i[unlist(index_method) %>% unique() %>% sort()]
-    index_method %<>% purrr::map(function(x) !!length(x))
-  }
-
-  out$is_register_pred <- !!length(index)
-  out$register_text <- article[index] %>% paste(collapse = " ")
-
-  index_any %<>% purrr::map(function(x) !!length(x))
-
-  if (out$is_register_pred) {
-
-    out$is_explicit <- FALSE
-
-  }
-
-  return(tibble::as_tibble(c(out, index_any, index_method)))
+  core <- c("is_relevant_reg", "is_method", "is_NCT", "is_register_pred",
+            "register_text", "is_explicit_reg")
+  tibble::as_tibble(c(
+    ids,
+    list(
+      is_research = reg$is_research,
+      is_review = reg$is_review,
+      is_slr = FALSE,
+      is_relevant = reg$is_relevant_reg,
+      is_method = reg$is_method,
+      is_NCT = reg$is_NCT,
+      is_register_pred = reg$is_register_pred,
+      register_text = reg$register_text,
+      is_explicit = reg$is_explicit_reg,
+      reg_title_pmc = reg$is_reg_pmc_title
+    ),
+    res[setdiff(names(res), core)]
+  ))
 }

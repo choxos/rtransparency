@@ -4,13 +4,16 @@
 \alias{rt_reporting}
 \title{Identify use of a reporting guideline from a TXT file.}
 \usage{
-rt_reporting(filename)
+rt_reporting(filename = NULL, text = NULL)
 }
 \arguments{
-\item{filename}{The name of the TXT file as a string.}
+\item{filename}{The path to a TXT file as a string.}
+
+\item{text}{Alternatively, the article text itself as a character vector
+(for example the output of [rt_read_pdf()]). Supply `filename` or `text`.}
 }
 \value{
-A tibble with the filename, the PMID (if present in the file name),
+A tibble with the file name (`article`), the PMID (`NA` if absent),
   whether a reporting-guideline statement was found (`is_reporting_pred`), the
   guideline(s) named (`reporting_guideline`) and the matched statement
   (`reporting_text`).

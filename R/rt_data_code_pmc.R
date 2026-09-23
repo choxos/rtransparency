@@ -7,9 +7,12 @@
 #'     depends on \code{oddpub} or \code{tokenizers}.
 #'
 #' @param filename The filename of the XML file to be analyzed as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
-#' @param specificity Retained for backward compatibility; it no longer changes
-#'     the result. The native detector extracts a fixed, broad set of article
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
+#' @param specificity Deprecated and ignored (it has not changed the result
+#'     since the native detector replaced oddpub); supplying it gives a
+#'     warning, and it will be removed in a future release. The native detector extracts a fixed, broad set of article
 #'     text (body paragraphs and titles, back matter, footnotes and supplements)
 #'     and applies repository, accession and availability-statement patterns.
 #' @return A dataframe of results: the unique IDs of the article, whether data or
@@ -20,7 +23,11 @@
 #'     (\code{open_data_links}, \code{open_code_links}). The links are the DOIs
 #'     (as \code{doi.org} URLs), repository URLs and database accessions (as
 #'     identifiers.org \code{prefix:accession}) extracted from the statements,
-#'     separated by \code{" ; "}.
+#'     separated by \code{" ; "}. \code{has_das} records whether the article
+#'     has a data-availability section (tagged, or titled as such) and
+#'     \code{das_text} holds its text: having the statement is itself a
+#'     reporting indicator, separate from whether data were actually shared
+#'     (a statement can say data are available only on request).
 #' @examples
 #' \donttest{
 #' # Path to PMC XML
@@ -29,17 +36,22 @@
 #' )
 #'
 #' # Identify and extract indicators of data and code sharing
-#' results_table <- rt_data_code_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_data_code_pmc(filepath)
 #' }
 #' @export
-rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
+rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = NULL) {
+
+  if (!is.null(specificity)) {
+    warning("`specificity` is deprecated and ignored; it will be removed in a ",
+            "future release.", call. = FALSE)
+  }
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
 
   if (inherits(article_xml, "error")) {
 
-    return(tibble::tibble(filename = filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
 
   }
 
@@ -64,6 +76,8 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
       is_open_code = found$is_open_code,
       open_code_statements = found$code_text,
       open_code_links = paste(code_links, collapse = " ; "),
+      has_das = nzchar(das_text <- .get_das_pmc(article_xml)),
+      das_text = das_text,
       is_success = TRUE
     )
   ))
@@ -77,7 +91,9 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
 #'     or Code exist, it will extract the relevant text for each.
 #'
 #' @param filenames A list of the PMC XML filenames as strings.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @param specificity Retained for backward compatibility; see
 #'     \code{\link{rt_data_code_pmc}}.
 #' @return A dataframe of results, one row per file.
@@ -90,10 +106,10 @@ rt_data_code_pmc <- function(filename, remove_ns = TRUE, specificity = "low") {
 #' filepaths <- list(filepath)
 #'
 #' # Identify and extract indicators of data and code sharing
-#' results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
+#' results_table <- rt_data_code_pmc_list(filepaths)
 #' }
 #' @export
-rt_data_code_pmc_list <- function(filenames, remove_ns = TRUE, specificity = "low") {
+rt_data_code_pmc_list <- function(filenames, remove_ns = TRUE, specificity = NULL) {
 
   purrr::map_dfr(filenames, function(f) {
     rt_data_code_pmc(f, remove_ns = remove_ns, specificity = specificity)

@@ -4,14 +4,17 @@
 \alias{rt_register}
 \title{Identify and extract Registration statements in TXT files.}
 \usage{
-rt_register(filename)
+rt_register(filename = NULL, text = NULL)
 }
 \arguments{
-\item{filename}{The name of the TXT file as a string.}
+\item{filename}{The path to a TXT file as a string.}
+
+\item{text}{Alternatively, the article text itself as a character vector
+(for example the output of [rt_read_pdf()]). Supply `filename` or `text`.}
 }
 \value{
-A dataframe of results. It returns the PMID (if this was part of the
-    filename and preceded by PMID), whether a registration statement was
+A tibble. It returns the file name (`article`), the PMID (`NA` if
+    absent), whether a registration statement was
     found, the identified statement, whether the text was deemed relevant
     (e.g. contained the word registration), whether a Methods section was
     identified, whether an NCT number was identified, whether a registration

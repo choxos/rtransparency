@@ -5,7 +5,7 @@
 \alias{rt_demo}
 \title{Simulated transparency indicators for a corpus of articles}
 \format{
-A tibble with 1200 rows and 11 columns:
+A tibble with 1200 rows and 13 columns:
 \describe{
   \item{pmid}{A made-up PubMed identifier (character).}
   \item{year}{Publication year, 2010-2026.}
@@ -20,6 +20,8 @@ A tibble with 1200 rows and 11 columns:
   \item{is_replication_pred}{Replication component detected.}
   \item{is_ai_pred}{Disclosure of generative-AI use detected. `NA` before
     2023, when the practice did not yet exist (see [rt_ai_pmc()]).}
+  \item{is_open_access}{Open license detected.}
+  \item{is_reporting_pred}{Reporting-guideline use detected.}
 }
 }
 \usage{

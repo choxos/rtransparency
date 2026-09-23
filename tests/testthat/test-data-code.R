@@ -234,3 +234,59 @@ test_that("code shared on the Open Science Framework is detected", {
   # Data on OSF without any code mention is not code sharing.
   expect_false(det("The data are available on OSF (https://osf.io/xyz/).")$is_open_code)
 })
+
+test_that("a request clause does not veto a concrete data deposit", {
+  springer <- paste(
+    "The datasets generated during the current study are available in the",
+    "Zenodo repository, https://doi.org/10.5281/zenodo.1234567, and further",
+    "information is available from the corresponding author on reasonable request."
+  )
+  expect_true(rtransparency:::.detect_data_code(springer)$is_open_data)
+
+  geo <- paste("RNA-seq data were deposited in GEO (GSE123456); other data are",
+               "available from the authors upon request.")
+  expect_true(rtransparency:::.detect_data_code(geo)$is_open_data)
+
+  # Request-only and genuinely unavailable data are still not sharing.
+  expect_false(rtransparency:::.detect_data_code(
+    "Data are available from the corresponding author upon reasonable request."
+  )$is_open_data)
+  expect_false(rtransparency:::.detect_data_code(paste(
+    "The data are not publicly available due to privacy restrictions but are",
+    "deposited in EGA under accession EGAS00001234567."
+  ))$is_open_data)
+})
+
+test_that("extracted links map to resolvable URLs", {
+  expect_identical(
+    rtransparency:::.link_url(c("https://github.com/a/b", "10.5281/zenodo.1",
+                                "geo:GSE123456")),
+    c("https://github.com/a/b", "https://doi.org/10.5281/zenodo.1",
+      "https://identifiers.org/geo:GSE123456")
+  )
+})
+
+test_that("rt_check_links reports status per unique link", {
+  skip_on_cran()
+  skip_if_offline("github.com")
+  res <- rt_check_links(c("https://github.com/choxos/rtransparency ; geo:GSE1",
+                          "https://github.com/choxos/rtransparency"))
+  expect_equal(nrow(res), 2L)
+  expect_true(res$is_ok[1])
+})
+
+
+test_that("the retired specificity argument warns", {
+  xml <- system.file("extdata", "PMID32171256-PMC7071725.xml",
+                     package = "rtransparency")
+  skip_if(xml == "")
+  expect_warning(rt_data_code_pmc(xml, specificity = "low"), "deprecated")
+  expect_silent(rt_data_code_pmc(xml))
+})
+
+test_that("supplement notices and imputed-data tables are not data sharing", {
+  d <- function(x) rtransparency:::.detect_data_code(x)$is_open_data
+  expect_false(d("Supplementary data accompanying this article are available online at www.jpain.org."))
+  expect_false(d("The proportion of imputed data for each variable is shown in Supplementary Table S1."))
+  expect_true(d("The authors declare that all supporting data are available within the article (and Supplement)."))
+})

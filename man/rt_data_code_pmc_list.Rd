@@ -4,12 +4,14 @@
 \alias{rt_data_code_pmc_list}
 \title{Identify and extract Data and Code sharing from a list of PMC XML files.}
 \usage{
-rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = "low")
+rt_data_code_pmc_list(filenames, remove_ns = TRUE, specificity = NULL)
 }
 \arguments{
 \item{filenames}{A list of the PMC XML filenames as strings.}
 
-\item{remove_ns}{TRUE if an XML namespace exists, else FALSE (default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 
 \item{specificity}{Retained for backward compatibility; see
 \code{\link{rt_data_code_pmc}}.}
@@ -31,6 +33,6 @@ filepath <- system.file(
 filepaths <- list(filepath)
 
 # Identify and extract indicators of data and code sharing
-results_table <- rt_data_code_pmc_list(filepaths, remove_ns = TRUE)
+results_table <- rt_data_code_pmc_list(filepaths)
 }
 }

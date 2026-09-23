@@ -1,5 +1,6 @@
-# Build the committed 2023 OA PMC hand-labeled sample (all eight indicators) and
-# the accuracy report. Run from the package root after editing detectors.
+# Score the detectors against the committed 2023 OA PMC hand-labeled sample
+# (eight indicators) and write the accuracy report. Run from the package root
+# after editing detectors.
 #
 # The labels were assigned by reading the article text. For COI, funding and
 # data the author's back matter was sometimes truncated in the labelling view
@@ -9,18 +10,15 @@
 # were labelled independently and are the meaningful validation.
 suppressMessages(devtools::load_all("."))
 
-label_dir <- Sys.getenv("RT_LABEL_DIR", "/tmp/labels2")
-xml_dir   <- Sys.getenv("RT_XML_DIR", "/tmp/newcache/xml")
-out_csv   <- "data-raw/benchmark/labels_2023_sample.csv"
-
-files <- sort(Sys.glob(file.path(label_dir, "batch_*.csv")))
-gold  <- do.call(rbind, lapply(files, function(f)
-  read.csv(f, stringsAsFactors = FALSE, colClasses = "character")))
-gold  <- gold[!duplicated(gold$pmcid), ]
+# The labels are committed; this script only scores the current detectors
+# against them (it never rewrites the label file).
+xml_dir <- Sys.getenv("RT_XML_DIR", "data-raw/benchmark/.cache")
+gold  <- read.csv("data-raw/benchmark/labels_2023_sample.csv",
+                  stringsAsFactors = FALSE, colClasses = "character")
 inds  <- c("coi", "fund", "reg", "nov", "rep", "data", "code", "ai")
-if (!dir.exists(dirname(out_csv))) dir.create(dirname(out_csv), recursive = TRUE)
-write.csv(gold, out_csv, row.names = FALSE)
-message("wrote ", out_csv, " (", nrow(gold), " articles)")
+missing <- sum(!file.exists(file.path(xml_dir, paste0(gold$pmcid, ".xml"))))
+if (missing) stop(missing, " labeled articles have no XML in ", xml_dir,
+                  "; fetch them first (see data-raw/benchmark/README.md).")
 
 # Predictions from the current detectors.
 pred <- as.data.frame(matrix(NA, nrow(gold), length(inds),
@@ -28,8 +26,8 @@ pred <- as.data.frame(matrix(NA, nrow(gold), length(inds),
 for (i in seq_len(nrow(gold))) {
   f <- file.path(xml_dir, paste0(gold$pmcid[i], ".xml"))
   if (!file.exists(f)) next
-  a <- tryCatch(rt_all_pmc(f, remove_ns = TRUE), error = function(e) NULL)
-  d <- tryCatch(rt_data_code_pmc(f, remove_ns = TRUE), error = function(e) NULL)
+  a <- tryCatch(rt_all_pmc(f), error = function(e) NULL)
+  d <- tryCatch(rt_data_code_pmc(f), error = function(e) NULL)
   if (!is.null(a) && isTRUE(a$is_success[1])) {
     pred$coi[i]  <- isTRUE(a$is_coi_pred[1]);  pred$fund[i] <- isTRUE(a$is_fund_pred[1])
     pred$reg[i]  <- isTRUE(a$is_register_pred[1]); pred$nov[i] <- isTRUE(a$is_novelty_pred[1])

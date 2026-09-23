@@ -4,15 +4,19 @@
 \alias{rt_ai}
 \title{Identify disclosure of generative-AI use from a TXT file.}
 \usage{
-rt_ai(filename)
+rt_ai(filename = NULL, text = NULL)
 }
 \arguments{
-\item{filename}{The name of the TXT file as a string.}
+\item{filename}{The path to a TXT file as a string.}
+
+\item{text}{Alternatively, the article text itself as a character vector
+(for example the output of [rt_read_pdf()]). Supply `filename` or `text`.}
 }
 \value{
-A tibble with the filename, the PMID (if present in the file name),
-  whether an AI-use disclosure was found (`is_ai_pred`) and the matched
-  statement (`ai_text`).
+A tibble with the file name (`article`), the PMID (`NA` if absent),
+  whether an AI-use disclosure was found (`is_ai_pred`), the matched
+  statement (`ai_text`) and what it says (`ai_used`, `ai_tools`,
+  `ai_purpose`), as described in [rt_ai_pmc()].
 }
 \description{
 Detects whether an article discloses the use (or non-use) of generative AI or

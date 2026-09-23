@@ -1,18 +1,30 @@
-#' Identify and extract transparency statements from a TXT file.
+#' Identify and extract all transparency indicators from a TXT file.
 #'
-#' Takes a TXT file and examines whether any statements of Conflicts of Interest
-#'     (COI), Funding, Protocol Registration, Novelty or Replication exist. If
-#'     any such statements are found, it also extracts the relevant text.
+#' Takes a plain-text article (a TXT file, or the text itself) and returns all
+#'     ten indicators of transparency the package detects: conflicts of
+#'     interest, funding, protocol registration, novelty, replication, data
+#'     sharing, code sharing, generative-AI-use disclosure, open-access
+#'     licensing and reporting-guideline use. The file is read once and every
+#'     detector runs on the same text, with the same logic as the standalone
+#'     plain-text functions ([rt_coi()], [rt_fund()], [rt_register()],
+#'     [rt_novelty()], [rt_replication()], [rt_data_code()], [rt_ai()],
+#'     [rt_oa()], [rt_reporting()]).
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A dataframe of results. It returns the PMID of the article (if this
-#'     was included in the filename and preceded by "PMID"), whether each of the
-#'     five indicators of transparency (COI, Funding, Registration, Novelty and
-#'     Replication) was identified, the relevant text identified, and whether
-#'     each labelling function identified relevant text or not. The labelling
-#'     functions are returned to add flexibility in how this package is used;
-#'     for example, future definitions of Registration may differ from the one
-#'     we used. If a labelling function returns NA it means that it was not run.
+#' @inheritParams rt_coi
+#' @return A one-row tibble: the file name (`article`) and PMID (`pmid`, the
+#'     digits after "PMID" in the file name, `NA` if absent), then each
+#'     indicator with the text that triggered it. The indicator columns carry
+#'     the same names as in [rt_all_pmc()] (`is_coi_pred`, `is_fund_pred`,
+#'     `is_register_pred`, `is_novelty_pred`, `is_replication_pred`,
+#'     `is_open_data`, `is_open_code`, `is_ai_pred`, `is_open_access`,
+#'     `is_reporting_pred`), so the result can be passed to [rt_summary()].
+#'     The pattern-function flags of the novelty and replication detectors are
+#'     also returned; if one is `NA` it was not run. Unlike
+#'     [rt_all_pmc()], `is_ai_pred` has no publication-year gate (see [rt_ai()]).
+#'     `is_funded_pred` and `funding_text` are deprecated copies of the funding
+#'     columns, kept for one release.
+#' @seealso [rt_all_pdf()] for a PDF, [rt_all_txt_dir()] for many files, and
+#'     [rt_all_pmc()] for PMC XML.
 #' @examples
 #' \donttest{
 #' # Write a short example article to a temporary text file.
@@ -28,25 +40,51 @@
 #'
 #' # Identify and extract indicators of transparency.
 #' results_table <- rt_all(filepath)
+#'
+#' # The same, from text already in memory.
+#' results_table <- rt_all(text = readLines(filepath))
 #' }
 #' @export
-rt_all <- function(filename) {
+rt_all <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  txt <- input$text
+  fund <- .rt_fund_txt(txt)
+  .txt_row(input, c(
+    .rt_coi_txt(txt),
+    fund,
+    list(is_funded_pred = fund$is_fund_pred, funding_text = fund$fund_text),
+    .rt_register_txt(txt),
+    .rt_novelty_txt(txt),
+    .rt_replication_txt(txt),
+    .rt_data_code_txt(txt),
+    .rt_ai_txt(txt),
+    .rt_oa_txt(txt),
+    .rt_reporting_txt(txt)
+  ))
+}
 
-  # Avoid automated checking warning in R package development
-  article <- pmid <- NULL
 
-  # Extract indicators
-  # TODO Modify functions to avoid loading the TXT file multiple times.
-  out_ls <- list(
-    coi_df        = rt_coi(filename) %>% dplyr::select(!(article:pmid)),
-    fund_df       = rt_fund(filename) %>% dplyr::select(!(article:pmid)),
-    register_df   = rt_register(filename),
-    novelty_df    = rt_novelty(filename) %>% dplyr::select(!(article:pmid)),
-    replication_df = rt_replication(filename) %>% dplyr::select(!(article:pmid))
-  )
-
-  # Return dataframe of indicators
-  out_ls %>%
-    dplyr::bind_cols() %>%
-    dplyr::select(article, pmid, tidyselect::everything())
+#' Identify and extract all transparency indicators from a PDF file.
+#'
+#' Converts a PDF to text with [rt_read_pdf()] and runs [rt_all()] on it, so a
+#'     PDF can be scored in one call without writing an intermediate text file.
+#'     Requires the poppler `pdftotext` utility.
+#'
+#' @param filepath The path to the PDF file as a string.
+#' @return The same one-row tibble as [rt_all()], with `article` and `pmid`
+#'     taken from the PDF file name.
+#' @seealso [rt_all()], [rt_read_pdf()], [rt_all_txt_dir()]
+#' @examples
+#' \dontrun{
+#' pdf_path <- system.file(
+#'   "extdata", "PMID32171256-PMC7071725.pdf", package = "rtransparency"
+#' )
+#' rt_all_pdf(pdf_path)
+#' }
+#' @export
+rt_all_pdf <- function(filepath) {
+  res <- rt_all(text = rt_read_pdf(filepath))
+  res$article <- basename(filepath)
+  res$pmid <- .pmid_from_filename(filepath)
+  res
 }

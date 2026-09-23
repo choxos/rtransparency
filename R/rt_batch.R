@@ -10,8 +10,12 @@
 #' When `output` is supplied, results are written to that CSV in chunks as the
 #' run proceeds. Re-running with the same `output` skips files already present
 #' in it and appends only the new results, so a long run can be resumed after an
-#' interruption. Each file is processed inside [tryCatch()]; a file that errors
-#' contributes a row with `is_success = FALSE` rather than stopping the run.
+#' interruption. File names are recorded as absolute paths and resuming
+#' compares normalized paths, so it also works from another working directory
+#' or with relative instead of absolute paths. Each
+#' file is processed inside [tryCatch()]; a file that errors contributes a row
+#' with `is_success = FALSE` and the error message in `error` rather than
+#' stopping the run.
 #'
 #' Parallelism uses \pkg{furrr}'s `future_map()` and honors whatever
 #' `future::plan()` is active (for example `future::plan("multisession")`); with
@@ -31,28 +35,76 @@
 #' @param progress Whether to show a progress bar (default `TRUE`).
 #' @param chunk_size Number of files per write/flush when `output` is set
 #'   (default `200`).
-#' @return A [tibble][tibble::tibble] with one row per file, carrying the same
-#'   columns as [rt_all_pmc()] (plus any rows read back from a pre-existing
-#'   `output`). Files that could not be processed have `is_success = FALSE`.
+#' @return A [tibble][tibble::tibble] with one row per file (`filename` is the
+#'   file's absolute path), carrying the same columns as [rt_all_pmc()] (plus any rows read back from a pre-existing
+#'   `output`). Files that could not be processed have `is_success = FALSE`
+#'   and the reason in `error`.
 #' @seealso [rt_all_pmc()] for a single file.
 #' @examples
 #' \donttest{
 #' # Process every PMC XML in a directory (here, the bundled example file).
 #' dir <- system.file("extdata", package = "rtransparency")
 #' out <- tempfile(fileext = ".csv")
-#' res <- rt_all_pmc_dir(dir, remove_ns = TRUE, output = out, parallel = FALSE)
+#' res <- rt_all_pmc_dir(dir, output = out, parallel = FALSE)
 #' }
 #' @export
 rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
-                           remove_ns = FALSE, all_meta = FALSE,
+                           remove_ns = TRUE, all_meta = FALSE,
                            output = NULL, parallel = FALSE, progress = TRUE,
                            chunk_size = 200L) {
+  files <- .batch_files(dir, pattern, recursive)
+  .rt_batch(files, function(f) rt_all_pmc(f, all_meta = all_meta),
+            output = output, parallel = parallel, progress = progress,
+            chunk_size = chunk_size)
+}
 
-  # Resolve the file list: a single existing directory is expanded by pattern;
-  # anything else is treated as an explicit vector of file paths.
+
+#' Identify transparency indicators across many TXT or PDF files.
+#'
+#' The plain-text counterpart of [rt_all_pmc_dir()]: runs [rt_all()] on every
+#' text file, and [rt_all_pdf()] on every PDF, in a directory (or an explicit
+#' vector of paths), with the same per-file error isolation, progress bar,
+#' resumable CSV output and optional parallelism.
+#'
+#' @param dir A directory containing TXT and/or PDF files, or a character
+#'   vector of file paths.
+#' @param pattern A regular expression for file names, used only when `dir` is a
+#'   single existing directory (default: `.txt` and `.pdf` files).
+#' @param recursive,parallel,progress,chunk_size As in [rt_all_pmc_dir()].
+#' @param output Optional path to a CSV file for incremental, resumable output,
+#'   with the same behavior as in [rt_all_pmc_dir()].
+#' @return A [tibble][tibble::tibble] with one row per file: `filename` (the
+#'   path), the columns of [rt_all()], `is_success` and `error`.
+#' @seealso [rt_all()], [rt_all_pdf()], [rt_all_pmc_dir()]
+#' @examples
+#' \donttest{
+#' d <- file.path(tempdir(), "rt_txt_example")
+#' dir.create(d, showWarnings = FALSE)
+#' writeLines("Conflicts of interest: none declared.",
+#'            file.path(d, "PMID00000001.txt"))
+#' writeLines("This work was funded by the Wellcome Trust (grant 12345).",
+#'            file.path(d, "PMID00000002.txt"))
+#' res <- rt_all_txt_dir(d, progress = FALSE)
+#' }
+#' @export
+rt_all_txt_dir <- function(dir, pattern = "\\.(txt|pdf)$", recursive = FALSE,
+                           output = NULL, parallel = FALSE, progress = TRUE,
+                           chunk_size = 200L) {
+  files <- .batch_files(dir, pattern, recursive)
+  worker <- function(f) {
+    if (grepl("\\.pdf$", f, ignore.case = TRUE)) rt_all_pdf(f) else rt_all(f)
+  }
+  .rt_batch(files, worker, output = output, parallel = parallel,
+            progress = progress, chunk_size = chunk_size)
+}
+
+
+# Resolve a batch file list: a single existing directory is expanded by
+# pattern; anything else is treated as an explicit vector of file paths.
+.batch_files <- function(dir, pattern, recursive) {
   if (length(dir) == 1 && dir.exists(dir)) {
     files <- list.files(dir, pattern = pattern, full.names = TRUE,
-                        recursive = recursive)
+                        recursive = recursive, ignore.case = TRUE)
   } else {
     files <- dir
   }
@@ -67,6 +119,17 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
          paste(utils::head(files[missing], 5L), collapse = ", "),
          if (sum(missing) > 5L) ", ..." else "", call. = FALSE)
   }
+  # Absolute, canonical paths: the output's filename column then identifies a
+  # file wherever a resumed run is started from.
+  normalizePath(files, winslash = "/", mustWork = TRUE)
+}
+
+
+# The batch engine shared by rt_all_pmc_dir() and rt_all_txt_dir(): runs
+# `worker` on each file with per-file error isolation, optional parallelism,
+# and resumable chunked CSV output.
+.rt_batch <- function(files, worker, output = NULL, parallel = FALSE,
+                      progress = TRUE, chunk_size = 200L) {
 
   if (parallel) {
     rlang::check_installed(c("furrr", "future"),
@@ -88,7 +151,11 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
       progress = FALSE
     )
     if ("filename" %in% names(done_rows)) {
-      files <- files[!files %in% done_rows$filename]
+      # Compare normalized paths, so a run resumed from another working
+      # directory, or with relative instead of absolute paths, still skips the
+      # files it has already processed.
+      norm <- function(x) normalizePath(x, winslash = "/", mustWork = FALSE)
+      files <- files[!norm(files) %in% norm(done_rows$filename)]
     }
   }
 
@@ -98,12 +165,17 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
 
   # Per-file worker: never let one file abort the batch. rt_all_pmc() already
   # returns is_success = FALSE on a parse error; this tryCatch is a backstop for
-  # any other failure.
+  # any other failure. Every row carries filename, is_success and error.
   process_one <- function(f) {
-    tryCatch(
-      rt_all_pmc(f, remove_ns = remove_ns, all_meta = all_meta),
-      error = function(e) tibble::tibble(filename = f, is_success = FALSE)
+    r <- tryCatch(
+      worker(f),
+      error = function(e) tibble::tibble(filename = f, is_success = FALSE,
+                                         error = conditionMessage(e))
     )
+    if (!"filename" %in% names(r)) r <- tibble::add_column(r, filename = f, .before = 1)
+    if (!"is_success" %in% names(r)) r$is_success <- TRUE
+    if (!"error" %in% names(r)) r$error <- NA_character_
+    r
   }
 
   mapper <- function(x) {
@@ -115,23 +187,41 @@ rt_all_pmc_dir <- function(dir, pattern = "\\.xml$", recursive = FALSE,
   }
 
   # Process in chunks so progress is flushed to disk periodically (a crash then
-  # loses at most one chunk). The whole file is rewritten on each flush; all
-  # columns are written as character so a re-read resumes cleanly.
+  # loses at most one chunk). Each chunk is appended to the output, written as
+  # character so a re-read resumes cleanly; the file is rewritten only in the
+  # rare case that a chunk brings columns the file does not have yet (for
+  # example when every earlier file failed to parse).
   chunk_size <- max(1L, as.integer(chunk_size))
   chunks <- split(files, ceiling(seq_along(files) / chunk_size))
   new_rows <- vector("list", length(files))
   pos <- 0L
+  out_cols <- if (!is.null(done_rows)) names(done_rows) else NULL
+
+  write_chunk <- function(rows) {
+    rows <- to_char(rows)
+    if (is.null(out_cols)) {
+      readr::write_csv(rows, output)
+      out_cols <<- names(rows)
+    } else if (all(names(rows) %in% out_cols)) {
+      missing_cols <- setdiff(out_cols, names(rows))
+      rows[missing_cols] <- NA_character_
+      readr::write_csv(rows[out_cols], output, append = TRUE)
+    } else {
+      old <- readr::read_csv(
+        output, col_types = readr::cols(.default = readr::col_character()),
+        progress = FALSE
+      )
+      combined <- dplyr::bind_rows(old, rows)
+      readr::write_csv(combined, output)
+      out_cols <<- names(combined)
+    }
+  }
 
   for (chunk in chunks) {
     res <- mapper(chunk)
     new_rows[seq_along(res) + pos] <- res
     pos <- pos + length(res)
-
-    if (!is.null(output)) {
-      combined <- dplyr::bind_rows(done_rows,
-                                   to_char(dplyr::bind_rows(new_rows[seq_len(pos)])))
-      readr::write_csv(combined, output)
-    }
+    if (!is.null(output)) write_chunk(dplyr::bind_rows(res))
   }
 
   # Rows freshly computed in this run share rt_all_pmc()'s native column types,

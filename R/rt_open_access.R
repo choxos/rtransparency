@@ -101,8 +101,8 @@
   license_text <- .get_text(article_xml, "front/article-meta//license", FALSE)
 
   # The license URL lives on the <license> href, a <license-ref>, or an
-  # <ext-link> inside the license (namespaces are stripped when remove_ns = TRUE,
-  # so xlink:href becomes href; @*[...] also catches the namespaced form).
+  # <ext-link> inside the license. The attribute may be xlink:href or a bare
+  # href depending on the source, so match it by local name.
   url_nodes <- tryCatch(
     xml2::xml_find_all(
       article_xml,
@@ -137,7 +137,9 @@
 #' does not.
 #'
 #' @param filename The filename of the PMC XML file to analyze.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A tibble with the article IDs, whether the article is openly licensed
 #'   (`is_open_access`), the canonical license (`oa_license`, `""` when none is
 #'   found), the license statement (`oa_text`) and `is_success`.
@@ -146,14 +148,14 @@
 #' filepath <- system.file(
 #'   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 #' )
-#' rt_oa_pmc(filepath, remove_ns = TRUE)
+#' rt_oa_pmc(filepath)
 #' }
 #' @export
-rt_oa_pmc <- function(filename, remove_ns = FALSE) {
+rt_oa_pmc <- function(filename, remove_ns = TRUE) {
 
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
   if (inherits(article_xml, "error")) {
-    return(tibble::tibble(filename = filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
   }
 
   id_ls <- .get_ids(article_xml)
@@ -173,8 +175,8 @@ rt_oa_pmc <- function(filename, remove_ns = FALSE) {
 #' `<license>` element, so detection relies on the prose and any license URL it
 #' contains.
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A tibble with the filename, the PMID (if present in the file name),
+#' @inheritParams rt_coi
+#' @return A tibble with the file name (`article`), the PMID (`NA` if absent),
 #'   whether the article is openly licensed (`is_open_access`), the canonical
 #'   license (`oa_license`) and the license statement (`oa_text`).
 #' @examples
@@ -192,19 +194,18 @@ rt_oa_pmc <- function(filename, remove_ns = FALSE) {
 #' }
 #' @seealso [rt_oa_pmc()] for the PMC XML detector.
 #' @export
-rt_oa <- function(filename) {
+rt_oa <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_oa_txt(input$text))
+}
 
-  article <- basename(filename)
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
 
-  paper_text <- .read_txt(filename)
+# Open-access status and license from plain text.
+.rt_oa_txt <- function(paper_text) {
   found <- .detect_open_access(paper_text)
-
-  tibble::as_tibble(list(
-    article = article,
-    pmid = pmid,
+  list(
     is_open_access = found$is_open_access,
     oa_license = found$oa_license,
     oa_text = substr(found$oa_text, 1, 500)
-  ))
+  )
 }

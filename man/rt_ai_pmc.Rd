@@ -4,17 +4,20 @@
 \alias{rt_ai_pmc}
 \title{Identify disclosure of generative-AI use from a PMC XML file.}
 \usage{
-rt_ai_pmc(filename, remove_ns = FALSE)
+rt_ai_pmc(filename, remove_ns = TRUE)
 }
 \arguments{
 \item{filename}{The filename of the PMC XML file to analyze.}
 
-\item{remove_ns}{TRUE if an XML namespace exists, else FALSE (default).}
+\item{remove_ns}{Ignored since version 1.2.0 and kept for backward
+compatibility. Default XML namespaces are now always removed, so a
+namespaced PMC XML file gives the same result as a plain one.}
 }
 \value{
 A tibble with the article IDs, the publication `year`, whether an AI
   disclosure was found (`is_ai_pred`, `NA` before 2023), the matched
-  statement (`ai_text`) and `is_success`.
+  statement (`ai_text`), what the disclosure says (`ai_used`, `ai_tools`,
+  `ai_purpose`; see Details) and `is_success`.
 }
 \description{
 Detects whether an article discloses the use (or non-use) of generative AI or
@@ -22,11 +25,27 @@ AI-assisted tools in preparing the manuscript, as required of articles since
 2023. The indicator is only evaluated for articles published in 2023 or
 later; for earlier articles `is_ai_pred` is `NA`.
 }
+\details{
+The year gate uses the earliest publication year the XML records
+  (electronic, print or collection date), so an article first published
+  online in December 2022 is gated out even if its issue is dated 2023.
+
+  A disclosure can state use or non-use, and `is_ai_pred` counts
+  both. `ai_used` separates them: `TRUE` when a disclosure states that AI
+  was used, `FALSE` when it states that no AI was used, and `NA` when there
+  is no disclosure or the use cannot be read from it (for example when only
+  a section title was found). `ai_tools` names the tools mentioned in
+  statements of use (for example `"ChatGPT; DeepL"`) and `ai_purpose` the
+  stated purposes, from `"language editing"`, `"translation"`,
+  `"drafting"`, `"figures and images"`, `"code and analysis"` and
+  `"literature search"`. These are read with the same rules as the
+  disclosure itself and have not been separately validated.
+}
 \examples{
 \donttest{
 filepath <- system.file(
   "extdata", "PMID32171256-PMC7071725.xml", package = "rtransparency"
 )
-rt_ai_pmc(filepath, remove_ns = TRUE)
+rt_ai_pmc(filepath)
 }
 }

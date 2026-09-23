@@ -5,9 +5,9 @@
 #'     Replication is defined as the study independently confirming findings
 #'     from a prior study in a new sample.
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A tibble of results. It returns the filename, PMID (if it was part
-#'     of the file name), whether a replication component was found, the text
+#' @inheritParams rt_coi
+#' @return A tibble of results. It returns the file name (`article`), the PMID
+#'     (`NA` if absent), whether a replication component was found, the text
 #'     identified, and whether each pattern-matching function identified
 #'     relevant text or not.
 #' @examples
@@ -27,10 +27,15 @@
 #' results_table <- rt_replication(filepath)
 #' }
 #' @export
-rt_replication <- function(filename) {
+rt_replication <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_replication_txt(input$text))
+}
 
-  article <- basename(filename)
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
+
+# Replication detection on plain text; returns the prediction, the matched
+# text and whether each pattern function fired.
+.rt_replication_txt <- function(paper_text) {
 
   is_replication_pred <- FALSE
   replication_text <- ""
@@ -43,27 +48,16 @@ rt_replication <- function(filename) {
     replication_validation_1  = NA
   )
 
-  paper_text <- .read_txt(filename)
-
-  # Quick relevance check
-  rel_regex <- paste(
-    "replicat",
-    "independent(ly)? (confirm|validat|reproduc)",
-    "external validation", "internal validation",
-    "validation cohort", "validation sample", "validation dataset",
-    "training cohort", "confirmatory cohort",
-    "reproduced (the|our|their|these) (findings|results)",
-    sep = "|"
-  )
+  # Cheap relevance gate: a superset of every cue the pattern functions match.
+  rel_regex <- .replication_gate()
   is_relevant <- grepl(rel_regex, paper_text, ignore.case = TRUE)
 
   if (!is_relevant) {
-    return(tibble::as_tibble(c(
-      list(article = article, pmid = pmid,
-           is_replication_pred = is_replication_pred,
+    return(c(
+      list(is_replication_pred = is_replication_pred,
            replication_text = replication_text),
       index_any
-    )))
+    ))
   }
 
   # Split into paragraphs
@@ -75,7 +69,7 @@ rt_replication <- function(filename) {
     purrr::map(gsub, pattern = broken_2, replacement = "\\1\\3") %>%
     purrr::map(strsplit, "\n| \\*") %>%
     unlist() %>%
-    utf8::utf8_encode()
+    .clean_txt()
 
   index_any$replication_replicat_1    <- .which_replication_replicat_1(splitted)
   index_any$replication_confirm_1     <- .which_replication_confirm_1(splitted)
@@ -96,12 +90,32 @@ rt_replication <- function(filename) {
 
   index_any %<>% purrr::map(function(x) !!length(x))
 
-  tibble::as_tibble(c(
-    list(article = article, pmid = pmid,
-         is_replication_pred = is_replication_pred,
+  c(
+    list(is_replication_pred = is_replication_pred,
          replication_text = replication_text),
     index_any
-  ))
+  )
+}
+
+
+# The relevance gate for replication. Besides skipping articles cheaply, it acts
+# as a precision filter: the pattern functions alone also match statistics
+# ("independent samples t-test") and generic "validated the findings" prose,
+# which the gate keeps out. An earlier gate lacked "externally validated" and
+# "validated ... in an independent cohort", so those genuine external
+# validations never reached the patterns; they are now admitted. A test checks
+# that every replication probe passes the gate.
+.replication_gate <- function() {
+  paste(
+    "replicat", "independent(ly)? (confirm|validat|reproduc)",
+    "external(ly)? validat", "internal validation",
+    "validation cohort", "validation sample", "validation dataset",
+    "training cohort", "confirmatory cohort",
+    "reproduced (the|our|their|these) (findings|results)",
+    "independent (validation )?(cohorts?|populations?|datasets?|data sets?|series)\\b",
+    "validat(e|ed|ion)\\b[^.]{0,40}\\b(independent|external|separate) (cohorts?|populations?|samples?|datasets?)",
+    sep = "|"
+  )
 }
 
 
@@ -235,6 +249,12 @@ rt_replication <- function(filename) {
 
   pattern <- paste(
     "not replicated",
+    # Statistics, not replication: "independent samples t-test".
+    "independent[- ]samples?\\b[^.]{0,20}\\b(t|student|tests?|mann|wilcoxon|kruskal)\\b",
+    # "two independent samples" only as statistics, near a test or comparison;
+    # "replicated in two independent samples" is a replication.
+    paste0("(t[- ]?tests?|student|mann|wilcoxon|compar\\w*)[^.]{0,40}two independent (samples|groups)|",
+           "two independent (samples|groups)[^.]{0,40}(t[- ]?tests?|student|mann|wilcoxon|compar\\w*)"),
     "independently replicated a minimum",
     "experiments? .{0,80}replicat",
     "replicated (a minimum|at least)",

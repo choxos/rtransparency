@@ -5,9 +5,9 @@
 #'     extracts the relevant text. Novelty is defined as the study claiming to
 #'     report something "for the first time."
 #'
-#' @param filename The name of the TXT file as a string.
-#' @return A tibble of results. It returns the filename, PMID (if it was part
-#'     of the file name), whether a novelty claim was found, the text
+#' @inheritParams rt_coi
+#' @return A tibble of results. It returns the file name (`article`), the PMID
+#'     (`NA` if absent), whether a novelty claim was found, the text
 #'     identified, and whether each pattern-matching function identified
 #'     relevant text or not.
 #' @examples
@@ -27,10 +27,15 @@
 #' results_table <- rt_novelty(filepath)
 #' }
 #' @export
-rt_novelty <- function(filename) {
+rt_novelty <- function(filename = NULL, text = NULL) {
+  input <- .txt_input(filename, text)
+  .txt_row(input, .rt_novelty_txt(input$text))
+}
 
-  article <- basename(filename)
-  pmid <- gsub("^.*PMID([0-9]+).*$", "\\1", filename)
+
+# Novelty detection on plain text; returns the prediction, the matched
+# text and whether each pattern function fired.
+.rt_novelty_txt <- function(paper_text) {
 
   is_novelty_pred <- FALSE
   novelty_text <- ""
@@ -44,8 +49,6 @@ rt_novelty <- function(filename) {
     novelty_knowledge_1 = NA
   )
 
-  paper_text <- .read_txt(filename)
-
   # Relevance gate: a cheap superset of every cue the pattern functions below can
   # match. Precision is enforced by those functions and .negate_novelty_1, not
   # here, so this only needs to admit anything potentially relevant.
@@ -57,12 +60,11 @@ rt_novelty <- function(filename) {
   is_relevant <- grepl(rel_regex, paper_text, ignore.case = TRUE)
 
   if (!is_relevant) {
-    return(tibble::as_tibble(c(
-      list(article = article, pmid = pmid,
-           is_novelty_pred = is_novelty_pred,
+    return(c(
+      list(is_novelty_pred = is_novelty_pred,
            novelty_text = novelty_text),
       index_any
-    )))
+    ))
   }
 
   # Split into paragraphs
@@ -74,7 +76,7 @@ rt_novelty <- function(filename) {
     purrr::map(gsub, pattern = broken_2, replacement = "\\1\\3") %>%
     purrr::map(strsplit, "\n| \\*") %>%
     unlist() %>%
-    utf8::utf8_encode()
+    .clean_txt()
 
   # Novelty claims frequently occur in abstracts, introductions and discussion,
   # but the external XML validation also found many explicit first-time claims
@@ -102,12 +104,11 @@ rt_novelty <- function(filename) {
 
   index_any %<>% purrr::map(function(x) !!length(x))
 
-  tibble::as_tibble(c(
-    list(article = article, pmid = pmid,
-         is_novelty_pred = is_novelty_pred,
+  c(
+    list(is_novelty_pred = is_novelty_pred,
          novelty_text = novelty_text),
     index_any
-  ))
+  )
 }
 
 

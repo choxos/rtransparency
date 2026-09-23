@@ -3,7 +3,6 @@
 #    time!
 
 
-
 #' Identify mentions of support
 #'
 #' Identifies mentions of "This work was funded by ..." and of "This work was
@@ -61,47 +60,6 @@ get_support_1 <- function(article) {
   if (!length(singular)) {
 
     words <- c("These", "researches", "are", "funded_funding", "by")
-
-    synonyms %>%
-      magrittr::extract(words) %>%
-      lapply(.bound, location = "end") %>%
-      lapply(.encase) %>%
-      # lapply(.max_words) %>%
-      paste(collapse = synonyms$txt) %>%
-      grep(article, perl = TRUE)
-
-  } else {
-
-    return(singular)
-
-  }
-}
-
-
-#' Identify mentions of support
-#'
-#' Returns the index with the elements of interest.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the paragraph of interest.
-#' @noRd
-get_support_2 <- function(article) {
-
-  synonyms <- .create_synonyms()
-  words <- c("funded_funding", "this_singular", "research_singular")
-
-  singular <-
-    synonyms %>%
-    magrittr::extract(words) %>%
-    lapply(.bound, location = "end") %>%
-    lapply(.encase) %>%
-    # lapply(.max_words) %>%
-    paste(collapse = synonyms$txt) %>%
-    grep(article, perl = TRUE)
-
-  if (!length(singular)) {
-
-    words <- c("funded", "these", "researches")
 
     synonyms %>%
       magrittr::extract(words) %>%
@@ -1137,7 +1095,6 @@ get_common_1 <- function(article) {
 }
 
 
-
 #' Get common phrases
 #'
 #' Returns the index with the elements of interest.
@@ -1309,29 +1266,6 @@ get_acknow_1 <- function(article) {
     }
   }
   return(b)
-}
-
-
-#' Identify acknowledgements
-#'
-#' Returns the index with the elements of interest. More generic than _1.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the paragraph of interest.
-#' @noRd
-get_acknow_2 <- function(article) {
-
-  txt_0 <- "(^A(?i)cknowledg(|e)ment(|s)(?-i))"
-
-  txt_1 <- "(^Acknowledg(|e)ment(|s)"
-  txt_2 <- "(of|and)"
-  txt_3 <- "([Ss]upport |\\b[Ff]unding|\\b[Ff]inancial))"
-
-  total_txt <- c(txt_1, txt_2, txt_3)
-  indicator_regex <- paste0(total_txt, collapse = " ")
-  indicator_regex <- paste(txt_0, indicator_regex, sep = "|")
-
-  grep(indicator_regex, article, perl = TRUE)
 }
 
 
@@ -1518,154 +1452,6 @@ get_acknow_2 <- function(article) {
 }
 
 
-#' Avoid disclosures that are in fact COI statements
-#'
-#' Returns the index with the elements of interest. More generic than _1.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the paragraph of interest.
-#' @noRd
-negate_disclosure_1 <- function(article) {
-
-  synonyms <- .create_synonyms()
-
-  txt <- "[a-zA-Z0-9\\s,()-]*"  # order matters
-
-  disclose_synonyms <- c(
-    "[Dd]isclose(|s)(|:|\\.)",
-    "[Dd]isclosure(|s)(|:|\\.)"
-  )
-
-  conflict_synonyms <- c(
-    "conflict(|s) of interest",
-    "conflicting interest",
-    "conflicting financial interest",
-    "conflicting of interest",
-    "conflits d'int",
-    "conflictos de Inter"
-  )
-
-  compete_synonyms <- c(
-    "competing interest",
-    "competing of interest",
-    "competing financial interest"
-  )
-
-  and_synonyms <- c(
-    "and",
-    "&",
-    "or"
-  )
-
-  not_synonyms <- c(
-    "not"
-  )
-
-  funded_synonyms <- c(
-    "\\bfunded",
-    "\\bfinanced",
-    "\\bsupported",
-    "\\bsponsored",
-    "\\bresourced"
-  )
-
-  disclose <- .encase(disclose_synonyms)
-  conflict <- .encase(c(conflict_synonyms, compete_synonyms))
-  and <- .encase(and_synonyms)
-  not <- .encase(not_synonyms)
-  funded <- .encase(funded_synonyms)
-
-  regex <- paste(disclose, conflict, and, not, funded, sep = txt)
-  a <- grepl(regex, article, perl = TRUE)
-
-  if (any(a)) {
-
-    return(a)
-
-  } else {
-
-    funded <- .encase(c(funded_synonyms, synonyms$funding))
-    regex <- paste(disclose, funded, conflict, sep = txt)
-    grepl(regex, article, perl = TRUE)
-  }
-}
-
-
-#' Identify "Funding disclosure. Nothing to declare" statements
-#'
-#' Returns the index with the elements of interest. More generic than _1.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the paragraph of interest.
-#' @noRd
-negate_disclosure_2 <- function(article) {
-
-  synonyms <- .create_synonyms()
-
-  Disclosure_synonyms <- c(
-    "F(?i)inancial disclosure(|s)(?-i)(|:|\\.)",
-    "F(?i)inancial declaration(|s)(?-i)(|:|\\.)",
-    "Disclosure(|:|\\.)",
-    "Declaration(|:|\\.)"
-  )
-
-  disclosure_synonyms <- c(
-    "financial disclosure(|s)",
-    "financial declaration(|s)",
-    "disclosure",
-    "declaration"
-  )
-
-  disclose_synonyms <- c(
-    "to disclose",
-    "to declare",
-    "to report"
-  )
-
-  Disclosure <- .encase(Disclosure_synonyms)
-  disclosure <- .encase(disclosure_synonyms)
-  disclose   <- .encase(disclose_synonyms)
-  no <- .encase(synonyms$No)
-  no_1 <- "(no|not have any)"
-  no_2 <- "(nil|nothing)"
-
-  regex_1 <-  # Financial disclosure: Nothing to declare
-    paste(Disclosure, no) %>%
-    .encase()
-  regex_2 <-  # Financial disclosure: The authors have no financial disclosures
-    paste(Disclosure, paste(no_1, disclosure), sep = synonyms$txt) %>%
-    .encase()
-  regex_3 <-  # Financial disclosure: The author has nothing to declare
-    paste(Disclosure, paste(no_2, disclose), sep = synonyms$txt) %>%
-    .encase()
-
-  regex <- paste(regex_1, regex_2, regex_3, sep = "|")
-  grepl(regex, article, perl = TRUE)
-
-}
-
-
-#' Avoid financial that is part of COI statements
-#'
-#' Returns the index with the elements of interest. More generic than _1.
-#'
-#' @param article A List with paragraphs of interest.
-#' @return The index of the paragraph of interest.
-#' @noRd
-negate_conflict_1 <- function(article) {
-
-  synonyms <- .create_synonyms()
-  words <- c("conflict_title")
-
-  synonyms %>%
-    magrittr::extract(words) %>%
-    lapply(.title) %>%
-    lapply(.encase) %>%
-    paste() %>%
-    grepl(article, perl = TRUE)
-}
-
-
 #' Avoid mentions that no funding information was provided
 #'
 #'
@@ -1743,7 +1529,7 @@ negate_absence_1 <- function(article) {
         "\\bno funds (have been|have not been|were|was) received\\b",
         "\\b(did|do|does) not receive (any )?funds\\b",
         "\\b(have|has|had) not received any (funding|funds|financial)\\b",
-        # "(This study/work) was not supported by any funding" — a funding
+        # "(This study/work) was not supported by any funding": a funding
         # section can be titled "Funding" yet declare the absence of funding,
         # which otherwise leaks through the funding-title route.
         "\\bnot (financially )?supported by any (funding|grant|financial|institution|organi[sz]ation|source|sponsor)",
@@ -1961,7 +1747,6 @@ obliterate_misleading_fund_1 <- function(article) {
     gsub("", article, perl = TRUE)
 
 }
-
 
 
 #' Remove disclosures with inappropriate sentences
@@ -2195,7 +1980,7 @@ obliterate_disclosure_1 <- function(article) {
 
   article_processed <-
     article %>%
-    iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT', sub = "") %>%   # keep first
+    .to_ascii() %>%   # keep first
     trimws() %>%
     .obliterate_fullstop_1() %>%
     .obliterate_semicolon_1() %>%  # adds minimal overhead
@@ -2390,7 +2175,6 @@ obliterate_disclosure_1 <- function(article) {
 }
 
 
-
 #' Identify and extract Funding statements in PMC XML files.
 #'
 #' Takes a PMC XML file and returns data related to the
@@ -2398,7 +2182,9 @@ obliterate_disclosure_1 <- function(article) {
 #'     exists. If a Funding statement exists, it extracts it.
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A dataframe of results. It returns all unique article identifiers,
 #'     whether this article was deemed relevant to funding (e.g. was the word
 #'     "fund" found within the text), whether a funding statement was found,
@@ -2416,17 +2202,17 @@ obliterate_disclosure_1 <- function(article) {
 #' )
 #'
 #' # Identify and extract meta-data and indicators of transparency.
-#' results_table <- rt_fund_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_fund_pmc(filepath)
 #' }
 #' @export
-rt_fund_pmc <- function(filename, remove_ns = FALSE) {
+rt_fund_pmc <- function(filename, remove_ns = TRUE) {
 
   # A lot of the PMC XML files are malformed
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
 
   if (inherits(article_xml, "error")) {
 
-    return(tibble::tibble(filename = filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
 
   }
 

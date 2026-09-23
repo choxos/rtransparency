@@ -59,8 +59,8 @@ negative. This mirrors how these are reported and counted in the literature.
   false-positive rate on AI-method papers than `rt_ai_pmc()`.
 - **Reporting guideline is claim detection.** It identifies a stated adherence
   to a reporting guideline, not whether the study fully complied. It is tuned
-  for precision (validated 93.8% sensitivity / 99.0% specificity on a
-  hand-labeled 1000-article sample); the residual misses are mostly non-English
+  for precision (validated on a hand-labeled 1000-article sample; see
+  `rt_accuracy` for the current sensitivity and specificity); the residual misses are mostly non-English
   statements, and residual false positives are guidelines named but not actually
   followed by the article.
 - **Open-access licensing is XML-structural.** It reads the JATS `<license>`
@@ -80,12 +80,28 @@ Every per-article detector returns the prediction columns `is_coi_pred`,
 `is_open_access` (with `oa_license`) and `is_reporting_pred` (with
 `reporting_guideline`), each paired with the extracted text or value.
 `rt_all_pmc()` returns all ten for one file; `rt_all_pmc_dir()` runs a whole
-directory.
+directory. The plain-text functions (`rt_all()` and the single-indicator ones)
+return the same indicator column names, so plain-text and XML results can be
+stacked and summarized together.
+
+A few columns describe a statement rather than detect one: `ai_used`,
+`ai_tools` and `ai_purpose` read an AI-use disclosure (whether it reports use,
+of which tools, for what), and `has_das` / `das_text` record whether the article
+has a data-availability section at all, which is not the same as sharing data
+(a statement can say the data are available only on request). A failed file has
+`is_success = FALSE` and the reason in `error`.
+
+Two limitations are worth stating plainly. Presence of a statement is not its
+quality: a registration can be retrospective (`rt_registration_timing()` checks
+this for ClinicalTrials.gov) and a data link can be dead (`rt_check_links()`).
+And the XML detector cannot see a statement that is printed only in the PDF:
+`rt_fill_coi_pubmed()` recovers conflict-of-interest statements PubMed records
+for such articles.
 
 ```{r}
 library(rtransparency)
 
-res <- rt_all_pmc("article.xml", remove_ns = TRUE)
+res <- rt_all_pmc("article.xml")
 res[, c("is_coi_pred", "is_fund_pred", "is_open_data", "is_open_code")]
 ```
 
@@ -98,7 +114,7 @@ FAIR data and software assessment, to score the findability and accessibility of
 the shared resources.
 
 ```{r}
-res <- rt_all_pmc("article.xml", remove_ns = TRUE)
+res <- rt_all_pmc("article.xml")
 links <- strsplit(res$open_data_links, " ; ")[[1]]
 # rfair::assess_fair(links)
 ```

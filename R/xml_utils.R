@@ -7,342 +7,7 @@
 #     contains things such as the abstract,
 
 
-.xml_metadata <- function(article_xml, as_list = FALSE) {
-
-  # TODO: Consider adding: word count, number of titles, number of sections
-  # TODO: Improve author format, e.g.
-  # "Omidvar Vahid; +420 - 58 563 4905vahid.omidvar@upol.cz;"
-  # "Mohorianu Irina; i.mohorianu@uea.ac.uk;"
-
-  meta <- list()
-
-  # article_xml %>%
-  #   xml2::xml_find_all(xpath = "//xref") %>%
-  #   xml2::xml_remove(free = TRUE)
-
-  article_xml %>%
-    xml2::xml_find_all(xpath = "//label") %>%
-    xml2::xml_remove(free = TRUE)
-
-  article_xml %>%
-    xml2::xml_find_all(xpath = "//sup") %>%
-    xml2::xml_remove(free = TRUE)
-
-  xpath <- c(
-    "front/journal-meta//journal-title",
-    "front/journal-meta/journal-id[@journal-id-type = 'nlm-ta']",
-    "front/journal-meta/journal-id[@journal-id-type = 'iso-abbrev']",
-    "front/journal-meta/journal-id[@journal-id-type = 'publisher-id']",
-    "front/journal-meta/publisher",
-    "front/journal-meta/issn[@pub-type = 'ppub']",
-    "front/journal-meta/issn[@pub-type = 'epub']",
-    # "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    # "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    # "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    # "front/article-meta/article-id[@pub-id-type = 'doi']",
-    "front/article-meta/article-id[@pub-id-type = 'pii']",
-    "front/article-meta//subject",
-    "front/article-meta//article-title",
-    "front/article-meta//aff",
-    "front/article-meta//aff//institution",
-    "front/article-meta//aff//country",
-    "front/article-meta//pub-date[@pub-type = 'epub']",
-    "front/article-meta//pub-date[@pub-type = 'epub']/year",
-    "front/article-meta//pub-date[@pub-type = 'ppub']",
-    "front/article-meta//pub-date[@pub-type = 'ppub']/year",
-    "front/article-meta//license"
-  )
-
-  var_names <- c(
-    "journal",
-    "journal_nlm",
-    "journal_iso",
-    "publisher_id",
-    "publisher",
-    "issn_ppub",
-    "issn_epub",
-    # "pmid",
-    # "pmcid_pmc",
-    # "pmcid_uid",
-    # "doi",
-    "pii",
-    "subject",
-    "title",
-    "affiliation_all",
-    "affiliation_institution",
-    "affiliation_country",
-    "date_epub",
-    "year_epub",
-    "date_ppub",
-    "year_ppub",
-    "license"
-  )
-
-
-  meta <-
-    xpath %>%
-    lapply(.get_text, article_xml = article_xml, find_first = FALSE) %>%
-    rlang::set_names(var_names)
-
-
-  meta[["author"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//contrib[@contrib-type = 'author']/name") %>%
-    lapply(function(x) xml2::xml_contents(x) %>% xml2::xml_text() %>% paste(collapse = " ")) %>%
-    paste(collapse = "; ")
-
-
-  meta[["author_aff_id"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//contrib[@contrib-type = 'author']") %>%
-    lapply(function(x) xml2::xml_find_all(x, "xref") %>% xml2::xml_attr("rid") %>% paste(collapse = ", ")) %>%
-    paste(collapse = "; ")
-
-
-  meta[["affiliation_aff_id"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//aff") %>%
-    xml2::xml_attr("id") %>%
-    paste(collapse = "; ")
-
-
-  meta[["correspondence"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//author-notes/corresp") %>%
-    xml2::xml_text() %>%
-    paste(collapse = "; ")
-
-
-  meta[["type"]] <-
-    article_xml %>%
-    xml2::xml_attr("article-type")
-
-
-  meta[["n_auth"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//contrib[@contrib-type = 'author']") %>%
-    length()
-
-  meta[["n_affiliation"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//aff") %>%
-    length()
-
-  meta[["n_ref"]] <-
-    article_xml %>%
-    xml2::xml_find_all("//back/ref-list/ref") %>%
-    length()
-
-  meta[["n_fig_body"]] <-
-    article_xml %>%
-    xml2::xml_find_all("body//fig") %>%
-    length()
-
-  meta[["n_fig_floats"]] <-
-    article_xml %>%
-    xml2::xml_find_all("floats-group/fig") %>%
-    length()
-
-  meta[["n_table_body"]] <-
-    article_xml %>%
-    xml2::xml_find_all("body//table-wrap") %>%
-    length()
-
-  meta[["n_table_floats"]] <-
-    article_xml %>%
-    xml2::xml_find_all("floats-group/table-wrap") %>%
-    length()
-
-  #
-  supp <- "//*[self::supplementary-material or self::supplement]"
-  meta[["is_supplement"]] <-
-    article_xml %>%
-    xml2::xml_find_all(supp) %>%
-    rlang::is_empty() %>%
-    magrittr::not()
-
-
-  meta$pmid %<>% stringr::str_replace_all("; [0-9]+", "")
-  meta$title %<>% stringr::str_replace_all("; ", "")
-  meta$author_aff_id %<>% gsub(" ;", "", .)
-  meta$affiliation_all %<>% stringr::str_replace_all("; ,", ",")
-  meta$affiliation_all %<>% stringr::str_replace_all(" ;", "")
-  meta$date_epub %<>% stringr::str_replace_all("; ", "-")
-  meta$date_epub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)  # fixes 1st
-  meta$date_epub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)  # fixes 2nd
-  meta$date_ppub %<>% stringr::str_replace_all("; ", "-")
-  meta$date_ppub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)
-  meta$date_ppub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)
-
-  if (!as_list) {
-
-    meta <-
-      meta %>%
-      tibble::as_tibble() %>%
-      dplyr::mutate_all(stringr::str_squish)
-
-  }
-
-  return(meta)
-}
-
-
 # Tiny improvement over all meta-data, so not worth it
-.xml_metadata_unique <- function(article_xml, as_list = FALSE) {
-
-  meta <- list()
-
-  article_xml %>%
-    xml2::xml_find_all(xpath = "//label") %>%
-    xml2::xml_remove(free = TRUE)
-
-  article_xml %>%
-    xml2::xml_find_all(xpath = "//sup") %>%
-    xml2::xml_remove(free = TRUE)
-
-  xpath <- c(
-    "front/journal-meta//journal-title",
-    "front/journal-meta/journal-id[@journal-id-type = 'nlm-ta']",
-    "front/journal-meta/journal-id[@journal-id-type = 'iso-abbrev']",
-    "front/journal-meta/journal-id[@journal-id-type = 'publisher-id']",
-    "front/journal-meta/publisher",
-    "front/journal-meta/issn[@pub-type = 'ppub']",
-    "front/journal-meta/issn[@pub-type = 'epub']",
-    "front/article-meta/article-id[@pub-id-type = 'pii']",
-    "front/article-meta//subject",
-    "front/article-meta//article-title",
-    "front/article-meta//aff",
-    "front/article-meta//aff//institution",
-    "front/article-meta//aff//country",
-    "front/article-meta//pub-date[@pub-type = 'epub']",
-    "front/article-meta//pub-date[@pub-type = 'epub']/year",
-    "front/article-meta//pub-date[@pub-type = 'ppub']",
-    "front/article-meta//pub-date[@pub-type = 'ppub']/year",
-    "front/article-meta//license"
-  )
-
-  var_names <- c(
-    "journal",
-    "journal_nlm",
-    "journal_iso",
-    "publisher_id",
-    "publisher",
-    "issn_ppub",
-    "issn_epub",
-    "pii",
-    "subject",
-    "title",
-    "affiliation_all",
-    "affiliation_institution",
-    "affiliation_country",
-    "date_epub",
-    "year_epub",
-    "date_ppub",
-    "year_ppub",
-    "license"
-  )
-
-
-  meta <-
-    xpath %>%
-    lapply(.get_text, article_xml = article_xml, find_first = FALSE) %>%
-    rlang::set_names(var_names)
-
-
-  meta[["author"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//contrib[@contrib-type = 'author']/name") %>%
-    lapply(function(x) xml2::xml_contents(x) %>% xml2::xml_text() %>% paste(collapse = " ")) %>%
-    paste(collapse = "; ")
-
-
-  meta[["author_aff_id"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//contrib[@contrib-type = 'author']") %>%
-    lapply(function(x) xml2::xml_find_all(x, "xref") %>% xml2::xml_attr("rid") %>% paste(collapse = ", ")) %>%
-    paste(collapse = "; ")
-
-
-  meta[["affiliation_aff_id"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//aff") %>%
-    xml2::xml_attr("id") %>%
-    paste(collapse = "; ")
-
-
-  meta[["correspondence"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//author-notes/corresp") %>%
-    xml2::xml_text() %>%
-    paste(collapse = "; ")
-
-
-  meta[["n_auth"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//contrib[@contrib-type = 'author']") %>%
-    length()
-
-  meta[["n_affiliation"]] <-
-    article_xml %>%
-    xml2::xml_find_all("front/article-meta//aff") %>%
-    length()
-
-  meta[["n_ref"]] <-
-    article_xml %>%
-    xml2::xml_find_all("//back/ref-list/ref") %>%
-    length()
-
-  meta[["n_fig_body"]] <-
-    article_xml %>%
-    xml2::xml_find_all("body//fig") %>%
-    length()
-
-  meta[["n_fig_floats"]] <-
-    article_xml %>%
-    xml2::xml_find_all("floats-group/fig") %>%
-    length()
-
-  meta[["n_table_body"]] <-
-    article_xml %>%
-    xml2::xml_find_all("body//table-wrap") %>%
-    length()
-
-  meta[["n_table_floats"]] <-
-    article_xml %>%
-    xml2::xml_find_all("floats-group/table-wrap") %>%
-    length()
-
-  #
-  supp <- "//*[self::supplementary-material or self::supplement]"
-  meta[["is_supplement"]] <-
-    article_xml %>%
-    xml2::xml_find_all(supp) %>%
-    rlang::is_empty() %>%
-    magrittr::not()
-
-
-  meta$title %<>% stringr::str_replace_all("; ", "")
-  meta$author_aff_id %<>% gsub(" ;", "", .)
-  meta$affiliation_all %<>% stringr::str_replace_all("; ,", ",")
-  meta$affiliation_all %<>% stringr::str_replace_all(" ;", "")
-  meta$date_epub %<>% stringr::str_replace_all("; ", "-")
-  meta$date_epub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)  # fixes 1st
-  meta$date_epub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)  # fixes 2nd
-  meta$date_ppub %<>% stringr::str_replace_all("; ", "-")
-  meta$date_ppub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)
-  meta$date_ppub %<>% gsub("(^|-)([0-9])(-.*)$", "\\10\\2\\3", .)
-
-  if (!as_list) {
-
-    meta <-
-      meta %>%
-      tibble::as_tibble() %>%
-      dplyr::mutate_all(stringr::str_squish)
-
-  }
-
-  return(meta)
-}
 
 
 .xml_metadata_lean <- function(article_xml, as_list = FALSE) {
@@ -354,8 +19,8 @@
     "front/journal-meta/publisher",
     "front/article-meta//aff//institution",
     "front/article-meta//aff//country",
-    "front/article-meta//pub-date[@pub-type = 'epub']/year",
-    "front/article-meta//pub-date[@pub-type = 'ppub']/year"
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic') or not(@pub-type or @date-type)]/year",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]/year"
   )
 
   var_names <- c(
@@ -411,11 +76,11 @@
 
   xpath <- c(
     "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
+    "front/article-meta/article-id[@pub-id-type = 'pmcid' or @pub-id-type = 'pmc']",
     "front/article-meta/article-id[@pub-id-type = 'doi']",
     "front/article-meta/article-id[@pub-id-type = 'pii']",
-    "front/article-meta//pub-date[@pub-type = 'epub']",
-    "front/article-meta//pub-date[@pub-type = 'ppub']",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]",
     "front/journal-meta/journal-id[@journal-id-type = 'nlm-ta']",
     "front/journal-meta/journal-id[@journal-id-type = 'iso-abbrev']",
     "front/journal-meta/journal-id[@journal-id-type = 'publisher-id']",
@@ -585,10 +250,10 @@
     "front/article-meta//aff",
     "front/article-meta//aff//institution",
     "front/article-meta//aff//country",
-    "front/article-meta//pub-date[@pub-type = 'epub']",
-    "front/article-meta//pub-date[@pub-type = 'epub']/year",
-    "front/article-meta//pub-date[@pub-type = 'ppub']",
-    "front/article-meta//pub-date[@pub-type = 'ppub']/year",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic')]",
+    "front/article-meta//pub-date[@pub-type = 'epub' or (@date-type = 'pub' and @publication-format = 'electronic') or not(@pub-type or @date-type)]/year",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]",
+    "front/article-meta//pub-date[@pub-type = 'ppub' or (@date-type = 'pub' and @publication-format = 'print')]/year",
     "front/article-meta//license"
   )
 
@@ -893,7 +558,6 @@
 }
 
 
-
 .xml_ack <- function(article_xml) {
 
   # Look for the appropriately named element
@@ -931,78 +595,6 @@
 
   return(ack)
 }
-
-
-.xml_suppl <- function(article_xml) {
-
-  article_xml %>%
-    xml2::xml_find_all("//*[self::supplementary-material or self::supplement]") %>%
-    xml2::xml_contents() %>%
-    xml2::xml_text()
-
-}
-
-
-
-.xml_preprocess <- function(article_xml,
-                            remove_refs = FALSE,
-                            modify_refs = TRUE,
-                            remove_tables = TRUE,
-                            remove_labels = FALSE,
-                            remove_titles = FALSE) {
-
-  # Removes references to citations, tables, figures and supplements
-  if (remove_refs) {
-
-    article_xml %>%
-      xml2::xml_find_all(xpath = "//xref") %>%
-      xml2::xml_remove(free = TRUE)
-
-  }
-
-
-  # Modify references
-  if (modify_refs) {
-
-    article_xml %>%
-      xml2::xml_find_all(xpath = "//xref") %>%
-      xml2::xml_set_text("REFFF")
-
-  }
-
-
-  # Removes tables
-  if (remove_tables) {
-
-    article_xml %>%
-      xml2::xml_find_all(xpath = "//table-wrap") %>%
-      xml2::xml_remove(free = TRUE)
-
-  }
-
-  # Removes labels
-  if (remove_labels) {
-
-    article_xml %>%
-      xml2::xml_find_all(xpath = "//label") %>%
-      xml2::xml_remove(free = TRUE)
-
-    article_xml %>%
-      xml2::xml_find_all(xpath = "//sup") %>%
-      xml2::xml_remove(free = TRUE)
-
-  }
-
-  # Removes titles
-  if (remove_titles) {
-
-    article_xml %>%
-      xml2::xml_find_all(xpath = "body//title") %>%
-      xml2::xml_remove(free = TRUE)
-
-  }
-}
-
 
 
 .xml_footnotes <- function(article_xml, remove_labels = FALSE, all = FALSE) {
@@ -1066,17 +658,6 @@
 }
 
 
-
-.node_exists <- function(xml_doc, node){
-
-  xpath <- paste0("//", node)
-  nodeset <- xml_doc %>% xml2::xml_find_all(xpath = xpath)
-  return(!!length(nodeset))
-
-}
-
-
-
 #' Get the desired text from the xml_document
 #'
 #' Returns the text desired according to xpath.
@@ -1107,7 +688,6 @@
   }
 
 }
-
 
 
 #' Reconfigure the PMC XML so that the top node is "article".
@@ -1154,36 +734,29 @@
 }
 
 
-
 #' Read an XML file into an xml_document
 #'
-#' Returns the file as an xml_document.
+#' Reads the file, removes default namespaces and re-roots it at <article>.
+#' Namespaces are always stripped: the detectors address JATS elements by bare
+#' name, so a default namespace (as in OAI-PMH records) would otherwise make
+#' every XPath miss and every indicator silently FALSE.
 #'
 #' @param filename The filepath to the PMC XML file of interest.
-#' @param remove_ns Whether to remove the XML namespace or not (default = FALSE).
+#' @param remove_ns Ignored; kept so existing callers need not change.
 #' @return The PMC XML as an xml_document.
 #' @noRd
-.get_xml <- function(filename, remove_ns = FALSE) {
-
-  if (remove_ns) {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml() %>%
-      xml2::xml_ns_strip()
-
-  } else {
-
-    article_xml <-
-      filename %>%
-      xml2::read_xml()
-
-  }
-
-  article_xml_with_correct_root <- .reroot_xml(article_xml)
-  return(article_xml_with_correct_root)
+.get_xml <- function(filename, remove_ns = TRUE) {
+  article_xml <- xml2::xml_ns_strip(xml2::read_xml(filename))
+  .reroot_xml(article_xml)
 }
 
+
+# The row returned for a file that could not be read or parsed as XML: the
+# filename, is_success = FALSE and the parser's error message.
+.xml_failure <- function(filename, err) {
+  tibble::tibble(filename = filename, is_success = FALSE,
+                 error = conditionMessage(err))
+}
 
 
 #' Extract PMIDs and DOIs
@@ -1196,14 +769,24 @@
 #' @noRd
 .get_ids <- function(article_xml) {
 
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
+  # NCBI tagged PMC identifiers as pub-id-type "pmc" (the number) and
+  # "pmc-uid"; current PMC XML (and Europe PMC) uses "pmcid" ("PMC7071725")
+  # and "pmcaid". Both vintages are read; pmcid_pmc is always "PMC<number>".
+  id <- function(types) {
+    for (t in types) {
+      v <- .get_text(article_xml,
+                     sprintf("front/article-meta/article-id[@pub-id-type = '%s']", t),
+                     TRUE)
+      if (length(v) && !is.na(v[1]) && nzchar(v[1])) return(v[1])
+    }
+    ""
+  }
+  pmc <- id(c("pmcid", "pmc"))
+  if (nzchar(pmc) && !grepl("^PMC", pmc, ignore.case = TRUE)) pmc <- paste0("PMC", pmc)
+  list(
+    pmid = id("pmid"),
+    pmcid_pmc = toupper(pmc),
+    pmcid_uid = id(c("pmc-uid", "pmcaid")),
+    doi = id("doi")
   )
-
-  xpath %>%
-    purrr::map(~ .get_text(article_xml, .x, TRUE)) %>%
-    rlang::set_names(c("pmid", "pmcid_pmc", "pmcid_uid", "doi"))
 }

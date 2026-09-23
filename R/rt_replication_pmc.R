@@ -31,16 +31,8 @@
     return(c(out, index_any))
   }
 
-  # Quick relevance check
-  rel_regex <- paste(
-    "replicat",
-    "independent(ly)? (confirm|validat|reproduc)",
-    "external validation", "internal validation",
-    "validation cohort", "validation sample", "validation dataset",
-    "training cohort", "confirmatory cohort",
-    "reproduced (the|our|their|these) (findings|results)",
-    sep = "|"
-  )
+  # Cheap relevance gate: a superset of every cue the pattern functions match.
+  rel_regex <- .replication_gate()
   is_relevant <- any(grepl(rel_regex, article, ignore.case = TRUE))
 
   if (!is_relevant) {
@@ -81,7 +73,9 @@
 #'     independently confirming findings from a prior study in a new sample.
 #'
 #' @param filename The name of the PMC XML as a string.
-#' @param remove_ns TRUE if an XML namespace exists, else FALSE (default).
+#' @param remove_ns Ignored since version 1.2.0 and kept for backward
+#'   compatibility. Default XML namespaces are now always removed, so a
+#'   namespaced PMC XML file gives the same result as a plain one.
 #' @return A tibble of results. It returns the unique identifiers of the
 #'     article, whether a replication component was found, the relevant text
 #'     and whether each pattern-matching function identified relevant text.
@@ -93,10 +87,10 @@
 #' )
 #'
 #' # Identify and extract replication components.
-#' results_table <- rt_replication_pmc(filepath, remove_ns = TRUE)
+#' results_table <- rt_replication_pmc(filepath)
 #' }
 #' @export
-rt_replication_pmc <- function(filename, remove_ns = FALSE) {
+rt_replication_pmc <- function(filename, remove_ns = TRUE) {
 
   # Identifier columns only; the prediction, extracted text and per-pattern flags
   # are supplied by .rt_replication_pmc() below and must not be duplicated here.
@@ -111,18 +105,11 @@ rt_replication_pmc <- function(filename, remove_ns = FALSE) {
   article_xml <- tryCatch(.get_xml(filename, remove_ns), error = function(e) e)
 
   if (inherits(article_xml, "error")) {
-    return(tibble::tibble(filename, is_success = FALSE))
+    return(.xml_failure(filename, article_xml))
   }
 
-  # Extract IDs
-  xpath <- c(
-    "front/article-meta/article-id[@pub-id-type = 'pmid']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc']",
-    "front/article-meta/article-id[@pub-id-type = 'pmc-uid']",
-    "front/article-meta/article-id[@pub-id-type = 'doi']"
-  )
 
-  out %<>% purrr::list_modify(!!!purrr::map(xpath, ~ .get_text(article_xml, .x, TRUE)))
+  out %<>% purrr::list_modify(!!!.get_ids(article_xml))
 
   # Extract text
   article_ls <- .get_article_txt(article_xml)
