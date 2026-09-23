@@ -8,14 +8,16 @@ and links. See NEWS.md.
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 0 notes (`R CMD check --as-cran`, including
+`--run-donttest` examples, on the local environment below).
 
 ## Test environments
 
-* local macOS, R 4.6.0
+* local macOS 27, R 4.6.0: Status OK
 * GitHub Actions (r-lib/actions, full `R CMD check`): macOS-release,
-  windows-release, ubuntu-devel, ubuntu-release, ubuntu-oldrel-1
-* win-builder (devel)
+  windows-release, ubuntu-devel, ubuntu-release, ubuntu-oldrel-1 (to be
+  confirmed on the release branch before submission)
+* win-builder (devel) (to be run before submission)
 
 ## Reverse dependencies
 
