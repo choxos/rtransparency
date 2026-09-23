@@ -15,7 +15,7 @@ Living plan for improving the package. Update it as items ship.
   accuracy; draw a new round (`data-raw/validation/`).
 - Be self-contained: no GitHub-only or AGPL dependencies.
 
-## Shipped in 1.2.0
+## In 1.2.0 (awaiting release)
 - Plain-text API unified with the XML one (text input, same column names, all
   ten indicators in `rt_all()`, `rt_all_pdf()`, `rt_all_txt_dir()`).
 - Correctness fixes: namespaced XML, empty PMCIDs in current PMC XML, data
