@@ -1038,6 +1038,16 @@
     "C(?i)onflicting of interest(|s)(?-i)",
     "C(?i)onflits d'int(?-i)",
     "C(?i)onflictos de Inter(?-i)",
+    # Other languages' section titles. "." stands for any apostrophe (' or
+    # a typographic one) so "d'int" and "d\u2019int" both match.
+    "C(?i)onflits? d.int(?-i)",                    # FR conflit(s) d'interets
+    "L(?i)iens? d.int(?-i)",                       # FR lien(s) d'interets
+    "D(?i)[e\u00e9]claration de liens? d.int(?-i)", # FR declaration de liens
+    "C(?i)onflictos? de inter(?-i)",               # ES conflicto(s) de interes
+    "C(?i)onflitos? de interesses?(?-i)",          # PT conflito(s) de interesse(s)
+    "C(?i)onflitt[oi] d.interess[ei](?-i)",        # IT conflitto d'interessi
+    "C(?i)onflitt[oi] di interess[ei](?-i)",       # IT conflitto di interessi
+    "I(?i)nteressenkonflikte?(?-i)",               # DE Interessenkonflikt(e)
     "C(?i)ompeting interest(|s)(?-i)",
     "C(?i)ompeting interest(|s) declaration(?-i)",
     "C(?i)ompeting of interest(|s)(?-i)",

@@ -47,3 +47,14 @@ test_that("transliteration is platform independent", {
                    "Die Autoren erklaren, dass kein Interessenkonflikt besteht. Financiacion")
   expect_identical(rtransparency:::.to_ascii(c("\u00e9t\u00e9", NA)), c("ete", NA))
 })
+
+test_that("non-English COI section titles are recognized", {
+  d <- rtransparency:::.create_synonyms()
+  titles <- rtransparency:::.encase(unlist(d[c("conflict_title", "disclosure_coi_title")]))
+  for (h in c("Liens d'intérêts", "LIENS D'INTÉRÊTS",
+              "Conflits d’intérêts", "Conflito de interesses",
+              "Conflitto di interessi", "Interessenkonflikt", "Conflicto de intereses")) {
+    expect_true(grepl(titles, h, ignore.case = TRUE, perl = TRUE), info = h)
+  }
+  expect_false(grepl(titles, "Linked data", ignore.case = TRUE, perl = TRUE))
+})
