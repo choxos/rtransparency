@@ -27,15 +27,14 @@
   ],
   "softwareRequirements": [
     "R >= 3.5.0",
-    "dplyr",
+    "dplyr >= 1.0.0",
     "magrittr",
-    "purrr",
+    "purrr >= 1.0.0",
     "readr",
-    "rlang",
+    "rlang >= 1.0.0",
+    "stringi",
     "stringr",
     "tibble",
-    "tidyselect",
-    "utf8",
     "xml2"
   ],
   "author": [

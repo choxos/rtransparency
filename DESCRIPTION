@@ -30,7 +30,6 @@ Imports:
     stringi,
     stringr,
     tibble,
-    tidyselect,
     xml2
 Suggests:
     furrr,

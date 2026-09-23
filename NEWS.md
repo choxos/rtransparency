@@ -153,8 +153,8 @@ changes responsible is on the roadmap.
 * `rt_demo` gains `is_open_access` and `is_reporting_pred`.
 * 110 unreachable or shadowed internal functions were removed.
 * Minimum versions: purrr 1.0.0, dplyr 1.0.0, rlang 1.0.0. stringi is now
-  imported directly; utf8 is no longer needed. jsonlite and pdftools are
-  suggested.
+  imported directly; utf8 and tidyselect are no longer needed. jsonlite and
+  pdftools are suggested.
 
 # rtransparency 1.1.0
 
