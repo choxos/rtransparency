@@ -1,6 +1,6 @@
 # Europe PMC parity
 
-Package version 1.1.0. 13 articles (the benchmark fixtures and the bundled example) were downloaded from both NCBI PMC and the Europe PMC REST API and run through `rt_all_pmc()`.
+Package version 1.2.0. 13 articles (the benchmark fixtures and the bundled example) were downloaded from both NCBI PMC and the Europe PMC REST API and run through `rt_all_pmc()`.
 
 Indicator fields (the ten decisions, license and guideline) identical: 155 of 156.
 

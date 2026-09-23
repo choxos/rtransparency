@@ -68,14 +68,26 @@ specificity, %):
 | Data sharing | 2023 sample (123 positives) | 90.2 / 98.1 | 91.9 / 98.1 |
 | Code sharing | held-out set (109 positives) | 86.2 / 98.6 | 88.1 / 99.5 |
 | Code sharing | 2023 sample (33 positives) | 93.9 / 99.1 | 93.9 / 99.0 |
-| Reporting guideline | 2023 sample (65 positives) | 95.4 / 99.0 | 93.8 / 99.0 |
+| Conflicts of interest | 2023 sample (927 positives) | 100 / 91.8 | 100 / 90.4 |
 
-Conflicts of interest, funding, registration, novelty, open access and AI
-disclosure are unchanged on every labeled set. The code and reporting rows
-move because `rt_all_pmc()` now matches the standalone detectors, which the
-published benchmarks already used (so the published reporting figure, 93.8%,
-is unchanged). Outside the labeled sets, the AI fixes catch two more genuine
-disclosures and the data vetoes remove four false positives.
+Funding, registration, novelty, open access, AI disclosure and reporting
+guidelines are unchanged on every labeled set, as are conflicts of interest on
+the independently labeled held-out set. The code row moves because
+`rt_all_pmc()` now matches the standalone detectors, which the published
+benchmarks already used. Reporting stays at 95.4 / 99.0 for `rt_all_pmc()`,
+and `rt_reporting_pmc()` rises from 93.8 to 95.4 because citation markers no
+longer hide guideline names.
+
+The one conflict-of-interest change in the 2023 sample is an article whose
+footnote reads "Declaration of competing interest: None." but whose label is
+`FALSE`. Those labels were reconciled against the 1.1.0 detector's output, so
+they inherit its misses; three more articles with a "Competing interests: ..."
+statement labeled `FALSE` explain most of the plain-text specificity in
+`results_txt_parity.md`. The labels are left as they are, pending the
+maintainer's review, and the new blind 2025 rounds are the fix. Outside the
+labeled sets, the AI fixes catch two more genuine disclosures, the data vetoes
+remove four false positives, and French conflict-of-interest detection on the
+multilingual corpus rises from 30% to 77%.
 
 Regenerating every benchmark report for this release also exposed drift that
 predates it: on the held-out Serghiou et al. (2021) set, the 1.1.0 detectors

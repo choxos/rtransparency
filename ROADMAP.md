@@ -61,7 +61,13 @@ The plain-text path does not exclude reference lists, so a cited title such as
 risky because some journals print declarations after them; measure with the
 TXT-parity benchmark first.
 
-### E. Registration linkage beyond ClinicalTrials.gov
+### E. Held-out drift since 0.9.0
+On the held-out set, funding sensitivity fell from 100% (0.9.0 report) to 91.7%
+and registration specificity from 96.9% to 92.7% by 1.1.0. Snapshot the v0.9.x
+tags on the held-out articles and bisect with `snapshot.R compare` to find the
+responsible changes; keep whichever gains they bought on other sets.
+
+### F. Registration linkage beyond ClinicalTrials.gov
 `rt_registration_timing()` covers NCT numbers. ISRCTN and PROSPERO expose
 registration dates too.
 
