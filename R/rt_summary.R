@@ -167,12 +167,13 @@
 #' @param n_sim Number of simulation draws for `adj_interval = "simulation"`.
 #' @param seed Random seed for the simulation, so results are reproducible.
 #'   The caller's random number stream is left untouched.
-#' @param register_research_only If `TRUE` (default) and `data` has an
+#' @param register_assessed_only If `TRUE` (default) and `data` has an
 #'   `is_research` column (as [rt_all_pmc()] output does), protocol
-#'   registration is summarized over research articles only, as in Serghiou et
-#'   al. (2021). The registration detector does not assess most other article
-#'   types (editorials, letters, ...), so counting them in the denominator
-#'   understates registration.
+#'   registration is summarized over the articles the registration detector
+#'   assesses: research articles and, when `is_review` is present, reviews
+#'   (where PROSPERO registration applies). Editorials, letters, news and
+#'   similar types are not assessed and return `FALSE`, so counting them in the
+#'   denominator understates registration. `FALSE` counts every article.
 #'
 #' @details
 #' **Corrected prevalence.** The Rogan-Gladen estimator corrects an apparent
@@ -208,7 +209,7 @@
 rt_summary <- function(data, indicators = NULL, by = NULL,
                        adjust = TRUE, accuracy = NULL, conf_level = 0.95,
                        adj_interval = c("simulation", "fixed"), n_sim = 10000,
-                       seed = 2021, register_research_only = TRUE) {
+                       seed = 2021, register_assessed_only = TRUE) {
   adj_interval <- match.arg(adj_interval)
   if (!is.data.frame(data)) {
     stop("`data` must be a data frame.", call. = FALSE)
@@ -246,9 +247,13 @@ rt_summary <- function(data, indicators = NULL, by = NULL,
     d <- splits[[gi]]
     for (v in indicators) {
       x <- .coerce_indicator(d[[v]], v)
-      if (v == "is_register_pred" && register_research_only &&
+      if (v == "is_register_pred" && register_assessed_only &&
           "is_research" %in% names(d)) {
-        x[!(.coerce_indicator(d$is_research, "is_research") %in% TRUE)] <- NA
+        assessed <- .coerce_indicator(d$is_research, "is_research") %in% TRUE
+        if ("is_review" %in% names(d)) {
+          assessed <- assessed | .coerce_indicator(d$is_review, "is_review") %in% TRUE
+        }
+        x[!assessed] <- NA
       }
       n <- sum(!is.na(x))
       k <- sum(x, na.rm = TRUE)

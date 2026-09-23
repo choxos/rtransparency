@@ -39,7 +39,8 @@ jobs:
           pkgload::load_all(quiet = TRUE)
           ids <- read.csv("data-raw/benchmark/predictions_snapshot.csv")$pmcid
           got <- rt_fetch_pmc(ids, "data-raw/benchmark/.cache", progress = FALSE)
-          if (!all(got$is_success)) stop(sum(!got$is_success), " downloads failed")
+          # The check step skips (and lists) articles that could not be fetched.
+          if (!all(got$is_success)) message(sum(!got$is_success), " downloads failed")
         shell: Rscript {0}
 
       - name: Check predictions

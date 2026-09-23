@@ -109,3 +109,12 @@ test_that("recommendations are not adherence, and non-use vetoes are clause-loca
   expect_true(detect("The study was conducted and reported as recommended by the PRISMA statement."))
   expect_true(detect("El estudio se reporto seg\u00fan la declaraci\u00f3n STROBE."))
 })
+
+test_that("a citation marker glued to a guideline name does not hide it", {
+  f <- tempfile(fileext = ".xml")
+  writeLines(paste0(
+    '<article><front><article-meta/></front><body><p>The review was reported ',
+    'following PRISMA<xref ref-type="bibr" rid="B1">12</xref>.</p></body></article>'), f)
+  expect_identical(rt_reporting_pmc(f)$reporting_guideline, "PRISMA")
+  expect_identical(rt_all_pmc(f)$reporting_guideline, "PRISMA")
+})

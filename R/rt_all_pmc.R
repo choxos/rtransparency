@@ -259,12 +259,18 @@ rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
   id_ls <- .get_ids(article_xml)
   id_ls$filename <- filename
 
+  # The full metadata extraction removes <sup> and <label> elements, so it
+  # works on a copy of the document; the detectors never see its changes.
+  meta_ls <- if (all_meta) {
+    .xml_metadata_all(xml2::read_xml(as.character(article_xml)), as_list = TRUE)
+  } else {
+    .xml_metadata_lean(article_xml, as_list = TRUE)
+  }
+
   # Order matters: .get_article_txt() removes citation markers and tables from
-  # the body, and the full metadata extraction removes <sup> and <label>
-  # elements, both in place. The detectors that read the XML directly
-  # therefore run first, on the untouched document, exactly as their
-  # standalone functions (rt_ai_pmc(), rt_data_code_pmc(), rt_oa_pmc(),
-  # rt_reporting_pmc()) do; the metadata is extracted last.
+  # the body in place. The detectors that read the XML directly therefore run
+  # first, on the untouched document, exactly as their standalone functions
+  # (rt_ai_pmc(), rt_data_code_pmc(), rt_oa_pmc(), rt_reporting_pmc()) do.
   pmc_coi_ls <- .get_coi_pmc(article_xml, dict)
   pmc_fund_ls <- .get_fund_pmc(article_xml, dict)
   pmc_reg_ls <- .get_register_pmc(article_xml)
@@ -304,13 +310,6 @@ rt_all_pmc <- function(filename, remove_ns = TRUE, all_meta = FALSE) {
 
   novelty_ls <- .rt_novelty_pmc(article_ls)
   replication_ls <- .rt_replication_pmc(article_ls)
-
-  # Metadata last (see above).
-  meta_ls <- if (all_meta) {
-    .xml_metadata_all(article_xml, as_list = TRUE)
-  } else {
-    .xml_metadata_lean(article_xml, as_list = TRUE)
-  }
 
   status_ls <- list(is_success = TRUE)
   tibble::as_tibble(c(id_ls, meta_ls, coi_ls, fund_ls, reg_ls,

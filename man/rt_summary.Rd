@@ -14,7 +14,7 @@ rt_summary(
   adj_interval = c("simulation", "fixed"),
   n_sim = 10000,
   seed = 2021,
-  register_research_only = TRUE
+  register_assessed_only = TRUE
 )
 }
 \arguments{
@@ -56,12 +56,13 @@ counts always use `"fixed"`.}
 \item{seed}{Random seed for the simulation, so results are reproducible.
 The caller's random number stream is left untouched.}
 
-\item{register_research_only}{If `TRUE` (default) and `data` has an
+\item{register_assessed_only}{If `TRUE` (default) and `data` has an
 `is_research` column (as [rt_all_pmc()] output does), protocol
-registration is summarized over research articles only, as in Serghiou et
-al. (2021). The registration detector does not assess most other article
-types (editorials, letters, ...), so counting them in the denominator
-understates registration.}
+registration is summarized over the articles the registration detector
+assesses: research articles and, when `is_review` is present, reviews
+(where PROSPERO registration applies). Editorials, letters, news and
+similar types are not assessed and return `FALSE`, so counting them in the
+denominator understates registration. `FALSE` counts every article.}
 }
 \value{
 A tibble with one row per indicator (per group, if `by` is given):

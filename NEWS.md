@@ -123,9 +123,10 @@ changes responsible is on the roadmap.
   published values are kept as `rt_accuracy_2021`.
 * `rt_summary()` intervals for the corrected prevalence propagate the
   uncertainty of sensitivity and specificity by simulation (the previous
-  interval is `adj_interval = "fixed"`), summarize registration over research
-  articles when `is_research` is present, and keep rows with a missing group
-  as an `NA` group.
+  interval is `adj_interval = "fixed"`), summarize registration over the
+  articles its detector assesses (research articles and reviews) when
+  `is_research` is present, and keep rows with a missing group as an `NA`
+  group.
 * `data-raw/validation/` draws fresh samples and builds blind labeling sheets
   (two 2025 rounds are ready to label) with inter-rater kappa.
 * A benchmark workflow fails a pull request whose predictions differ from the

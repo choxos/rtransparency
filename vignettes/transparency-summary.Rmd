@@ -106,16 +106,18 @@ correction subtracts the false-positive rate `1 - specificity`, which is only
 known to within a percentage point or so. `adj_interval = "fixed"` gives the
 narrower interval that treats the accuracy as known.
 
-**Registration is summarized over research articles.** When the data carry
-`is_research` (as `rt_all_pmc()` output does), the registration denominator is
-restricted to research articles, as in Serghiou et al. (2021); set
-`register_research_only = FALSE` to count every article.
+**Registration is summarized over the articles its detector assesses.** When
+the data carry `is_research` (as `rt_all_pmc()` output does), the registration
+denominator is restricted to research articles and reviews, the types the
+detector assesses; set `register_assessed_only = FALSE` to count every article.
 
 To use your own validation (or the published `oddpub` values for data and
 code), pass any table with `variable`, `sensitivity` and `specificity` columns:
 
 ```{r}
-my_acc <- rt_accuracy
+# Keep only the point estimates: the bundled validation counts would no longer
+# match an edited sensitivity (rt_summary() warns when they disagree).
+my_acc <- rt_accuracy[, c("variable", "sensitivity", "specificity")]
 my_acc$sensitivity[my_acc$variable == "is_open_data"] <- 0.758
 rt_summary(rt_demo, indicators = "is_open_data", accuracy = my_acc)[,
   c("label", "percent", "adj_percent")]

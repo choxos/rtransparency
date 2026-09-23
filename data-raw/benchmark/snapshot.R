@@ -103,8 +103,15 @@ if (args[1] == "run") {
   dir <- if (length(args) > 2) args[3] else "data-raw/benchmark/.cache"
   suppressMessages(pkgload::load_all(Sys.getenv("RT_PKG_DIR", "."), quiet = TRUE))
   files <- file.path(dir, paste0(ref$pmcid, ".xml"))
-  if (!all(file.exists(files))) {
-    stop(sum(!file.exists(files)), " articles have no XML in ", dir, call. = FALSE)
+  # An article withdrawn from PMC cannot be re-fetched; report it and check the
+  # rest rather than failing the whole run.
+  have <- file.exists(files)
+  if (!all(have)) {
+    cat(sum(!have), "articles have no XML in", dir, "and are skipped:",
+        paste(utils::head(ref$pmcid[!have], 10), collapse = " "), "\n")
+    if (mean(have) < 0.95) stop("more than 5% of the articles are missing", call. = FALSE)
+    ref <- ref[have, ]
+    files <- files[have]
   }
   cores <- as.integer(Sys.getenv("RT_CORES", max(1, parallel::detectCores() - 1)))
   now <- dplyr::bind_rows(parallel::mclapply(files, function(f) {

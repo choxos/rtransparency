@@ -168,11 +168,15 @@ test_that("the simulation interval widens with small validation samples", {
   expect_identical(a, b)
 })
 
-test_that("registration is summarized over research articles only by default", {
-  df <- data.frame(is_register_pred = c(TRUE, FALSE, FALSE, FALSE),
-                   is_research = c(TRUE, TRUE, FALSE, FALSE))
-  expect_equal(rt_summary(df, adjust = FALSE)$n_articles, 2)
-  expect_equal(rt_summary(df, adjust = FALSE, register_research_only = FALSE)$n_articles, 4)
+test_that("registration is summarized over the articles the detector assesses", {
+  df <- data.frame(is_register_pred = c(TRUE, FALSE, TRUE, FALSE, FALSE),
+                   is_research = c(TRUE, TRUE, FALSE, FALSE, FALSE),
+                   is_review = c(FALSE, FALSE, TRUE, FALSE, FALSE))
+  # Two research articles and one registered systematic review are assessed.
+  s <- rt_summary(df, adjust = FALSE)
+  expect_equal(s$n_articles, 3)
+  expect_equal(s$n_detected, 2)
+  expect_equal(rt_summary(df, adjust = FALSE, register_assessed_only = FALSE)$n_articles, 5)
 })
 
 test_that("rows with a missing group form their own group", {

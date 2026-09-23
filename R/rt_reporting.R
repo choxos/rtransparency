@@ -245,7 +245,11 @@
     sep = " | "
   )
   nodes <- tryCatch(xml2::xml_find_all(article_xml, xp), error = function(e) NULL)
-  text <- if (length(nodes)) xml2::xml_text(nodes) else character(0)
+  # Citation markers are left out of the text, so a superscript reference glued
+  # to a guideline name ("PRISMA<xref>12</xref>") does not hide it. The
+  # document itself is not modified.
+  text <- vapply(nodes, function(n) paste(xml2::xml_text(xml2::xml_find_all(
+    n, ".//text()[not(ancestor::xref)]")), collapse = ""), character(1))
   .detect_reporting(text)
 }
 

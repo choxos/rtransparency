@@ -61,6 +61,9 @@ rt_coi <- function(filename = NULL, text = NULL) {
 # when the heading stands alone ("Declaration of interests" / "None."). Uses
 # the same title vocabulary as the PMC section-title route, minus the bare
 # "Declaration(s)", which in plain text usually heads an unrelated block.
+# On flattened XML back-matter paragraphs a lone heading is paired with the
+# next paragraph even across footnotes: the decision is right, but coi_text
+# can include that neighbor.
 .coi_title_txt <- function(paragraphs, dict) {
   titles <- c(dict$conflict_title,
               "D(?i)eclaration of competing interest(|s)(?-i)",

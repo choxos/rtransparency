@@ -82,3 +82,12 @@ test_that("rt_all_pmc agrees with every standalone detector and ignores all_meta
                      pick(all, "reporting_guideline"), info = f)
   }
 })
+
+test_that("full metadata is extracted from an unmodified document", {
+  f <- test_path("fixtures", "benchmark", "PMC5147920.xml")
+  skip_if(!file.exists(f))
+  full <- rt_all_pmc(f, all_meta = TRUE)
+  meta <- rtransparency:::.xml_metadata_all(rtransparency:::.get_xml(f), as_list = TRUE)
+  expect_identical(full$n_table_body, meta$n_table_body)
+  expect_identical(full$n_ref, meta$n_ref)
+})
